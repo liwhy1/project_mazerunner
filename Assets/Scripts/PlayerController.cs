@@ -1,7 +1,8 @@
 using System.Linq;
+using Unity.Netcode;
 using UnityEngine;
 
-public class PlayerController : MonoBehaviour
+public class PlayerController : NetworkBehaviour
 {
     public static PlayerController Instance;
 
@@ -32,9 +33,14 @@ public class PlayerController : MonoBehaviour
     private RaycastHit rayHit;
     public float rayLength;
 
-    private void Awake()
+    public override void OnNetworkSpawn()
     {
-        // setup vars
+        if (!IsOwner)
+        {
+            cameraObject.gameObject.SetActive(false);
+            Destroy(this);
+            return;
+        }
         Instance = this;
         playerRigidbody = GetComponent<Rigidbody>();
         enableInteraction = true;
@@ -42,9 +48,6 @@ public class PlayerController : MonoBehaviour
         enableCamera = true;
         accumulatedRotationX = cameraObject.transform.localEulerAngles.x;
         accumulatedRotationY = transform.localEulerAngles.y;
-    
-        Cursor.visible = false;
-        Cursor.lockState = CursorLockMode.Locked;
     }
 
 

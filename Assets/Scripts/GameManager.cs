@@ -1,18 +1,51 @@
 using System;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
 
 public class GameManager : NetworkBehaviour
 {
     public static GameManager Instance;
     public bool isPaused;
-    [SerializeField] private GameObject playerObject;
     [SerializeField] private GameObject mainCamera;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    private static void Initialize()
+    {
+        Debug.Log("GameManager: Initializing");
+        if (Instance != null) return;
+
+        // create NetworkManager
+        if (FindAnyObjectByType<NetworkManager>() == null)
+        {
+            GameObject networkManager = Instantiate(Resources.Load<GameObject>("NetworkManager"));
+            networkManager.name = "NetworkManager";
+            DontDestroyOnLoad(networkManager);
+        }
+
+        // create InputManager
+        if (FindAnyObjectByType<InputManager>() == null)
+        {
+            GameObject inputManager = Instantiate(Resources.Load<GameObject>("InputManager"));
+            inputManager.name = "InputManager";
+            DontDestroyOnLoad(inputManager);
+        }
+
+        // create EventSystem
+        if (FindAnyObjectByType<EventSystem>() == null)
+        {
+            GameObject eventSystem = Instantiate(Resources.Load<GameObject>("EventSystem"));
+            eventSystem.name = "EventSystem";
+            DontDestroyOnLoad(eventSystem);
+        }
+    }
 
     private void Start()
     {
         Instance = this;
-        isPaused = false;
+        isPaused = true;
+        mainCamera = Camera.main.gameObject;
         UIManager.Instance.OnPauseToggle();
 
         NetworkManager.OnClientConnectedCallback += OnClientConnected;
@@ -32,9 +65,22 @@ public class GameManager : NetworkBehaviour
         InputManager.Instance.ToggleCursor();
     }
 
+    public void OnNameChanged()
+    {
+        PlayerPrefs.SetString("PlayerName", UIManager.Instance.playerNameInput.text);
+        PlayerPrefs.Save();
+    }
+
+    public void OnStartGame()
+    {
+        mainCamera.SetActive(false);
+        OnPauseToggle();
+    }
+
     private void OnClientConnected(ulong clientId)
     {
         Debug.Log("Client connected: " + clientId);
+
         if (!NetworkManager.IsHost) return;
         SpawnPlayer(clientId);
     }
@@ -45,31 +91,30 @@ public class GameManager : NetworkBehaviour
         if (!NetworkManager.IsHost) return;
     }
 
-    public void OnStartHost()
+    public async void OnStartHost()
     {
-        try
+        string joinCode = await RelayManager.Instance.StartHost(4);
+
+        if (!string.IsNullOrEmpty(joinCode))
         {
-            NetworkManager.StartHost();
-            mainCamera.SetActive(false);
-        }
-        catch (Exception ex)
-        {
-            Debug.Log("Failed to host session. " + ex);
-            return;
+            UIManager.Instance.joinCodeText.text = "Join Code\n" + joinCode;
+            UIManager.Instance.OnSessionConnect();
         }
     }
 
-    public void OnStartClient()
+    public async void OnStartClient()
     {
-        try
+        string code = UIManager.Instance.joinCodeInput.text.Trim().ToUpper();
+
+        bool success = await RelayManager.Instance.JoinHost(code);
+
+        if (!success)
         {
-            NetworkManager.StartClient();
-        }
-        catch (Exception ex)
-        {
-            Debug.Log("Failed to join session. " + ex);
+            Debug.LogError("Failed to join game.");
             return;
         }
+
+        UIManager.Instance.OnSessionConnect();
     }
 
     public void OnDisconnectClient()
@@ -77,18 +122,22 @@ public class GameManager : NetworkBehaviour
         try
         {
             NetworkManager.Shutdown();
+            UIManager.Instance.joinCodeInput.text = "";
+            UIManager.Instance.joinCodeText.text = "Join Code";
         }
         catch (Exception ex)
         {
             Debug.Log("Failed to disconnect from session. " + ex);
             return;
         }
+
+        SceneManager.LoadScene(0);
     }
 
     private void SpawnPlayer(ulong clientId)
     {
         Debug.Log("Spawning player for: " + clientId);
-        GameObject player = Instantiate(playerObject, Vector3.zero, Quaternion.identity);
+        GameObject player = Instantiate(Resources.Load<GameObject>("Player"), Vector3.zero, Quaternion.identity);
         player.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientId);
     }
 }

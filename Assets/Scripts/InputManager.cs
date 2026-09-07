@@ -5,6 +5,7 @@ public class InputManager : MonoBehaviour
 {
     public static InputManager Instance;
     private InputSystem inputSystem;
+    public Vector3 mousePosition;
     private InputAction pauseAction;
     private InputAction mapAction;
     public InputAction moveAction;
@@ -25,29 +26,33 @@ public class InputManager : MonoBehaviour
         jumpAction = inputSystem.Player.Jump;
 
         pauseAction.performed += context => GameManager.Instance.OnPauseToggle();
-        mapAction.performed += context => UIManager.Instance.OnMapToggle();
+        mapAction.performed += context => MapManager.Instance.OnMapToggle();
         jumpAction.performed += context => PlayerController.Instance.OnJump();
     }
 
     private void OnEnable() => inputSystem.Enable();
-    private void OnDisable() => inputSystem.Enable();
+    private void OnDisable() => inputSystem.Disable();
 
     public void ToggleCursor()
     {
-        if (Cursor.visible)
+        try
         {
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
+            if (Cursor.visible)
+            {
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
+            }
+            else
+            {
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;            
+            }
         }
-        else
-        {
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;            
-        }
+        catch {}
     }
 
-    void Update()
+    private void Update()
     {
-        
+        mousePosition = Mouse.current.position.ReadValue();
     }
 }
