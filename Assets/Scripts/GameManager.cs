@@ -48,6 +48,8 @@ public class GameManager : NetworkBehaviour
         isPaused = true;
         isOffline = false;
         mainCamera = Camera.main.gameObject;
+        PlayerPrefs.DeleteAll();
+        PlayerPrefs.Save();
         UIManager.Instance.OnMenuToggle();
 
         NetworkManager.OnClientConnectedCallback += OnClientConnected;
@@ -63,7 +65,21 @@ public class GameManager : NetworkBehaviour
     public void OnPauseToggle()
     {
         isPaused = !isPaused;
+
         UIManager.Instance.OnPauseToggle();
+
+        // prevent toggling cursor if the mapui is already active
+        if (!MapManager.Instance.isMapActive)
+        {
+            InputManager.Instance.ToggleCursor();            
+        }
+    }
+
+    public void OnMapToggle()
+    {
+        if (isPaused) return;
+
+        MapManager.Instance.OnMapToggle();
         InputManager.Instance.ToggleCursor();
     }
 

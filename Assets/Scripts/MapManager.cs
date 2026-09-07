@@ -7,6 +7,7 @@ using UnityEngine.UI;
 public class MapManager : MonoBehaviour
 {
     public static MapManager Instance;
+    public bool isMapActive;
     [SerializeField] private GameObject mapObject;
     [SerializeField] private GameObject iconPile;
     private Vector3 savedElementPosition;
@@ -20,14 +21,9 @@ public class MapManager : MonoBehaviour
     
     private void Start()
     {
-        /*if (!IsOwner)
-        {
-            Debug.Log("Destorying map manager");
-            Destroy(this);
-            return;
-        }*/
         Instance = this;
-        //GetComponent<Canvas>().worldCamera = PlayerController.Instance.cameraObject;
+        isMapActive = false;
+
         mapObject.SetActive(false);
         GenerateIcons();
     }
@@ -87,9 +83,8 @@ public class MapManager : MonoBehaviour
 
     public void OnMapToggle()
     {
+        isMapActive = !isMapActive;
         mapObject.SetActive(!mapObject.activeSelf);
-        InputManager.Instance.ToggleCursor();
-        GameManager.Instance.isPaused = !GameManager.Instance.isPaused;
     }
 
     public void OnStartElementDrag(GameObject targetElement)
