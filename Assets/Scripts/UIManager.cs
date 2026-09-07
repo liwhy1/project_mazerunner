@@ -7,81 +7,94 @@ public class UIManager : NetworkBehaviour
 {
     public static UIManager Instance;
 
+    [Header("Host Data")]
+    [SerializeField] private GameObject hostObject;
+    [SerializeField] private Button startHostButton;
+    [SerializeField] private Button hostBackButton;
+    public TMP_InputField hostPlayerNameInput;
+
+    [Header("Join Data")]
+    [SerializeField] private GameObject joinObject;
+    [SerializeField] private Button startClientButton;
+    [SerializeField] private Button joinBackButton;
+    public TMP_InputField joinCodeInput;
+    public TMP_InputField joinPlayerNameInput;
+
     [Header("Pause Data")]
     [SerializeField] private GameObject pauseObject;
-    [SerializeField] private Button startHostButton;
-    [SerializeField] private Button startClientButton;
-    [SerializeField] private Button backButton;
-    public Button startGameButton;
+    [SerializeField] public Button resumeButton;
+    [SerializeField] private Button quitButton;
     public TMP_Text joinCodeText;
-    public TMP_InputField joinCodeInput;
-    public TMP_InputField playerNameInput;
 
     [Header("Menu Data")]
     [SerializeField] private GameObject menuObject;
-    [SerializeField] private Button onlineButton;
+    [SerializeField] private Button hostButton;
+    [SerializeField] private Button joinButton;
     [SerializeField] private Button offlineButton;
 
     private void Awake()
     {
         Instance = this;
 
-        // setup vars
-        pauseObject.SetActive(false);
-        menuObject.SetActive(false);
-
-        // reset ui active state
-        ResetUIElements();
+        // reset ui
+        ResetUIState();
+        menuObject.SetActive(true);
 
         // subscribe to events 
-        startHostButton.onClick.AddListener(delegate { GameManager.Instance.OnStartHost(); });
+        // join
+        joinBackButton.onClick.AddListener(delegate { OnBackButton(); });
         startClientButton.onClick.AddListener(delegate { GameManager.Instance.OnStartClient(); });
-        startGameButton.onClick.AddListener(delegate { GameManager.Instance.OnStartGame(); });
-        backButton.onClick.AddListener(delegate { OnBackButton(); });
-        playerNameInput.onValueChanged.AddListener(delegate { GameManager.Instance.OnNameChanged(); });
+        joinPlayerNameInput.onValueChanged.AddListener(delegate { GameManager.Instance.OnNameChanged(joinPlayerNameInput.text); });
 
-        onlineButton.onClick.AddListener(delegate { OnOnlinePlay(); });
-        offlineButton.onClick.AddListener(delegate { OnOfflinePlay(); });
+        // host
+        hostBackButton.onClick.AddListener(delegate { OnBackButton(); });
+        startHostButton.onClick.AddListener(delegate { GameManager.Instance.OnStartHost(); });
+        joinPlayerNameInput.onValueChanged.AddListener(delegate { GameManager.Instance.OnNameChanged(hostPlayerNameInput.text); });
+
+        // menu
+        joinButton.onClick.AddListener(delegate { OnJoinGame(); });
+        hostButton.onClick.AddListener(delegate { OnHostGame(); });
+        offlineButton.onClick.AddListener(delegate { OnOfflineGame(); });
+
+        // pause
+        resumeButton.onClick.AddListener(delegate { GameManager.Instance.OnPauseToggle(); });
+        quitButton.onClick.AddListener(delegate { OnBackButton(); });
     }
 
-    private void ResetUIElements()
+    private void ResetUIState()
     {
-        startHostButton.gameObject.SetActive(true);
-        startGameButton.gameObject.SetActive(true);
-        startClientButton.gameObject.SetActive(true);
-        backButton.gameObject.SetActive(true);
-        onlineButton.gameObject.SetActive(true);
-        offlineButton.gameObject.SetActive(true);
-        joinCodeInput.gameObject.SetActive(true);
-        joinCodeText.gameObject.SetActive(true);
-        playerNameInput.gameObject.SetActive(true);
-    }
-
-    private void OnOnlinePlay()
-    {
-        startGameButton.gameObject.SetActive(false);
+        pauseObject.SetActive(false);
+        hostObject.SetActive(false);
+        joinObject.SetActive(false);
         menuObject.SetActive(false);
-        pauseObject.SetActive(true);
     }
 
-    private void OnOfflinePlay()
+    private void OnJoinGame()
+    {
+        ResetUIState();
+        joinObject.SetActive(true);
+    }
+
+    private void OnHostGame()
+    {
+        ResetUIState();
+        hostObject.SetActive(true);
+    }
+
+    private void OnOfflineGame()
     {
         // set gamestate to offline
         GameManager.Instance.isOffline = true;
 
-        startHostButton.gameObject.SetActive(false);
-        startClientButton.gameObject.SetActive(false);
-        joinCodeInput.gameObject.SetActive(false);
-        joinCodeText.gameObject.SetActive(false);
-        playerNameInput.gameObject.SetActive(false);
-        menuObject.SetActive(false);
-        pauseObject.SetActive(true);
-
-        // move to "connected session" ui state
-        OnSessionConnect();
-
         // trigger offline player spawn
         GameManager.Instance.SpawnPlayer(0);
+
+        ResetUIState();
+        pauseObject.SetActive(true);
+        joinCodeText.gameObject.SetActive(false);
+
+        // start game
+        GameManager.Instance.OnStartGame();
     }
 
     private void OnBackButton()
@@ -89,10 +102,9 @@ public class UIManager : NetworkBehaviour
         // reset networking & ui state
         GameManager.Instance.isOffline = false;
         GameManager.Instance.OnDisconnectClient();
-        ResetUIElements();
+        ResetUIState();
 
         menuObject.SetActive(true);
-        pauseObject.SetActive(false);
 
         // destroy spawned player
         if (PlayerController.Instance != null)
@@ -103,26 +115,12 @@ public class UIManager : NetworkBehaviour
 
     public void OnSessionConnect()
     {
-        startHostButton.gameObject.SetActive(false);
-        startClientButton.gameObject.SetActive(false);
-        joinCodeInput.gameObject.SetActive(false);
-        playerNameInput.gameObject.SetActive(false);
-        startGameButton.gameObject.SetActive(true);
-
-        // disable session code text on clients
-        if (!NetworkManager.IsHost)
-        {
-            joinCodeText.gameObject.SetActive(false);
-        }
+        ResetUIState();
+        pauseObject.SetActive(true);
     }
 
     public void OnPauseToggle()
     {
         pauseObject.SetActive(!pauseObject.activeSelf);
-    }
-
-    public void OnMenuToggle()
-    {
-        menuObject.SetActive(!menuObject.activeSelf);
     }
 }

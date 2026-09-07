@@ -9,6 +9,7 @@ public class GameManager : NetworkBehaviour
     public static GameManager Instance;
     public bool isPaused;
     public bool isOffline;
+    public bool isConnected;
     [SerializeField] private GameObject mainCamera;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -47,10 +48,10 @@ public class GameManager : NetworkBehaviour
         Instance = this;
         isPaused = true;
         isOffline = false;
+        isConnected = false;
         mainCamera = Camera.main.gameObject;
         PlayerPrefs.DeleteAll();
         PlayerPrefs.Save();
-        UIManager.Instance.OnMenuToggle();
 
         NetworkManager.OnClientConnectedCallback += OnClientConnected;
         NetworkManager.OnClientDisconnectCallback += OnClientDisconnected;
@@ -72,12 +73,6 @@ public class GameManager : NetworkBehaviour
         isPaused = !isPaused;
 
         UIManager.Instance.OnPauseToggle();
-
-        // prevent toggling cursor if the mapui is already active
-        if (!MapManager.Instance.isMapActive)
-        {
-            InputManager.Instance.ToggleCursor();            
-        }
     }
 
     public void OnMapToggle()
@@ -85,17 +80,17 @@ public class GameManager : NetworkBehaviour
         if (isPaused) return;
 
         MapManager.Instance.OnMapToggle();
-        InputManager.Instance.ToggleCursor();
     }
 
-    public void OnNameChanged()
+    public void OnNameChanged(string inputText)
     {
-        PlayerPrefs.SetString("PlayerName", UIManager.Instance.playerNameInput.text);
+        PlayerPrefs.SetString("PlayerName", inputText);
         PlayerPrefs.Save();
     }
 
     public void OnStartGame()
     {
+        isConnected = true;
         mainCamera.SetActive(false);
         OnPauseToggle();
     }
@@ -120,7 +115,7 @@ public class GameManager : NetworkBehaviour
 
         if (!string.IsNullOrEmpty(joinCode))
         {
-            UIManager.Instance.joinCodeText.text = "Join Code\n" + joinCode;
+            UIManager.Instance.joinCodeText.text = "Join Code: " + joinCode;
             UIManager.Instance.OnSessionConnect();
         }
     }
@@ -142,6 +137,7 @@ public class GameManager : NetworkBehaviour
 
     public void OnDisconnectClient()
     {
+        isConnected = false;
         try
         {
             NetworkManager.Shutdown();

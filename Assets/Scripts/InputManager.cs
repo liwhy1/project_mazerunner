@@ -14,6 +14,7 @@ public class InputManager : MonoBehaviour
     public InputAction lookAction;
     public InputAction sprintAction;
     public InputAction jumpAction;
+    public InputAction primaryAction;
 
     private void Awake()
     {
@@ -27,6 +28,7 @@ public class InputManager : MonoBehaviour
         lookAction = inputSystem.Player.Look;
         sprintAction = inputSystem.Player.Sprint;
         jumpAction = inputSystem.Player.Jump;
+        primaryAction = inputSystem.Player.Primary;
 
         // subscribe to input events
         pauseAction.performed += context => GameManager.Instance.OnPauseToggle();
@@ -37,28 +39,26 @@ public class InputManager : MonoBehaviour
     private void OnEnable() => inputSystem.Enable();
     private void OnDisable() => inputSystem.Disable();
 
-    public void ToggleCursor()
-    {
-        // webgl doesn't like this, keep it in try
-        try
-        {
-            if (Cursor.visible)
-            {
-                Cursor.lockState = CursorLockMode.Locked;
-                Cursor.visible = false;
-            }
-            else
-            {
-                Cursor.lockState = CursorLockMode.None;
-                Cursor.visible = true;            
-            }
-        }
-        catch {}
-    }
-
     private void Update()
     {
         // track mouse position
         mousePosition = Mouse.current.position.ReadValue();
+
+        // set cursor state
+        // webgl doesn't like this, drop it in a try catch
+        try
+        {
+            if (GameManager.Instance.isPaused || (MapManager.Instance && MapManager.Instance.isMapActive))
+            {
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+            }
+            else
+            {
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
+            }
+        }
+        catch {}
     }
 }

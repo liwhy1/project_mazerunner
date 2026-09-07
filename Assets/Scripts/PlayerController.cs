@@ -40,6 +40,10 @@ public class PlayerController : NetworkBehaviour
 
         Instance = this;
         playerRigidbody = GetComponent<Rigidbody>();
+        playerRigidbody.isKinematic = false;
+        enableInteraction = true;
+        enableMovement = true;
+        enableCamera = true;
     }
 
     public override void OnNetworkSpawn()
@@ -108,7 +112,7 @@ public class PlayerController : NetworkBehaviour
 
     private void CameraHandler()
     {
-        if (!enableCamera || GameManager.Instance.isPaused) 
+        if (!enableCamera || GameManager.Instance.isPaused || MapManager.Instance.isMapActive) 
         {
             lookVector = Vector2.zero;
             return;
@@ -130,7 +134,7 @@ public class PlayerController : NetworkBehaviour
 
     private void MovementHandler()
     {
-        if (!enableMovement || GameManager.Instance.isPaused || playerRigidbody.isKinematic) return;
+        if (!enableMovement || GameManager.Instance.isPaused || playerRigidbody.isKinematic || MapManager.Instance.isMapActive) return;
 
         // checks which direction the player is trying to move reads as a vector2 for x and y;
         moveDirection = InputManager.Instance.moveAction.ReadValue<Vector2>();
@@ -145,7 +149,7 @@ public class PlayerController : NetworkBehaviour
 
     public void OnJump()
     {
-        if (GameManager.Instance.isPaused || !isGrounded || !enableMovement) return;
+        if (GameManager.Instance.isPaused || !isGrounded || !enableMovement || playerRigidbody.isKinematic || MapManager.Instance.isMapActive) return;
 
         playerRigidbody.linearVelocity = gameObject.transform.up * jumpStrength;
     }
