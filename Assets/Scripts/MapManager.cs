@@ -2,20 +2,21 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.LightTransport;
 using UnityEngine.UI;
 
 public class MapManager : MonoBehaviour
 {
     public static MapManager Instance;
     [SerializeField] private GameObject mapObject;
+    [SerializeField] private GameObject iconPile;
     private Vector3 savedElementPosition;
     [SerializeField] private float dragSmoothing = 25f;
 
     [SerializeField] private GameObject drawDot;
-    [SerializeField] private float maxAllowedDots = 300f;
+    [SerializeField] private float maxAllowedDots = 500f;
     private List<GameObject> activeDrawDots = new List<GameObject>();
-    [SerializeField] private bool enableDraw;
+    [SerializeField] private bool enablePlacement;
+    [SerializeField] private bool enableDiscard;
     
     private void Start()
     {
@@ -43,25 +44,45 @@ public class MapManager : MonoBehaviour
             newIcon.transform.localEulerAngles = Vector3.zero;
             newIcon.AddComponent<Image>();
             newIcon.GetComponent<Image>().sprite = icon;
-            newIcon.AddComponent<EventTrigger>();
             newIcon.GetComponent<RectTransform>().sizeDelta = new Vector2(0.1f, 0.1f);
+            newIcon.transform.SetParent(iconPile.transform);
 
-            EventTrigger.Entry beginDragEntry = new EventTrigger.Entry();
-            beginDragEntry.eventID = EventTriggerType.BeginDrag;
-            beginDragEntry.callback.AddListener((eventData) => { OnStartElementDrag(newIcon); });
-
-            EventTrigger.Entry dragEntry = new EventTrigger.Entry();
-            dragEntry.eventID = EventTriggerType.Drag;
-            dragEntry.callback.AddListener((eventData) => { OnElementDrag(newIcon); });
-
-            EventTrigger.Entry endDragEntry = new EventTrigger.Entry();
-            endDragEntry.eventID = EventTriggerType.EndDrag;
-            endDragEntry.callback.AddListener((eventData) => { OnStopElementDrag(newIcon); });
-
-            newIcon.GetComponent<EventTrigger>().triggers.Add(beginDragEntry);
-            newIcon.GetComponent<EventTrigger>().triggers.Add(dragEntry);
-            newIcon.GetComponent<EventTrigger>().triggers.Add(endDragEntry);
+            SetupElementTriggers(newIcon);
         }
+    }
+
+    private void SetupElementTriggers(GameObject targetElement)
+    {
+        if (targetElement.GetComponent<EventTrigger>() == null)
+        {
+            targetElement.AddComponent<EventTrigger>();
+        }
+
+        EventTrigger.Entry beginDragEntry = new EventTrigger.Entry();
+        beginDragEntry.eventID = EventTriggerType.BeginDrag;
+        beginDragEntry.callback.AddListener((eventData) => { OnStartElementDrag(targetElement); });
+
+        EventTrigger.Entry dragEntry = new EventTrigger.Entry();
+        dragEntry.eventID = EventTriggerType.Drag;
+        dragEntry.callback.AddListener((eventData) => { OnElementDrag(targetElement); });
+
+        EventTrigger.Entry endDragEntry = new EventTrigger.Entry();
+        endDragEntry.eventID = EventTriggerType.EndDrag;
+        endDragEntry.callback.AddListener((eventData) => { OnStopElementDrag(targetElement); });
+
+        EventTrigger.Entry enterHoverEntry = new EventTrigger.Entry();
+        enterHoverEntry.eventID = EventTriggerType.PointerEnter;
+        enterHoverEntry.callback.AddListener((eventData) => { OnEnablePlacement(); });
+
+        EventTrigger.Entry exitHoverEntry = new EventTrigger.Entry();
+        exitHoverEntry.eventID = EventTriggerType.PointerExit;
+        exitHoverEntry.callback.AddListener((eventData) => { OnDisablePlacement(); });
+
+        targetElement.GetComponent<EventTrigger>().triggers.Add(beginDragEntry);
+        targetElement.GetComponent<EventTrigger>().triggers.Add(dragEntry);
+        targetElement.GetComponent<EventTrigger>().triggers.Add(endDragEntry);
+        targetElement.GetComponent<EventTrigger>().triggers.Add(enterHoverEntry);
+        targetElement.GetComponent<EventTrigger>().triggers.Add(exitHoverEntry);
     }
 
     public void OnMapToggle()
@@ -71,17 +92,44 @@ public class MapManager : MonoBehaviour
         GameManager.Instance.isPaused = !GameManager.Instance.isPaused;
     }
 
-
     public void OnStartElementDrag(GameObject targetElement)
     {
         savedElementPosition = targetElement.transform.position;
+
+        // check if the element is dragged out of the pile
+        if (targetElement.transform.parent == iconPile.transform)
+        {
+            var newElement = Instantiate(targetElement, targetElement.transform.position, targetElement.transform.rotation, iconPile.transform);
+            int siblingIndex = targetElement.transform.GetSiblingIndex();
+            targetElement.transform.SetParent(mapObject.transform);
+            newElement.transform.SetSiblingIndex(siblingIndex);
+            SetupElementTriggers(newElement);
+
+            // pile position shouldn't be saved, this will be used to destroy instead
+            savedElementPosition = Vector3.zero;
+        }
         targetElement.GetComponent<Image>().raycastTarget = false;
     }
 
     public void OnStopElementDrag(GameObject targetElement)
     {
-        if (!enableDraw)
+        // destroy element if its dropped over a discard allowed area
+        if (enableDiscard)
         {
+            Destroy(targetElement);
+            return;
+        }
+
+        // return element to previous position if the current drop target is invalid
+        if (!enablePlacement)
+        {
+            // this should only be true if the element wasn't place on the map yet, causing a saved position to not exist
+            if (savedElementPosition == Vector3.zero)
+            {
+                Destroy(targetElement);
+                return;
+            }
+
             targetElement.transform.position = savedElementPosition;            
         }
         targetElement.GetComponent<Image>().raycastTarget = true;
@@ -104,7 +152,7 @@ public class MapManager : MonoBehaviour
 
     public void OnDrawLine()
     {
-        if (!enableDraw && InputManager.Instance.lookAction.ReadValue<Vector2>() != Vector2.zero) return;
+        if (!enablePlacement && InputManager.Instance.lookAction.ReadValue<Vector2>() != Vector2.zero) return;
 
         Vector3 worldPosition = InputManager.Instance.mousePosition;
         worldPosition.z = PlayerController.Instance.cameraObject.nearClipPlane + 1f;
@@ -119,6 +167,8 @@ public class MapManager : MonoBehaviour
         }
     }
 
-    public void OnEnableDraw() => enableDraw = true;
-    public void OnDisableDraw() => enableDraw = false;
+    public void OnEnablePlacement() => enablePlacement = true;
+    public void OnDisablePlacement() => enablePlacement = false;
+    public void OnEnableDiscard() => enableDiscard = true;
+    public void OnDisableDiscard() => enableDiscard = false;
 }
