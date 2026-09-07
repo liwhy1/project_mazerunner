@@ -58,8 +58,13 @@ public class GameManager : NetworkBehaviour
 
     public override void OnDestroy()
     {
-        NetworkManager.OnClientConnectedCallback -= OnClientConnected;
-        NetworkManager.OnClientDisconnectCallback -= OnClientDisconnected;
+        // networkmanager usually dies before this, keep it just in case
+        try
+        {
+            NetworkManager.OnClientConnectedCallback -= OnClientConnected;
+            NetworkManager.OnClientDisconnectCallback -= OnClientDisconnected;            
+        }
+        catch {}
     }
 
     public void OnPauseToggle()

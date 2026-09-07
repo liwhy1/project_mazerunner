@@ -7,41 +7,53 @@ using UnityEngine.UI;
 public class MapManager : MonoBehaviour
 {
     public static MapManager Instance;
-    public bool isMapActive;
+
+    [Header("Map Data")]
     [SerializeField] private GameObject mapObject;
+    public bool isMapActive;
+
+    [Header("Icon Data")]
     [SerializeField] private GameObject iconPile;
     private Vector3 savedElementPosition;
     [SerializeField] private float dragSmoothing = 25f;
     private List<GameObject> activeIcons = new List<GameObject>();
+    [SerializeField] private bool enablePlacement;
+    [SerializeField] private bool enableDiscard;
 
+    [Header("Draw Data")]
     [SerializeField] private GameObject drawDot;
     [SerializeField] private float maxAllowedDots = 500f;
     private List<GameObject> activeDrawDots = new List<GameObject>();
     private GameObject activeHoveredDot;
-    [SerializeField] private bool enablePlacement;
-    [SerializeField] private bool enableDiscard;
-    public enum ToolType {Pencil, Eraser}
-    private ToolType activeTool;
-    
+    private GameObject activeTool;
+    [SerializeField] private GameObject pencilIcon;
+    [SerializeField] private GameObject eraserIcon;
+    [SerializeField] private GameObject trashIcon;
+
     private void Start()
     {
         Instance = this;
+
+        // setup vars
         isMapActive = false;
-
-        // TODO: not this
-        SetActiveTool(mapObject.transform.Find("Tools").Find("PencilIcon").gameObject);
-
         mapObject.SetActive(false);
+
+        // set active map tool
+        SetActiveTool(pencilIcon);
+
+        // generate icon objects
         GenerateIcons();
     }
 
     private void GenerateIcons()
     {
+        // load icons from resources folder
         var mapIcons = Resources.LoadAll<Sprite>("MapIcons");
+
+        // setup icons
         foreach (var icon in mapIcons)
         {
-            var newIcon = new GameObject();
-            newIcon.name = icon.name;
+            var newIcon = new GameObject() {name = icon.name};
             newIcon.transform.SetParent(mapObject.transform);
             newIcon.transform.localPosition = Vector3.zero;
             newIcon.transform.localEulerAngles = Vector3.zero;
@@ -50,6 +62,7 @@ public class MapManager : MonoBehaviour
             newIcon.GetComponent<RectTransform>().sizeDelta = new Vector2(0.1f, 0.1f);
             newIcon.transform.SetParent(iconPile.transform);
 
+            // setup event triggers
             SetupElementTriggers(newIcon);
         }
     }
@@ -61,30 +74,29 @@ public class MapManager : MonoBehaviour
             targetElement.AddComponent<EventTrigger>();
         }
 
-        EventTrigger.Entry beginDragEntry = new EventTrigger.Entry();
-        beginDragEntry.eventID = EventTriggerType.BeginDrag;
+        // begin drag trigger
+        EventTrigger.Entry beginDragEntry = new EventTrigger.Entry() {eventID = EventTriggerType.BeginDrag};
         beginDragEntry.callback.AddListener((eventData) => { OnStartElementDrag(targetElement); });
-
-        EventTrigger.Entry dragEntry = new EventTrigger.Entry();
-        dragEntry.eventID = EventTriggerType.Drag;
-        dragEntry.callback.AddListener((eventData) => { OnElementDrag(targetElement); });
-
-        EventTrigger.Entry endDragEntry = new EventTrigger.Entry();
-        endDragEntry.eventID = EventTriggerType.EndDrag;
-        endDragEntry.callback.AddListener((eventData) => { OnStopElementDrag(targetElement); });
-
-        EventTrigger.Entry enterHoverEntry = new EventTrigger.Entry();
-        enterHoverEntry.eventID = EventTriggerType.PointerEnter;
-        enterHoverEntry.callback.AddListener((eventData) => { OnEnablePlacement(); });
-
-        EventTrigger.Entry exitHoverEntry = new EventTrigger.Entry();
-        exitHoverEntry.eventID = EventTriggerType.PointerExit;
-        exitHoverEntry.callback.AddListener((eventData) => { OnDisablePlacement(); });
-
         targetElement.GetComponent<EventTrigger>().triggers.Add(beginDragEntry);
+
+        // on drag trigger
+        EventTrigger.Entry dragEntry = new EventTrigger.Entry() {eventID = EventTriggerType.Drag};
+        dragEntry.callback.AddListener((eventData) => { OnElementDrag(targetElement); });
         targetElement.GetComponent<EventTrigger>().triggers.Add(dragEntry);
+
+        // end drag trigger
+        EventTrigger.Entry endDragEntry = new EventTrigger.Entry() {eventID = EventTriggerType.EndDrag};
+        endDragEntry.callback.AddListener((eventData) => { OnStopElementDrag(targetElement); });
         targetElement.GetComponent<EventTrigger>().triggers.Add(endDragEntry);
+
+        // pointer enter trigger
+        EventTrigger.Entry enterHoverEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerEnter};
+        enterHoverEntry.callback.AddListener((eventData) => { OnEnablePlacement(); });
         targetElement.GetComponent<EventTrigger>().triggers.Add(enterHoverEntry);
+
+        // pointer exit trigger
+        EventTrigger.Entry exitHoverEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerExit};
+        exitHoverEntry.callback.AddListener((eventData) => { OnDisablePlacement(); });
         targetElement.GetComponent<EventTrigger>().triggers.Add(exitHoverEntry);
     }
 
@@ -96,11 +108,13 @@ public class MapManager : MonoBehaviour
 
     public void OnStartElementDrag(GameObject targetElement)
     {
+        // save element position
         savedElementPosition = targetElement.transform.position;
 
         // check if the element is dragged out of the pile
         if (targetElement.transform.parent == iconPile.transform)
         {
+            // duplicate and replace original element
             var newElement = Instantiate(targetElement, targetElement.transform.position, targetElement.transform.rotation, iconPile.transform);
             int siblingIndex = targetElement.transform.GetSiblingIndex();
             targetElement.transform.SetParent(mapObject.transform);
@@ -117,6 +131,7 @@ public class MapManager : MonoBehaviour
             activeIcons.Add(targetElement);
         }
 
+        // disable raycast target to allow detecting hover states under the element
         targetElement.GetComponent<Image>().raycastTarget = false;
     }
 
@@ -132,7 +147,7 @@ public class MapManager : MonoBehaviour
         // return element to previous position if the current drop target is invalid
         if (!enablePlacement)
         {
-            // this should only be true if the element wasn't place on the map yet, causing a saved position to not exist
+            // this should only be true if the element wasn't place on the map yet, causing a saved position to "not exist"
             if (savedElementPosition == Vector3.zero)
             {
                 Destroy(targetElement);
@@ -141,6 +156,8 @@ public class MapManager : MonoBehaviour
 
             targetElement.transform.position = savedElementPosition;            
         }
+
+        // reset raycast target state
         targetElement.GetComponent<Image>().raycastTarget = true;
     }
 
@@ -161,11 +178,12 @@ public class MapManager : MonoBehaviour
 
     public void OnDrawableDrag()
     {
-        if (activeTool == ToolType.Pencil)
+        // determine target action based on active tool
+        if (activeTool == pencilIcon)
         {
             OnDrawLine();
         }
-        else if (activeTool == ToolType.Eraser)
+        else if (activeTool == eraserIcon)
         {
             OnEraseLine();
         }
@@ -173,37 +191,41 @@ public class MapManager : MonoBehaviour
 
     public void OnDrawLine()
     {
-        if (activeTool != ToolType.Pencil && !enablePlacement && InputManager.Instance.lookAction.ReadValue<Vector2>() != Vector2.zero) return;
+        if (activeTool != pencilIcon && !enablePlacement && InputManager.Instance.lookAction.ReadValue<Vector2>() != Vector2.zero) return;
 
+        // instantiate new dots in world space based on mouse position
         Vector3 worldPosition = InputManager.Instance.mousePosition;
         worldPosition.z = PlayerController.Instance.cameraObject.nearClipPlane + 1f;
         Vector3 targetPosition = PlayerController.Instance.cameraObject.ScreenToWorldPoint(worldPosition);
         GameObject newDot = Instantiate(drawDot, targetPosition, Quaternion.Euler(0f, 0f, 0f), mapObject.transform);
         newDot.SetActive(true);
-        
+
+        // add pointer enter event to allowed detecting existance
         newDot.AddComponent<EventTrigger>();
-        EventTrigger.Entry enterHoverEntry = new EventTrigger.Entry();
-        enterHoverEntry.eventID = EventTriggerType.PointerEnter;
+        EventTrigger.Entry enterHoverEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerEnter};
         enterHoverEntry.callback.AddListener((eventData) => { SetHoveredDot(newDot); });
         newDot.GetComponent<EventTrigger>().triggers.Add(enterHoverEntry);
-
         newDot.GetComponent<Image>().raycastTarget = true;
 
+        // store active dots in a list
         activeDrawDots.Add(newDot);
+
+        // cleanup old dots based on limit
         if (activeDrawDots.Count > maxAllowedDots)
         {
             Destroy(activeDrawDots.FirstOrDefault(d => d != null));
         }
     }
 
-    public void SetHoveredDot(GameObject targetDot) => activeHoveredDot = targetDot;
-
     public void OnClearMap()
     {
+        // cleanup dots
         foreach (var dot in activeDrawDots)
         {
             Destroy(dot);
         }
+
+        // cleanup icons
         foreach (var icon in activeIcons)
         {
             Destroy(icon);
@@ -212,7 +234,7 @@ public class MapManager : MonoBehaviour
 
     public void OnEraseLine()
     {
-        if (activeTool != ToolType.Eraser && !enablePlacement && InputManager.Instance.lookAction.ReadValue<Vector2>() != Vector2.zero) return;
+        if (activeTool != eraserIcon && !enablePlacement && InputManager.Instance.lookAction.ReadValue<Vector2>() != Vector2.zero) return;
 
         if (!activeHoveredDot) return;
 
@@ -221,24 +243,18 @@ public class MapManager : MonoBehaviour
 
     public void SetActiveTool(GameObject targetTool)
     {
-        // TODO: this is a bad solution, refrac!
-        if (targetTool.name.Contains("Pencil"))
-        {
-            activeTool = ToolType.Pencil;
-        }
-        else if (targetTool.name.Contains("Eraser"))
-        {
-            activeTool = ToolType.Eraser;
-        }
+        activeTool = targetTool;
 
-        foreach (Transform tool in mapObject.transform.Find("Tools"))
-        {
-            tool.GetComponent<Image>().color = Color.white;
-        }
+        // reset icon states
+        pencilIcon.GetComponent<Image>().color = Color.white;
+        eraserIcon.GetComponent<Image>().color = Color.white;
+        trashIcon.GetComponent<Image>().color = Color.white;
 
+        // highlight target tool
         targetTool.GetComponent<Image>().color = Color.gray;
     }
 
+    public void SetHoveredDot(GameObject targetDot) => activeHoveredDot = targetDot;
     public void OnEnablePlacement() => enablePlacement = true;
     public void OnDisablePlacement() => enablePlacement = false;
     public void OnEnableDiscard() => enableDiscard = true;

@@ -35,19 +35,24 @@ public class PlayerController : NetworkBehaviour
 
     private void Start()
     {
+        // only run this in offline mode
         if (!GameManager.Instance.isOffline) return;
+
         Instance = this;
         playerRigidbody = GetComponent<Rigidbody>();
     }
 
     public override void OnNetworkSpawn()
     {
+        // setup client player
         if (!IsOwner)
         {
             cameraObject.gameObject.SetActive(false);
             Destroy(this);
             return;
         }
+
+        // setup local player
         Instance = this;
         playerRigidbody = GetComponent<Rigidbody>();
         enableInteraction = true;

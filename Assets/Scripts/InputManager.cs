@@ -4,6 +4,8 @@ using UnityEngine.InputSystem;
 public class InputManager : MonoBehaviour
 {
     public static InputManager Instance;
+
+    [Header("Input Data")]
     private InputSystem inputSystem;
     public Vector3 mousePosition;
     private InputAction pauseAction;
@@ -17,6 +19,7 @@ public class InputManager : MonoBehaviour
     {
         Instance = this;
 
+        //setup input
         inputSystem = new InputSystem();
         pauseAction = inputSystem.Player.Pause;
         mapAction = inputSystem.Player.Map;
@@ -25,6 +28,7 @@ public class InputManager : MonoBehaviour
         sprintAction = inputSystem.Player.Sprint;
         jumpAction = inputSystem.Player.Jump;
 
+        // subscribe to input events
         pauseAction.performed += context => GameManager.Instance.OnPauseToggle();
         mapAction.performed += context => GameManager.Instance.OnMapToggle();
         jumpAction.performed += context => PlayerController.Instance.OnJump();
@@ -35,6 +39,7 @@ public class InputManager : MonoBehaviour
 
     public void ToggleCursor()
     {
+        // webgl doesn't like this, keep it in try
         try
         {
             if (Cursor.visible)
@@ -53,6 +58,7 @@ public class InputManager : MonoBehaviour
 
     private void Update()
     {
+        // track mouse position
         mousePosition = Mouse.current.position.ReadValue();
     }
 }

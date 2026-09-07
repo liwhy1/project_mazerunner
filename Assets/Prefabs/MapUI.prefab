@@ -474,7 +474,7 @@ MonoBehaviour:
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
   m_DynamicPixelsPerUnit: 1
-  m_PresetInfoIsWorld: 1
+  m_PresetInfoIsWorld: 0
 --- !u!114 &2767205654804382649
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -504,14 +504,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 403190bda8166f84ca2bdf4e15fc832a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MapManager
-  isMapActive: 0
   mapObject: {fileID: 3260031592883449448}
+  isMapActive: 0
   iconPile: {fileID: 1413736821858039157}
   dragSmoothing: 25
-  drawDot: {fileID: 1925298198860093365, guid: 2d23a3f631f496b4cbfa1e41a2871b6c, type: 3}
-  maxAllowedDots: 500
   enablePlacement: 0
   enableDiscard: 0
+  drawDot: {fileID: 1925298198860093365, guid: 2d23a3f631f496b4cbfa1e41a2871b6c, type: 3}
+  maxAllowedDots: 500
+  pencilIcon: {fileID: 363901241974541232}
+  eraserIcon: {fileID: 4742275240348975062}
+  trashIcon: {fileID: 5697104052686752615}
 --- !u!1 &3260031592883449448
 GameObject:
   m_ObjectHideFlags: 0
