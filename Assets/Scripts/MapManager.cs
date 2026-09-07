@@ -12,17 +12,24 @@ public class MapManager : MonoBehaviour
     [SerializeField] private GameObject iconPile;
     private Vector3 savedElementPosition;
     [SerializeField] private float dragSmoothing = 25f;
+    private List<GameObject> activeIcons = new List<GameObject>();
 
     [SerializeField] private GameObject drawDot;
     [SerializeField] private float maxAllowedDots = 500f;
     private List<GameObject> activeDrawDots = new List<GameObject>();
+    private GameObject activeHoveredDot;
     [SerializeField] private bool enablePlacement;
     [SerializeField] private bool enableDiscard;
+    public enum ToolType {Pencil, Eraser}
+    private ToolType activeTool;
     
     private void Start()
     {
         Instance = this;
         isMapActive = false;
+
+        // TODO: not this
+        SetActiveTool(mapObject.transform.Find("Tools").Find("PencilIcon").gameObject);
 
         mapObject.SetActive(false);
         GenerateIcons();
@@ -103,6 +110,13 @@ public class MapManager : MonoBehaviour
             // pile position shouldn't be saved, this will be used to destroy instead
             savedElementPosition = Vector3.zero;
         }
+
+        // store active icons
+        if (!activeIcons.Contains(targetElement))
+        {
+            activeIcons.Add(targetElement);
+        }
+
         targetElement.GetComponent<Image>().raycastTarget = false;
     }
 
@@ -145,21 +159,84 @@ public class MapManager : MonoBehaviour
         targetElement.transform.position = Vector3.Lerp(targetElement.transform.position, targetPosition, Time.deltaTime * dragSmoothing);
     }
 
+    public void OnDrawableDrag()
+    {
+        if (activeTool == ToolType.Pencil)
+        {
+            OnDrawLine();
+        }
+        else if (activeTool == ToolType.Eraser)
+        {
+            OnEraseLine();
+        }
+    }
+
     public void OnDrawLine()
     {
-        if (!enablePlacement && InputManager.Instance.lookAction.ReadValue<Vector2>() != Vector2.zero) return;
+        if (activeTool != ToolType.Pencil && !enablePlacement && InputManager.Instance.lookAction.ReadValue<Vector2>() != Vector2.zero) return;
 
         Vector3 worldPosition = InputManager.Instance.mousePosition;
         worldPosition.z = PlayerController.Instance.cameraObject.nearClipPlane + 1f;
         Vector3 targetPosition = PlayerController.Instance.cameraObject.ScreenToWorldPoint(worldPosition);
         GameObject newDot = Instantiate(drawDot, targetPosition, Quaternion.Euler(0f, 0f, 0f), mapObject.transform);
         newDot.SetActive(true);
+        
+        newDot.AddComponent<EventTrigger>();
+        EventTrigger.Entry enterHoverEntry = new EventTrigger.Entry();
+        enterHoverEntry.eventID = EventTriggerType.PointerEnter;
+        enterHoverEntry.callback.AddListener((eventData) => { SetHoveredDot(newDot); });
+        newDot.GetComponent<EventTrigger>().triggers.Add(enterHoverEntry);
+
+        newDot.GetComponent<Image>().raycastTarget = true;
 
         activeDrawDots.Add(newDot);
         if (activeDrawDots.Count > maxAllowedDots)
         {
             Destroy(activeDrawDots.FirstOrDefault(d => d != null));
         }
+    }
+
+    public void SetHoveredDot(GameObject targetDot) => activeHoveredDot = targetDot;
+
+    public void OnClearMap()
+    {
+        foreach (var dot in activeDrawDots)
+        {
+            Destroy(dot);
+        }
+        foreach (var icon in activeIcons)
+        {
+            Destroy(icon);
+        }
+    }
+
+    public void OnEraseLine()
+    {
+        if (activeTool != ToolType.Eraser && !enablePlacement && InputManager.Instance.lookAction.ReadValue<Vector2>() != Vector2.zero) return;
+
+        if (!activeHoveredDot) return;
+
+        Destroy(activeHoveredDot);
+    }
+
+    public void SetActiveTool(GameObject targetTool)
+    {
+        // TODO: this is a bad solution, refrac!
+        if (targetTool.name.Contains("Pencil"))
+        {
+            activeTool = ToolType.Pencil;
+        }
+        else if (targetTool.name.Contains("Eraser"))
+        {
+            activeTool = ToolType.Eraser;
+        }
+
+        foreach (Transform tool in mapObject.transform.Find("Tools"))
+        {
+            tool.GetComponent<Image>().color = Color.white;
+        }
+
+        targetTool.GetComponent<Image>().color = Color.gray;
     }
 
     public void OnEnablePlacement() => enablePlacement = true;
