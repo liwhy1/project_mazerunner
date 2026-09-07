@@ -25,7 +25,7 @@ public class MapManager : MonoBehaviour
     [SerializeField] private float maxAllowedDots = 500f;
     private List<GameObject> activeDrawDots = new List<GameObject>();
     private GameObject activeHoveredDot;
-    private GameObject activeTool;
+    [SerializeField] private GameObject activeTool;
     [SerializeField] private GameObject pencilIcon;
     [SerializeField] private GameObject eraserIcon;
     [SerializeField] private GameObject trashIcon;
@@ -133,6 +133,9 @@ public class MapManager : MonoBehaviour
 
         // disable raycast target to allow detecting hover states under the element
         targetElement.GetComponent<Image>().raycastTarget = false;
+
+        // disable drawdot raycast target
+        SetDrawDotRaycastState(false);
     }
 
     public void OnStopElementDrag(GameObject targetElement)
@@ -159,6 +162,9 @@ public class MapManager : MonoBehaviour
 
         // reset raycast target state
         targetElement.GetComponent<Image>().raycastTarget = true;
+
+        // conditionally enable drawdot raycast state
+        SetDrawDotRaycastState(activeTool == eraserIcon);
     }
 
     public void OnElementDrag(GameObject targetElement)
@@ -183,21 +189,18 @@ public class MapManager : MonoBehaviour
         {
             OnDrawLine();
         }
-        else if (activeTool == eraserIcon)
-        {
-            OnEraseLine();
-        }
     }
 
     public void OnDrawLine()
     {
-        if (activeTool != pencilIcon && !enablePlacement && InputManager.Instance.lookAction.ReadValue<Vector2>() != Vector2.zero) return;
+        if (activeTool != pencilIcon || !enablePlacement || InputManager.Instance.lookAction.ReadValue<Vector2>() == Vector2.zero) return;
 
         // instantiate new dots in world space based on mouse position
         Vector3 worldPosition = InputManager.Instance.mousePosition;
         worldPosition.z = PlayerController.Instance.cameraObject.nearClipPlane + 1f;
         Vector3 targetPosition = PlayerController.Instance.cameraObject.ScreenToWorldPoint(worldPosition);
         GameObject newDot = Instantiate(drawDot, targetPosition, Quaternion.Euler(0f, 0f, 0f), mapObject.transform);
+        newDot.transform.localEulerAngles = Vector3.zero;
         newDot.SetActive(true);
 
         // add pointer enter event to allowed detecting existance
@@ -205,7 +208,7 @@ public class MapManager : MonoBehaviour
         EventTrigger.Entry enterHoverEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerEnter};
         enterHoverEntry.callback.AddListener((eventData) => { SetHoveredDot(newDot); });
         newDot.GetComponent<EventTrigger>().triggers.Add(enterHoverEntry);
-        newDot.GetComponent<Image>().raycastTarget = true;
+        newDot.GetComponent<Image>().raycastTarget = false;
 
         // store active dots in a list
         activeDrawDots.Add(newDot);
@@ -213,7 +216,9 @@ public class MapManager : MonoBehaviour
         // cleanup old dots based on limit
         if (activeDrawDots.Count > maxAllowedDots)
         {
-            Destroy(activeDrawDots.FirstOrDefault(d => d != null));
+            var targetDot = activeDrawDots.FirstOrDefault(d => d != null);
+            activeDrawDots.Remove(targetDot);
+            Destroy(targetDot);
         }
     }
 
@@ -230,20 +235,35 @@ public class MapManager : MonoBehaviour
         {
             Destroy(icon);
         }
+
+        activeDrawDots.Clear();
+        activeIcons.Clear();
     }
 
     public void OnEraseLine()
     {
-        if (activeTool != eraserIcon && !enablePlacement && InputManager.Instance.lookAction.ReadValue<Vector2>() != Vector2.zero) return;
+        if (activeTool != eraserIcon || InputManager.Instance.lookAction.ReadValue<Vector2>() == Vector2.zero) return;
 
         if (!activeHoveredDot) return;
 
+        activeDrawDots.Remove(activeHoveredDot);
         Destroy(activeHoveredDot);
+    }
+
+    private void SetDrawDotRaycastState(bool targetState)
+    {
+        foreach (var dot in activeDrawDots)
+        {
+            dot.GetComponent<Image>().raycastTarget = targetState;
+        }
     }
 
     public void SetActiveTool(GameObject targetTool)
     {
         activeTool = targetTool;
+
+        // reset raycast state for draw dots
+        SetDrawDotRaycastState(activeTool == eraserIcon);
 
         // reset icon states
         pencilIcon.GetComponent<Image>().color = Color.white;
@@ -254,7 +274,14 @@ public class MapManager : MonoBehaviour
         targetTool.GetComponent<Image>().color = Color.gray;
     }
 
-    public void SetHoveredDot(GameObject targetDot) => activeHoveredDot = targetDot;
+    public void SetHoveredDot(GameObject targetDot) 
+    {
+        activeHoveredDot = targetDot;
+        if (InputManager.Instance.primaryAction.ReadValue<float>() != 0)
+        {
+            OnEraseLine();
+        }
+    }
     public void OnEnablePlacement() => enablePlacement = true;
     public void OnDisablePlacement() => enablePlacement = false;
     public void OnEnableDiscard() => enableDiscard = true;
