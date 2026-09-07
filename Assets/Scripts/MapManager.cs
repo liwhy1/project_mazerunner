@@ -27,7 +27,7 @@ public class MapManager : MonoBehaviour
             return;
         }*/
         Instance = this;
-        GetComponent<Canvas>().worldCamera = PlayerController.Instance.cameraObject;
+        //GetComponent<Canvas>().worldCamera = PlayerController.Instance.cameraObject;
         mapObject.SetActive(false);
         GenerateIcons();
     }

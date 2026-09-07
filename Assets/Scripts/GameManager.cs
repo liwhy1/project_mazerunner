@@ -8,6 +8,7 @@ public class GameManager : NetworkBehaviour
 {
     public static GameManager Instance;
     public bool isPaused;
+    public bool isOffline;
     [SerializeField] private GameObject mainCamera;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -45,8 +46,9 @@ public class GameManager : NetworkBehaviour
     {
         Instance = this;
         isPaused = true;
+        isOffline = false;
         mainCamera = Camera.main.gameObject;
-        UIManager.Instance.OnPauseToggle();
+        UIManager.Instance.OnMenuToggle();
 
         NetworkManager.OnClientConnectedCallback += OnClientConnected;
         NetworkManager.OnClientDisconnectCallback += OnClientDisconnected;
@@ -134,10 +136,13 @@ public class GameManager : NetworkBehaviour
         SceneManager.LoadScene(0);
     }
 
-    private void SpawnPlayer(ulong clientId)
+    public void SpawnPlayer(ulong clientId)
     {
         Debug.Log("Spawning player for: " + clientId);
         GameObject player = Instantiate(Resources.Load<GameObject>("Player"), Vector3.zero, Quaternion.identity);
-        player.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientId);
+        if (!isOffline)
+        {
+            player.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientId);            
+        }
     }
 }

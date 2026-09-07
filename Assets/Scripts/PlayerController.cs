@@ -33,6 +33,13 @@ public class PlayerController : NetworkBehaviour
     private RaycastHit rayHit;
     public float rayLength;
 
+    private void Start()
+    {
+        if (!GameManager.Instance.isOffline) return;
+        Instance = this;
+        playerRigidbody = GetComponent<Rigidbody>();
+    }
+
     public override void OnNetworkSpawn()
     {
         if (!IsOwner)
