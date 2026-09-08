@@ -98,6 +98,7 @@ public class GameManager : NetworkBehaviour
         isConnected = true;
         mainCamera.SetActive(false);
         OnPauseToggle();
+        UIManager.Instance.OnLobbyStartClientRpc();
     }
 
     private void OnClientConnected(ulong clientId)
@@ -110,8 +111,8 @@ public class GameManager : NetworkBehaviour
 
     private void OnClientDisconnected(ulong clientId)
     {
-        if (!NetworkManager.IsListening) return;
-        PlayerLeftClientRpc(clientId);
+        if (!IsSpawned || !NetworkManager.IsListening || !NetworkManager.IsConnectedClient) return;
+        PlayerLeftClientRpc(clientId);            
     }
 
     public async void OnStartHost()
@@ -140,6 +141,14 @@ public class GameManager : NetworkBehaviour
 
     public void OnDisconnectClient()
     {
+        isOffline = false;
+
+        // notify clients on the disconnect intent of the host
+        if (NetworkManager.IsHost)
+        {
+            PlayerLeftClientRpc(NetworkManager.LocalClientId);
+        }
+
         isConnected = false;
         try
         {
@@ -184,6 +193,11 @@ public class GameManager : NetworkBehaviour
     private void PlayerLeftClientRpc(ulong clientId)
     {
         Debug.Log("GameManager: Client disconnected: " + clientId);
+
+        if (!NetworkManager.IsHost && clientId == NetworkManager.ServerClientId)
+        {
+            OnDisconnectClient();
+        }
 
         playerList.RemoveAll(player => player.OwnerClientId == clientId);
         UIManager.Instance.OnRefreshPlayerList();

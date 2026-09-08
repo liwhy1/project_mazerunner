@@ -26,6 +26,7 @@ public class UIManager : NetworkBehaviour
     [SerializeField] private Button quitButton;
     [SerializeField] private TMP_Text joinCodeText;
     [SerializeField] private TMP_Text playerListText;
+    [SerializeField] private TMP_Text waitingOnHostText;
 
     [Header("Menu Data")]
     [SerializeField] private GameObject menuObject;
@@ -101,7 +102,6 @@ public class UIManager : NetworkBehaviour
     private void OnBackButton()
     {
         // reset networking & ui state
-        GameManager.Instance.isOffline = false;
         GameManager.Instance.OnDisconnectClient();
         ResetUIState();
 
@@ -119,8 +119,11 @@ public class UIManager : NetworkBehaviour
         ResetUIState();
         pauseObject.SetActive(true);
         resumeButton.transform.GetChild(0).GetComponent<TMP_Text>().text = "Start";
-        if (!IsHost)
+        waitingOnHostText.gameObject.SetActive(false);
+        if (!NetworkManager.IsHost)
         {
+            waitingOnHostText.gameObject.SetActive(true);
+            resumeButton.gameObject.SetActive(false);
             joinCodeText.gameObject.SetActive(false);
         }
     }
@@ -152,5 +155,13 @@ public class UIManager : NetworkBehaviour
     public string GetJoinCodeInput()
     {
         return joinCodeInput.text.Trim().ToUpper();
+    }
+
+    [ClientRpc]
+    public void OnLobbyStartClientRpc()
+    {
+        if (NetworkManager.IsHost) return;
+        resumeButton.gameObject.SetActive(true);
+        waitingOnHostText.gameObject.SetActive(false);
     }
 }
