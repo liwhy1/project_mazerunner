@@ -385,7 +385,7 @@ MonoBehaviour:
   m_StartCorner: 0
   m_StartAxis: 0
   m_CellSize: {x: 0.1, y: 0.1}
-  m_Spacing: {x: 14, y: 14}
+  m_Spacing: {x: 14, y: 12}
   m_Constraint: 1
   m_ConstraintCount: 2
 --- !u!1 &1801697020777382791
@@ -474,7 +474,7 @@ MonoBehaviour:
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
   m_DynamicPixelsPerUnit: 1
-  m_PresetInfoIsWorld: 0
+  m_PresetInfoIsWorld: 1
 --- !u!114 &2767205654804382649
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -512,6 +512,7 @@ MonoBehaviour:
   enableDiscard: 0
   drawDot: {fileID: 1925298198860093365, guid: 2d23a3f631f496b4cbfa1e41a2871b6c, type: 3}
   maxAllowedDots: 500
+  activeTool: {fileID: 0}
   pencilIcon: {fileID: 363901241974541232}
   eraserIcon: {fileID: 4742275240348975062}
   trashIcon: {fileID: 5697104052686752615}
