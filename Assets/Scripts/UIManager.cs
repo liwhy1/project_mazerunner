@@ -11,20 +11,21 @@ public class UIManager : NetworkBehaviour
     [SerializeField] private GameObject hostObject;
     [SerializeField] private Button startHostButton;
     [SerializeField] private Button hostBackButton;
-    public TMP_InputField hostPlayerNameInput;
+    [SerializeField] private TMP_InputField hostPlayerNameInput;
 
     [Header("Join Data")]
     [SerializeField] private GameObject joinObject;
     [SerializeField] private Button startClientButton;
     [SerializeField] private Button joinBackButton;
-    public TMP_InputField joinCodeInput;
-    public TMP_InputField joinPlayerNameInput;
+    [SerializeField] private TMP_InputField joinCodeInput;
+    [SerializeField] private TMP_InputField joinPlayerNameInput;
 
     [Header("Pause Data")]
     [SerializeField] private GameObject pauseObject;
     [SerializeField] public Button resumeButton;
     [SerializeField] private Button quitButton;
-    public TMP_Text joinCodeText;
+    [SerializeField] private TMP_Text joinCodeText;
+    [SerializeField] private TMP_Text playerListText;
 
     [Header("Menu Data")]
     [SerializeField] private GameObject menuObject;
@@ -117,6 +118,7 @@ public class UIManager : NetworkBehaviour
     {
         ResetUIState();
         pauseObject.SetActive(true);
+        resumeButton.transform.GetChild(0).GetComponent<TMP_Text>().text = "Start";
         if (!IsHost)
         {
             joinCodeText.gameObject.SetActive(false);
@@ -125,6 +127,30 @@ public class UIManager : NetworkBehaviour
 
     public void OnPauseToggle()
     {
+        resumeButton.transform.GetChild(0).GetComponent<TMP_Text>().text = "Resume";
         pauseObject.SetActive(!pauseObject.activeSelf);
+
+    }
+
+    public void OnRefreshPlayerList()
+    {
+        playerListText.text = "";
+        foreach (var player in GameManager.Instance.playerList)
+        {
+            string targetText = player.PlayerName.Value.ToString();
+            targetText += player.OwnerClientId == NetworkManager.LocalClientId ? " (you)" : "";
+            targetText += player.OwnerClientId == NetworkManager.ServerClientId ? " (host)" : "";
+            playerListText.text += targetText + "\n";
+        }
+    }
+
+    public void SetJoinCodeText(string targetText)
+    {
+        joinCodeText.text = targetText;
+    }
+
+    public string GetJoinCodeInput()
+    {
+        return joinCodeInput.text.Trim().ToUpper();
     }
 }

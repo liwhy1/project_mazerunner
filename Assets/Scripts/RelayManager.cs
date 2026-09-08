@@ -31,13 +31,13 @@ public class RelayManager : MonoBehaviour
 
         if (!started)
         {
-            Debug.LogError("Failed to start host.");
+            Debug.LogError("RelayManager: Failed to start host.");
             return null;
         }
 
         string joinCode = await RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId);
 
-        Debug.Log("Relay Join Code: " + joinCode);
+        Debug.Log("RelayManager: Relay Join Code: " + joinCode);
 
         return joinCode;
     }

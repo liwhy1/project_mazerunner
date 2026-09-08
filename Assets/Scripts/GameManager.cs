@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -11,6 +13,7 @@ public class GameManager : NetworkBehaviour
     public bool isOffline;
     public bool isConnected;
     [SerializeField] private GameObject mainCamera;
+    public List<PlayerData> playerList = new List<PlayerData>();
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void Initialize()
@@ -99,7 +102,7 @@ public class GameManager : NetworkBehaviour
 
     private void OnClientConnected(ulong clientId)
     {
-        Debug.Log("Client connected: " + clientId);
+        Debug.Log("GameManager: Client connected: " + clientId);
 
         if (!NetworkManager.IsHost) return;
         SpawnPlayer(clientId);
@@ -107,8 +110,8 @@ public class GameManager : NetworkBehaviour
 
     private void OnClientDisconnected(ulong clientId)
     {
-        Debug.Log("Client disconnected: " + clientId);
-        if (!NetworkManager.IsHost) return;
+        if (!NetworkManager.IsListening) return;
+        PlayerLeftClientRpc(clientId);
     }
 
     public async void OnStartHost()
@@ -117,20 +120,18 @@ public class GameManager : NetworkBehaviour
 
         if (!string.IsNullOrEmpty(joinCode))
         {
-            UIManager.Instance.joinCodeText.text = "Join Code: " + joinCode;
+            UIManager.Instance.SetJoinCodeText("Join Code: " + joinCode);
             UIManager.Instance.OnSessionConnect();
         }
     }
 
     public async void OnStartClient()
     {
-        string code = UIManager.Instance.joinCodeInput.text.Trim().ToUpper();
+        string joinCode = UIManager.Instance.GetJoinCodeInput();
 
-        bool success = await RelayManager.Instance.JoinHost(code);
-
-        if (!success)
+        if (!await RelayManager.Instance.JoinHost(joinCode))
         {
-            Debug.LogError("Failed to join game.");
+            Debug.Log("GameManager: Failed to join game.");
             return;
         }
 
@@ -143,12 +144,10 @@ public class GameManager : NetworkBehaviour
         try
         {
             NetworkManager.Shutdown();
-            UIManager.Instance.joinCodeInput.text = "";
-            UIManager.Instance.joinCodeText.text = "Join Code";
         }
         catch (Exception ex)
         {
-            Debug.Log("Failed to disconnect from session. " + ex);
+            Debug.Log("GameManager: Failed to disconnect from session. " + ex);
             return;
         }
 
@@ -157,11 +156,36 @@ public class GameManager : NetworkBehaviour
 
     public void SpawnPlayer(ulong clientId)
     {
-        Debug.Log("Spawning player for: " + clientId);
-        GameObject player = Instantiate(Resources.Load<GameObject>("Player"), Vector3.zero, Quaternion.identity);
+        Debug.Log("GameManager: Spawning player for: " + clientId);
+        GameObject playerObject = Instantiate(Resources.Load<GameObject>("Player"), Vector3.zero, Quaternion.identity);
+        if (clientId == NetworkManager.LocalClientId) playerObject.name = "Player";
+
         if (!isOffline)
         {
-            player.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientId);
+            playerObject.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientId);
         }
+    }
+
+    public void RefreshPlayerList()
+    {
+        playerList.Clear();
+
+        PlayerData[] players = FindObjectsByType<PlayerData>();
+        foreach (PlayerData player in players)
+        {
+            playerList.Add(player);
+        }
+        
+        playerList.Sort((a, b) => a.OwnerClientId.CompareTo(b.OwnerClientId));
+        UIManager.Instance.OnRefreshPlayerList();
+    }
+
+    [ClientRpc]
+    private void PlayerLeftClientRpc(ulong clientId)
+    {
+        Debug.Log("GameManager: Client disconnected: " + clientId);
+
+        playerList.RemoveAll(player => player.OwnerClientId == clientId);
+        UIManager.Instance.OnRefreshPlayerList();
     }
 }

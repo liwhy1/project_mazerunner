@@ -33,6 +33,7 @@ public class PlayerData : NetworkBehaviour
     private void UpdateNameUI(FixedString64Bytes name)
     {
         nameText.text = name.ToString();
+        GameManager.Instance.RefreshPlayerList();
     }
 
     [ServerRpc]
