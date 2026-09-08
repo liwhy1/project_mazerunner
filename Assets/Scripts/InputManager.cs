@@ -15,6 +15,7 @@ public class InputManager : MonoBehaviour
     public InputAction sprintAction;
     public InputAction jumpAction;
     public InputAction primaryAction;
+    public InputAction interactAction;
 
     private void Awake()
     {
@@ -29,6 +30,7 @@ public class InputManager : MonoBehaviour
         sprintAction = inputSystem.Player.Sprint;
         jumpAction = inputSystem.Player.Jump;
         primaryAction = inputSystem.Player.Primary;
+        interactAction = inputSystem.Player.Interact;
 
         // subscribe to input events
         pauseAction.performed += context => GameManager.Instance.OnPauseToggle();

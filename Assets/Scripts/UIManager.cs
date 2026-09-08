@@ -34,6 +34,9 @@ public class UIManager : NetworkBehaviour
     [SerializeField] private Button joinButton;
     [SerializeField] private Button offlineButton;
 
+    [Header("HUD Data")]
+    [SerializeField] private Image crossHair;
+
     private void Awake()
     {
         Instance = this;
@@ -61,6 +64,26 @@ public class UIManager : NetworkBehaviour
         // pause
         resumeButton.onClick.AddListener(delegate { GameManager.Instance.OnStartGame(); });
         quitButton.onClick.AddListener(delegate { OnBackButton(); });
+    }
+
+    private void Update()
+    {
+        if (PlayerController.Instance)
+        {
+            CrosshairHandler();            
+        }
+    }
+
+    private void CrosshairHandler()
+    {
+        if (PlayerController.Instance.rayHit.collider != null && PlayerController.Instance.rayHit.collider.gameObject.CompareTag("Interactable"))
+        {
+            crossHair.gameObject.GetComponent<RectTransform>().sizeDelta = new Vector3(22f, 22f, 22f);
+        }
+        else
+        {
+            crossHair.gameObject.GetComponent<RectTransform>().sizeDelta = new Vector3(15f, 15f, 15f);
+        }        
     }
 
     private void ResetUIState()

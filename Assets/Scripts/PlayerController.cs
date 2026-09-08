@@ -30,8 +30,8 @@ public class PlayerController : NetworkBehaviour
 
     [Header("Interaction Data")]
     public bool enableInteraction;
-    private RaycastHit rayHit;
-    public float rayLength;
+    public RaycastHit rayHit;
+    public float rayLength = 3f;
 
     private void Start()
     {
@@ -152,5 +152,10 @@ public class PlayerController : NetworkBehaviour
         if (GameManager.Instance.isPaused || !isGrounded || !enableMovement || playerRigidbody.isKinematic || MapManager.Instance.isMapActive) return;
 
         playerRigidbody.linearVelocity = gameObject.transform.up * jumpStrength;
+    }
+
+    public void OnInteract()
+    {
+        // interact logic here :)
     }
 }
