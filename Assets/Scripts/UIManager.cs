@@ -42,7 +42,7 @@ public class UIManager : NetworkBehaviour
         ResetUIState();
         menuObject.SetActive(true);
 
-        // subscribe to events 
+        // subscribe to events
         // join
         joinBackButton.onClick.AddListener(delegate { OnBackButton(); });
         startClientButton.onClick.AddListener(delegate { GameManager.Instance.OnStartClient(); });
@@ -65,6 +65,7 @@ public class UIManager : NetworkBehaviour
 
     private void ResetUIState()
     {
+        waitingOnHostText.gameObject.SetActive(false);
         pauseObject.SetActive(false);
         hostObject.SetActive(false);
         joinObject.SetActive(false);
@@ -119,7 +120,7 @@ public class UIManager : NetworkBehaviour
         ResetUIState();
         pauseObject.SetActive(true);
         resumeButton.transform.GetChild(0).GetComponent<TMP_Text>().text = "Start";
-        waitingOnHostText.gameObject.SetActive(false);
+
         if (!NetworkManager.IsHost)
         {
             waitingOnHostText.gameObject.SetActive(true);

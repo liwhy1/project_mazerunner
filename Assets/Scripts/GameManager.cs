@@ -98,7 +98,10 @@ public class GameManager : NetworkBehaviour
         isConnected = true;
         mainCamera.SetActive(false);
         OnPauseToggle();
-        UIManager.Instance.OnLobbyStartClientRpc();
+        if (!isOffline)
+        {
+            UIManager.Instance.OnLobbyStartClientRpc();            
+        }
     }
 
     private void OnClientConnected(ulong clientId)
