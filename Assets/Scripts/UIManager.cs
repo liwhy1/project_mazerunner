@@ -57,7 +57,7 @@ public class UIManager : NetworkBehaviour
         offlineButton.onClick.AddListener(delegate { OnOfflineGame(); });
 
         // pause
-        resumeButton.onClick.AddListener(delegate { GameManager.Instance.OnPauseToggle(); });
+        resumeButton.onClick.AddListener(delegate { GameManager.Instance.OnStartGame(); });
         quitButton.onClick.AddListener(delegate { OnBackButton(); });
     }
 

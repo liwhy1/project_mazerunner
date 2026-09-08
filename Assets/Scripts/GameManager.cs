@@ -70,6 +70,8 @@ public class GameManager : NetworkBehaviour
 
     public void OnPauseToggle()
     {
+        if (!isConnected) return;
+
         isPaused = !isPaused;
 
         UIManager.Instance.OnPauseToggle();
