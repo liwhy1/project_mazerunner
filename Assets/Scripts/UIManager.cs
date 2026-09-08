@@ -49,7 +49,7 @@ public class UIManager : NetworkBehaviour
         // host
         hostBackButton.onClick.AddListener(delegate { OnBackButton(); });
         startHostButton.onClick.AddListener(delegate { GameManager.Instance.OnStartHost(); });
-        joinPlayerNameInput.onValueChanged.AddListener(delegate { GameManager.Instance.OnNameChanged(hostPlayerNameInput.text); });
+        hostPlayerNameInput.onValueChanged.AddListener(delegate { GameManager.Instance.OnNameChanged(hostPlayerNameInput.text); });
 
         // menu
         joinButton.onClick.AddListener(delegate { OnJoinGame(); });
@@ -117,6 +117,10 @@ public class UIManager : NetworkBehaviour
     {
         ResetUIState();
         pauseObject.SetActive(true);
+        if (!IsHost)
+        {
+            joinCodeText.gameObject.SetActive(false);
+        }
     }
 
     public void OnPauseToggle()

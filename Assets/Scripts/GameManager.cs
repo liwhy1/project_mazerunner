@@ -161,7 +161,7 @@ public class GameManager : NetworkBehaviour
         GameObject player = Instantiate(Resources.Load<GameObject>("Player"), Vector3.zero, Quaternion.identity);
         if (!isOffline)
         {
-            player.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientId);            
+            player.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientId);
         }
     }
 }
