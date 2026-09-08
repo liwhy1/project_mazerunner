@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Rendering;
 using UnityEngine.UI;
 
 public class MapManager : MonoBehaviour
@@ -53,14 +55,14 @@ public class MapManager : MonoBehaviour
         // setup icons
         foreach (var icon in mapIcons)
         {
-            var newIcon = new GameObject() {name = icon.name};
-            newIcon.transform.SetParent(mapObject.transform);
+            GameObject newIcon = Instantiate(Resources.Load<GameObject>("MapIcon"), iconPile.transform);
+            newIcon.name = icon.name;
             newIcon.transform.localPosition = Vector3.zero;
             newIcon.transform.localEulerAngles = Vector3.zero;
-            newIcon.AddComponent<Image>();
-            newIcon.GetComponent<Image>().sprite = icon;
             newIcon.GetComponent<RectTransform>().sizeDelta = new Vector2(0.1f, 0.1f);
-            newIcon.transform.SetParent(iconPile.transform);
+            newIcon.GetComponent<RectTransform>().localScale = new Vector3(100f, 100f, 100f);
+            newIcon.GetComponent<Image>().sprite = icon;
+            newIcon.transform.GetChild(0).GetComponent<TMP_Text>().text = icon.name.Remove(icon.name.Length - 6, 6);
 
             // setup event triggers
             SetupElementTriggers(newIcon);
@@ -118,6 +120,7 @@ public class MapManager : MonoBehaviour
             var newElement = Instantiate(targetElement, targetElement.transform.position, targetElement.transform.rotation, iconPile.transform);
             int siblingIndex = targetElement.transform.GetSiblingIndex();
             targetElement.transform.SetParent(mapObject.transform);
+            targetElement.transform.GetChild(0).gameObject.SetActive(false);
             newElement.transform.SetSiblingIndex(siblingIndex);
             SetupElementTriggers(newElement);
 
