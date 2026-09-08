@@ -100,7 +100,7 @@ public class GameManager : NetworkBehaviour
         OnPauseToggle();
         if (!isOffline)
         {
-            UIManager.Instance.OnLobbyStartClientRpc();            
+            UIManager.Instance.OnLobbyStartClientRpc();
         }
     }
 
@@ -110,6 +110,11 @@ public class GameManager : NetworkBehaviour
 
         if (!NetworkManager.IsHost) return;
         SpawnPlayer(clientId);
+
+        if (!isOffline)
+        {
+            UIManager.Instance.OnLobbyStartClientRpc();            
+        }
     }
 
     private void OnClientDisconnected(ulong clientId)
