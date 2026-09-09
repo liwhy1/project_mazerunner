@@ -13,7 +13,6 @@ public class MapManager : MonoBehaviour
     [Header("Map Data")]
     public GameObject mapObject;
     public bool isMapActive;
-    [SerializeField] private GameObject sendMapDataIcon;
 
     [Header("Icon Data")]
     [SerializeField] private GameObject iconPile;
@@ -32,6 +31,7 @@ public class MapManager : MonoBehaviour
     [SerializeField] private GameObject pencilIcon;
     [SerializeField] private GameObject eraserIcon;
     [SerializeField] private GameObject trashIcon;
+    [SerializeField] private GameObject saveIcon;
 
     private void Start()
     {
@@ -291,6 +291,7 @@ public class MapManager : MonoBehaviour
         pencilIcon.GetComponent<Image>().color = Color.white;
         eraserIcon.GetComponent<Image>().color = Color.white;
         trashIcon.GetComponent<Image>().color = Color.white;
+        saveIcon.GetComponent<Image>().color = Color.white;
 
         // highlight target tool
         targetTool.GetComponent<Image>().color = Color.gray;
