@@ -11,7 +11,9 @@ public class MapManager : MonoBehaviour
     public static MapManager Instance;
 
     [Header("Map Data")]
-    public GameObject mapObject;
+    public GameObject mapComponenets;
+    public GameObject mapObjectP1;
+    public GameObject mapObjectP2;
     //public bool isMapActive;
 
     [Header("Icon Data")]
@@ -141,8 +143,8 @@ public class MapManager : MonoBehaviour
         {
             // duplicate and replace original element
             var newElement = Instantiate(targetElement, targetElement.transform.position, targetElement.transform.rotation, iconPile.transform);
+            newElement.name = targetElement.GetComponent<Image>().name;
             int siblingIndex = targetElement.transform.GetSiblingIndex();
-            targetElement.transform.SetParent(mapObject.transform);
             targetElement.transform.GetChild(0).gameObject.SetActive(false);
             newElement.transform.SetSiblingIndex(siblingIndex);
             SetupElementTriggers(newElement);
@@ -151,6 +153,7 @@ public class MapManager : MonoBehaviour
             // pile position shouldn't be saved, this will be used to destroy instead
             savedElementPosition = Vector3.zero;
         }
+        targetElement.transform.SetParent(transform);
 
         // store active icons
         if (!activeIcons.Contains(targetElement))
@@ -189,6 +192,7 @@ public class MapManager : MonoBehaviour
 
         // reset raycast target state
         targetElement.GetComponent<Image>().raycastTarget = true;
+        targetElement.transform.SetParent(mapComponenets.transform);
 
         // conditionally enable drawdot raycast state
         SetDrawDotRaycastState(activeTool == eraserIcon);
@@ -197,7 +201,7 @@ public class MapManager : MonoBehaviour
     public void OnElementDrag(GameObject targetElement)
     {
         // prevent dragging while the map isn't active
-        if (!mapObject.activeSelf) return;
+        if (!gameObject.activeSelf) return;
 
         // force object to appear on top
         targetElement.transform.SetAsLastSibling();
@@ -228,7 +232,7 @@ public class MapManager : MonoBehaviour
         worldPosition.z = PlayerController.Instance.cameraObject.nearClipPlane + 1f;
         Vector3 targetPosition = PlayerController.Instance.cameraObject.ScreenToWorldPoint(worldPosition);*/
         Vector3 targetPosition = InputManager.Instance.mousePosition;
-        GameObject newDot = Instantiate(drawDot, targetPosition, Quaternion.Euler(0f, 0f, 0f), mapObject.transform);
+        GameObject newDot = Instantiate(drawDot, targetPosition, Quaternion.Euler(0f, 0f, 0f), mapComponenets.transform);
         newDot.transform.localEulerAngles = Vector3.zero;
         newDot.SetActive(true);
 
@@ -310,6 +314,39 @@ public class MapManager : MonoBehaviour
         if (InputManager.Instance.primaryAction.ReadValue<float>() != 0)
         {
             OnEraseLine();
+        }
+    }
+
+    public void SetMapPage(int pageNumber)
+    {
+        iconPile.SetActive(false);
+        mapObjectP1.SetActive(false);
+        mapObjectP2.SetActive(false);
+        transform.Find("Tools").gameObject.SetActive(false);
+        transform.parent.Find("ContentLayout").gameObject.SetActive(true);
+        transform.parent.GetComponent<Image>().enabled = true;
+        mapComponenets.SetActive(false);
+        GameManager.Instance.mapCamera.gameObject.SetActive(false);
+        PlayerController.Instance.cameraObject.gameObject.SetActive(true);
+        if (pageNumber == 1)
+        {
+            iconPile.SetActive(true);
+            mapComponenets.SetActive(true);
+            transform.Find("Tools").gameObject.SetActive(true);
+            transform.parent.Find("ContentLayout").gameObject.SetActive(false);
+        }
+        else if (pageNumber == 2)
+        {
+            mapObjectP1.SetActive(true);
+            mapObjectP2.SetActive(true);
+            transform.parent.Find("ContentLayout").gameObject.SetActive(false);
+        }
+        else
+        {
+            PlayerController.Instance.cameraObject.gameObject.SetActive(false);
+            GameManager.Instance.mapCamera.gameObject.SetActive(true);
+            transform.parent.Find("ContentLayout").gameObject.SetActive(false);
+            transform.parent.GetComponent<Image>().enabled = false;
         }
     }
 

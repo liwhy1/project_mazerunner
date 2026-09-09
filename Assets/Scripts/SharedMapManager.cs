@@ -113,7 +113,7 @@ public class SharedMapManager : NetworkBehaviour
         {
             // duplicate and replace original element
             var newElement = Instantiate(targetElement, targetElement.transform.position, targetElement.transform.rotation, iconPile.transform);
-            newElement.name = targetElement.name;
+            newElement.name = targetElement.GetComponent<Image>().name;
             int siblingIndex = targetElement.transform.GetSiblingIndex();
             targetElement.transform.SetParent(transform);
             targetElement.transform.GetChild(0).gameObject.SetActive(false);
@@ -177,7 +177,7 @@ public class SharedMapManager : NetworkBehaviour
         //NETCODE
         if (savedElementPosition == Vector3.zero)
         {
-            GameManager.Instance.SpawnMapElementServerRpc("MapIcon", targetElement.name, targetElement.transform.position);
+            GameManager.Instance.SpawnMapElementServerRpc("MapIcon", targetElement.name, targetElement.transform.localPosition);
             Destroy(targetElement);
         }
     }
@@ -189,8 +189,8 @@ public class SharedMapManager : NetworkBehaviour
 
         // follow mouse position with object
         Vector3 worldPosition = InputManager.Instance.mousePosition;
-        worldPosition.z = PlayerController.Instance.cameraObject.nearClipPlane + 1f;
-        Vector3 targetPosition = PlayerController.Instance.cameraObject.ScreenToWorldPoint(worldPosition);
+        worldPosition.z = GameManager.Instance.mapCamera.nearClipPlane + 1f;
+        Vector3 targetPosition = GameManager.Instance.mapCamera.ScreenToWorldPoint(worldPosition);
         if (!NetworkManager.IsHost && savedElementPosition != Vector3.zero)
         {
             GameManager.Instance.MoveMapElementServerRpc(targetElement.GetComponent<NetworkObject>().NetworkObjectId, targetPosition);            
@@ -216,13 +216,13 @@ public class SharedMapManager : NetworkBehaviour
 
         // instantiate new dots in world space based on mouse position
         Vector3 worldPosition = InputManager.Instance.mousePosition;
-        worldPosition.z = PlayerController.Instance.cameraObject.nearClipPlane + 1f;
-        Vector3 targetPosition = PlayerController.Instance.cameraObject.ScreenToWorldPoint(worldPosition);
+        worldPosition.z = GameManager.Instance.mapCamera.nearClipPlane + 1f;
+        Vector3 targetPosition = GameManager.Instance.mapCamera.ScreenToWorldPoint(worldPosition);
         GameObject newDot = Instantiate(drawDot, targetPosition, Quaternion.Euler(0f, 0f, 0f), transform);
         newDot.transform.localEulerAngles = Vector3.zero;
         newDot.SetActive(true);
 
-        GameManager.Instance.SpawnMapElementServerRpc("DrawDot", "DrawDot", newDot.transform.position);
+        GameManager.Instance.SpawnMapElementServerRpc("DrawDot", "DrawDot", newDot.transform.localPosition);
         Destroy(newDot);
     }
 

@@ -16,6 +16,7 @@ public class GameManager : NetworkBehaviour
     public bool isOffline;
     public bool isConnected;
     [SerializeField] private GameObject mainCamera;
+    public Camera mapCamera;
     public List<PlayerData> playerList = new List<PlayerData>();
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -105,7 +106,7 @@ public class GameManager : NetworkBehaviour
         if (isOffline) return;
         if (SharedMapManager.Instance)
         {
-            SharedMapManager.Instance.gameObject.GetComponent<Canvas>().worldCamera = PlayerController.Instance.cameraObject;
+            SharedMapManager.Instance.gameObject.GetComponent<Canvas>().worldCamera = mapCamera;
         }
         // notify clients about lobby start
         OnLobbyStartClientRpc();
@@ -214,7 +215,10 @@ public class GameManager : NetworkBehaviour
     {
         Debug.Log("GameManager: Spawning SharedMap for: " + clientId);
         GameObject mapObject = Instantiate(Resources.Load<GameObject>("MapUI2"), Vector3.zero, Quaternion.identity);
-        mapObject.GetComponent<Canvas>().worldCamera = PlayerController.Instance.cameraObject;
+        //mapObject.GetComponent<Canvas>().worldCamera = PlayerController.Instance.cameraObject;
+        mapObject.GetComponent<Canvas>().worldCamera = mapCamera;
+        mapObject.transform.position = new Vector3(0f, -100f, 0f);
+        mapCamera.transform.position = new Vector3(0f, -100f, 0f);
         if (!isOffline)
         {
             mapObject.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientId);
@@ -257,7 +261,7 @@ public class GameManager : NetworkBehaviour
         Debug.Log("GameManager: Spawning new object with type: " + iconPrefab);
         GameObject newObject = Instantiate(Resources.Load<GameObject>(iconPrefab + "2"));
         newObject.GetComponent<NetworkObject>().Spawn();
-        newObject.name = iconPrefab;
+        newObject.name = iconSprite;
 
         if (iconPrefab == "MapIcon")
         {
@@ -280,7 +284,7 @@ public class GameManager : NetworkBehaviour
     {
         if (NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(targetElement, out NetworkObject targetObject))
         {
-            targetObject.transform.localPosition = new Vector3(targetPosition.x, targetPosition.y, 1f);
+            targetObject.transform.position = new Vector3(targetPosition.x, targetPosition.y, 1f);
         }
     }
 
@@ -329,16 +333,19 @@ public class GameManager : NetworkBehaviour
     {
         if (clientId == NetworkManager.LocalClientId) return;
 
+        GameObject targetMap = MapManager.Instance.mapObjectP1.transform.childCount > 1 ? MapManager.Instance.mapObjectP2 : MapManager.Instance.mapObjectP1;
+
         foreach (var element in mapElements)
         {
             Debug.Log("GameManager: Spawning new object with type: " + element.iconPrefab);
             GameObject newObject = Instantiate(Resources.Load<GameObject>(element.iconPrefab));
+            newObject.name = element.iconSprite;
             if (element.iconPrefab == "MapIcon")
             {
                 newObject.GetComponent<Image>().sprite = Resources.LoadAll<Sprite>("MapIcons").FirstOrDefault(i => i.name.Contains(element.iconSprite));                
                 newObject.transform.GetChild(0).GetComponent<TMP_Text>().text = "";
             }
-            newObject.transform.SetParent(MapManager.Instance.mapObject.transform);
+            newObject.transform.SetParent(targetMap.transform);
             newObject.transform.localPosition = element.iconPosition;
             newObject.transform.localEulerAngles = Vector3.zero;
             newObject.transform.localScale = new Vector3(1f, 1f, 1f);

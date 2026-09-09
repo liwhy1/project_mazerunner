@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using Unity.Netcode;
+using Unity.VisualScripting;
 
 public class UIManager : NetworkBehaviour
 {
@@ -211,6 +212,10 @@ public class UIManager : NetworkBehaviour
     {
         isInventoryActive = !isInventoryActive;
         inventoryObject.SetActive(isInventoryActive);
+        if (GameManager.Instance.mapCamera.gameObject.activeSelf)
+        {
+            PlayerController.Instance.cameraObject.gameObject.SetActive(!isInventoryActive);            
+        }
     }
 
     public void OnElementHighlight(GameObject targetElement) => targetElement.GetComponent<Image>().color = Color.lightGray;
@@ -226,8 +231,43 @@ public class UIManager : NetworkBehaviour
         OnElementUnHighlight(targetElement);
     }
 
-    public void OnOpenBook() => bookObject.SetActive(true);
-    public void OnOpenMap() => mapObject.SetActive(true);
+    public void OnOpenBook() 
+    {
+        if (!bookObject.transform.Find("Page1View").Find("Viewport").Find("Content").GetComponent<VerticalLayoutGroup>())
+        {
+            bookObject.transform.Find("Page1View").Find("Viewport").Find("Content").GetChild(0).GetComponent<TMP_Text>().text = Resources.Load<TextAsset>("Information/info" + (((int)NetworkManager.LocalClientId) + 1).ToString() + "_1").text;
+            bookObject.transform.Find("Page2View").Find("Viewport").Find("Content").GetChild(0).GetComponent<TMP_Text>().text = Resources.Load<TextAsset>("Information/info" + (((int)NetworkManager.LocalClientId) + 1).ToString() + "_2").text;
+
+            bookObject.transform.Find("Page1View").Find("Viewport").Find("Content").AddComponent<VerticalLayoutGroup>();
+            bookObject.transform.Find("Page2View").Find("Viewport").Find("Content").AddComponent<VerticalLayoutGroup>();
+        }
+        bookObject.SetActive(true);
+    }
+
+    public void OnOpenMap() 
+    {
+        mapObject.SetActive(true);
+        if (GameManager.Instance.mapCamera.gameObject.activeSelf)
+        {
+            PlayerController.Instance.cameraObject.gameObject.SetActive(false);
+            transform.Find("Inventory").transform.Find("ContentLayout").gameObject.SetActive(false);
+        }
+    }
+
+    public void OnBookNextPage()
+    {
+        if (bookObject.transform.Find("Page1View").gameObject.activeSelf)
+        {
+            bookObject.transform.Find("Page1View").gameObject.SetActive(false);
+            bookObject.transform.Find("Page2View").gameObject.SetActive(true);
+        }
+        else
+        {
+            bookObject.transform.Find("Page1View").gameObject.SetActive(true);
+            bookObject.transform.Find("Page2View").gameObject.SetActive(false);
+        }
+    }
+
     public void OnToggleNote() => noteObject.SetActive(!noteObject.activeSelf);
     public void OnCloseNote() => noteObject.SetActive(false);
 
@@ -235,5 +275,7 @@ public class UIManager : NetworkBehaviour
     {
         bookObject.SetActive(false);
         mapObject.SetActive(false);
+        transform.Find("Inventory").transform.Find("ContentLayout").gameObject.SetActive(true);
+        PlayerController.Instance.cameraObject.gameObject.SetActive(true);
     }
 }
