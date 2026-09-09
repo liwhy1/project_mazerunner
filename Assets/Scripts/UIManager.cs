@@ -181,10 +181,8 @@ public class UIManager : NetworkBehaviour
         return joinCodeInput.text.Trim().ToUpper();
     }
 
-    [ClientRpc]
-    public void OnLobbyStartClientRpc()
+    public void OnLobbyStart()
     {
-        if (NetworkManager.IsHost) return;
         resumeButton.gameObject.SetActive(true);
         waitingOnHostText.gameObject.SetActive(false);
     }

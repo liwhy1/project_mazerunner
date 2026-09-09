@@ -100,10 +100,9 @@ public class GameManager : NetworkBehaviour
         isConnected = true;
         mainCamera.SetActive(false);
         OnPauseToggle();
-        if (!isOffline)
-        {
-            UIManager.Instance.OnLobbyStartClientRpc();
-        }
+
+        // notify clients about lobby start
+        OnLobbyStartClientRpc();
     }
 
     private void OnClientConnected(ulong clientId)
@@ -113,9 +112,10 @@ public class GameManager : NetworkBehaviour
         if (!NetworkManager.IsHost) return;
         SpawnPlayer(clientId);
 
-        if (!isOffline)
+        // notify new clients about lobby status
+        if (isConnected)
         {
-            UIManager.Instance.OnLobbyStartClientRpc();            
+            OnLobbyStartClientRpc();            
         }
     }
 
@@ -152,6 +152,7 @@ public class GameManager : NetworkBehaviour
     public void OnDisconnectClient()
     {
         isOffline = false;
+        isConnected = false;
 
         // notify clients on the disconnect intent of the host
         if (NetworkManager.IsHost)
@@ -159,7 +160,6 @@ public class GameManager : NetworkBehaviour
             PlayerLeftClientRpc(NetworkManager.LocalClientId);
         }
 
-        isConnected = false;
         try
         {
             NetworkManager.Shutdown();
@@ -239,6 +239,13 @@ public class GameManager : NetworkBehaviour
     {
         ulong senderClientId = rpcParams.Receive.SenderClientId;
         SpawnMapElementsClientRpc(senderClientId, mapElements);
+    }
+
+    [ClientRpc]
+    public void OnLobbyStartClientRpc()
+    {
+        if (NetworkManager.IsHost) return;
+        UIManager.Instance.OnLobbyStart();
     }
 
     public ulong FetchLocalClientID()
