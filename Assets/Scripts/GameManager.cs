@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using WebSocketSharp;
 
 public class GameManager : NetworkBehaviour
 {
@@ -111,13 +112,13 @@ public class GameManager : NetworkBehaviour
     {
         Debug.Log("GameManager: Client connected: " + clientId);
 
+        // move to lobby ui
+        if (clientId == NetworkManager.LocalClientId)
+        {
+        }
+
         if (!NetworkManager.IsHost) return;
 
-        // limit player count to 3
-        if (FindObjectsByType<PlayerData>().Length > 2)
-        {
-            PlayerLeftClientRpc(clientId);
-        }
         SpawnPlayer(clientId);
 
         // notify new clients about lobby status
@@ -135,7 +136,9 @@ public class GameManager : NetworkBehaviour
 
     public async void OnStartHost()
     {
-        string joinCode = await RelayManager.Instance.StartHost(4);
+        if (PlayerPrefs.GetString("PlayerName").IsNullOrEmpty()) return;
+
+        string joinCode = await RelayManager.Instance.StartHost(3);
 
         if (!string.IsNullOrEmpty(joinCode))
         {
@@ -147,6 +150,8 @@ public class GameManager : NetworkBehaviour
     public async void OnStartClient()
     {
         string joinCode = UIManager.Instance.GetJoinCodeInput();
+
+        if (PlayerPrefs.GetString("PlayerName").IsNullOrEmpty() || joinCode.IsNullOrEmpty()) return;
 
         if (!await RelayManager.Instance.JoinHost(joinCode))
         {
