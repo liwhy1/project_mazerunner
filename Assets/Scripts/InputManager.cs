@@ -36,6 +36,7 @@ public class InputManager : MonoBehaviour
         pauseAction.performed += context => GameManager.Instance.OnPauseToggle();
         mapAction.performed += context => GameManager.Instance.OnMapToggle();
         jumpAction.performed += context => PlayerController.Instance.OnJump();
+        interactAction.performed += context => GameManager.Instance.OnInteract();
     }
 
     private void OnEnable() => inputSystem.Enable();

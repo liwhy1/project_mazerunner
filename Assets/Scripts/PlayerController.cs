@@ -134,7 +134,12 @@ public class PlayerController : NetworkBehaviour
 
     private void MovementHandler()
     {
-        if (!enableMovement || GameManager.Instance.isPaused || playerRigidbody.isKinematic || MapManager.Instance.isMapActive) return;
+        if (!enableMovement || GameManager.Instance.isPaused || playerRigidbody.isKinematic || MapManager.Instance.isMapActive) 
+        {
+            playerRigidbody.linearVelocity = Vector3.zero;
+            playerRigidbody.angularVelocity = Vector3.zero;
+            return;
+        }
 
         // checks which direction the player is trying to move reads as a vector2 for x and y;
         moveDirection = InputManager.Instance.moveAction.ReadValue<Vector2>();
@@ -156,6 +161,7 @@ public class PlayerController : NetworkBehaviour
 
     public void OnInteract()
     {
-        // interact logic here :)
+        if (GameManager.Instance.isPaused || rayHit.collider == null) return;
+        MapManager.Instance.isMapActive = true;
     }
 }

@@ -103,7 +103,10 @@ public class GameManager : NetworkBehaviour
         OnPauseToggle();
 
         if (isOffline) return;
-
+        if (SharedMapManager.Instance)
+        {
+            SharedMapManager.Instance.gameObject.GetComponent<Canvas>().worldCamera = PlayerController.Instance.cameraObject;
+        }
         // notify clients about lobby start
         OnLobbyStartClientRpc();
     }
@@ -121,6 +124,11 @@ public class GameManager : NetworkBehaviour
         if (!NetworkManager.IsHost) return;
 
         SpawnPlayer(clientId);
+
+        if (!SharedMapManager.Instance)
+        {
+            SpawnSharedMap(clientId);
+        }
 
         // notify new clients about lobby status
         if (!isOffline && isConnected)
@@ -202,6 +210,17 @@ public class GameManager : NetworkBehaviour
         }
     }
 
+    public void SpawnSharedMap(ulong clientId)
+    {
+        Debug.Log("GameManager: Spawning SharedMap for: " + clientId);
+        GameObject mapObject = Instantiate(Resources.Load<GameObject>("MapUI2"), Vector3.zero, Quaternion.identity);
+        mapObject.GetComponent<Canvas>().worldCamera = PlayerController.Instance.cameraObject;
+        if (!isOffline)
+        {
+            mapObject.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientId);
+        }
+    }
+
     public void RefreshPlayerList()
     {
         playerList.Clear();
@@ -230,6 +249,79 @@ public class GameManager : NetworkBehaviour
 
         playerList.RemoveAll(player => player.OwnerClientId == clientId);
         UIManager.Instance.OnRefreshPlayerList();
+    }
+
+    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+    public void SpawnMapElementServerRpc(string iconPrefab, string iconSprite, Vector3 iconPosition)
+    {
+        Debug.Log("GameManager: Spawning new object with type: " + iconPrefab);
+        GameObject newObject = Instantiate(Resources.Load<GameObject>(iconPrefab + "2"));
+        newObject.GetComponent<NetworkObject>().Spawn();
+        newObject.name = iconPrefab;
+
+        if (iconPrefab == "MapIcon")
+        {
+            newObject.GetComponent<Image>().sprite = Resources.LoadAll<Sprite>("MapIcons").FirstOrDefault(i => i.name.Contains(iconSprite));                
+            newObject.transform.GetChild(0).GetComponent<TMP_Text>().text = "";
+            SharedMapManager.Instance.SetupElementTriggers(newObject);
+        }
+        newObject.transform.SetParent(SharedMapManager.Instance.transform);
+        newObject.transform.localPosition = new Vector3(iconPosition.x, iconPosition.y, 1f);
+        newObject.transform.localEulerAngles = Vector3.zero;
+        newObject.transform.localScale = new Vector3(1f, 1f, 1f);
+        if (iconPrefab == "DrawDot") SharedMapManager.Instance.SetupDotEventTriggers(newObject);
+
+        ulong objectId = newObject.GetComponent<NetworkObject>().NetworkObjectId;
+        SetElementDataClientRpc(objectId, iconSprite);
+    }
+
+    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+    public void MoveMapElementServerRpc(ulong targetElement, Vector3 targetPosition)
+    {
+        if (NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(targetElement, out NetworkObject targetObject))
+        {
+            targetObject.transform.localPosition = new Vector3(targetPosition.x, targetPosition.y, 1f);
+        }
+    }
+
+    [ClientRpc]
+    public void SetElementDataClientRpc(ulong targetElement, string targetSprite)
+    {
+        if (NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(targetElement, out NetworkObject targetObject))
+        {
+            targetObject.GetComponent<Image>().sprite = Resources.LoadAll<Sprite>("MapIcons").FirstOrDefault(i => i.name.Contains(targetSprite));
+            targetObject.name = targetSprite;
+            if (targetSprite != "DrawDot")
+            {
+                SharedMapManager.Instance.SetupElementTriggers(targetObject.gameObject);                
+            }
+            else
+            {
+                SharedMapManager.Instance.SetupDotEventTriggers(targetObject.gameObject);
+            }
+        }
+    }
+
+    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+    public void DestroyElementServerRpc(ulong targetElement)
+    {
+        Debug.Log("destory" + targetElement);
+        if (NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(targetElement, out NetworkObject targetObject))
+        {
+            targetObject.Despawn();
+        }
+    }
+
+    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+    public void ClearMapServerRpc()
+    {
+        foreach (Transform element in SharedMapManager.Instance.transform)
+        {
+            if (element.name.Contains("DrawDot") || element.name.Contains("Icon"))
+            {
+                element.gameObject.GetComponent<NetworkObject>().Despawn();
+            }
+        }
     }
 
     [ClientRpc]
@@ -270,5 +362,13 @@ public class GameManager : NetworkBehaviour
     public ulong FetchLocalClientID()
     {
         return NetworkManager.LocalClientId;
+    }
+
+    public void OnInteract()
+    {
+        if (PlayerController.Instance)
+        {
+            PlayerController.Instance.OnInteract();
+        }
     }
 }
