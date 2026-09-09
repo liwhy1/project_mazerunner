@@ -110,6 +110,12 @@ public class GameManager : NetworkBehaviour
         Debug.Log("GameManager: Client connected: " + clientId);
 
         if (!NetworkManager.IsHost) return;
+
+        // limit player count to 3
+        if (FindObjectsByType<PlayerData>().Length > 2)
+        {
+            PlayerLeftClientRpc(clientId);
+        }
         SpawnPlayer(clientId);
 
         // notify new clients about lobby status
@@ -204,9 +210,11 @@ public class GameManager : NetworkBehaviour
     {
         Debug.Log("GameManager: Client disconnected: " + clientId);
 
-        if (!NetworkManager.IsHost && clientId == NetworkManager.ServerClientId)
+        // host disconnect & self kick
+        if (!NetworkManager.IsHost && (clientId == NetworkManager.ServerClientId || clientId == NetworkManager.LocalClientId))
         {
             OnDisconnectClient();
+            return;
         }
 
         playerList.RemoveAll(player => player.OwnerClientId == clientId);
