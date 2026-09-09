@@ -7,7 +7,6 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using WebSocketSharp;
 
 public class GameManager : NetworkBehaviour
 {
@@ -146,7 +145,7 @@ public class GameManager : NetworkBehaviour
 
     public async void OnStartHost()
     {
-        if (PlayerPrefs.GetString("PlayerName").IsNullOrEmpty()) return;
+        if (string.IsNullOrEmpty(PlayerPrefs.GetString("PlayerName"))) return;
 
         UIManager.Instance.loadingIcon.SetActive(true);
         string joinCode = await RelayManager.Instance.StartHost(3);
@@ -164,7 +163,7 @@ public class GameManager : NetworkBehaviour
     {
         string joinCode = UIManager.Instance.GetJoinCodeInput();
 
-        if (PlayerPrefs.GetString("PlayerName").IsNullOrEmpty() || joinCode.IsNullOrEmpty()) return;
+        if (string.IsNullOrEmpty(PlayerPrefs.GetString("PlayerName")) || string.IsNullOrEmpty(joinCode)) return;
 
         UIManager.Instance.loadingIcon.SetActive(true);
         if (!await RelayManager.Instance.JoinHost(joinCode))
