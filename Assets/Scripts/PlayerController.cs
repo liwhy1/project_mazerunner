@@ -162,6 +162,6 @@ public class PlayerController : NetworkBehaviour
     public void OnInteract()
     {
         if (GameManager.Instance.isPaused || rayHit.collider == null) return;
-        MapManager.Instance.isMapActive = true;
+        //MapManager.Instance.isMapActive = true;
     }
 }

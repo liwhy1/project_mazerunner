@@ -12,7 +12,7 @@ public class MapManager : MonoBehaviour
 
     [Header("Map Data")]
     public GameObject mapObject;
-    public bool isMapActive;
+    //public bool isMapActive;
 
     [Header("Icon Data")]
     [SerializeField] private GameObject iconPile;
@@ -37,10 +37,6 @@ public class MapManager : MonoBehaviour
     {
         Instance = this;
 
-        // setup vars
-        isMapActive = false;
-        mapObject.SetActive(false);
-
         // set active map tool
         SetActiveTool(pencilIcon);
 
@@ -60,8 +56,8 @@ public class MapManager : MonoBehaviour
             newIcon.name = icon.name;
             newIcon.transform.localPosition = Vector3.zero;
             newIcon.transform.localEulerAngles = Vector3.zero;
-            newIcon.GetComponent<RectTransform>().sizeDelta = new Vector2(0.1f, 0.1f);
-            newIcon.GetComponent<RectTransform>().localScale = new Vector3(100f, 100f, 100f);
+            //newIcon.GetComponent<RectTransform>().sizeDelta = new Vector2(0.1f, 0.1f);
+            //newIcon.GetComponent<RectTransform>().localScale = new Vector3(100f, 100f, 100f);
             newIcon.GetComponent<Image>().sprite = icon;
             newIcon.transform.GetChild(0).GetComponent<TMP_Text>().text = icon.name.Remove(icon.name.Length - 6, 6);
 
@@ -103,11 +99,11 @@ public class MapManager : MonoBehaviour
         targetElement.GetComponent<EventTrigger>().triggers.Add(exitHoverEntry);
     }
 
-    public void OnMapToggle()
-    {
-        isMapActive = !isMapActive;
-        mapObject.SetActive(!mapObject.activeSelf);
-    }
+    //public void OnMapToggle()
+    //{
+    //    isMapActive = !isMapActive;
+    //    mapObject.SetActive(!mapObject.activeSelf);
+    //}
 
     public void OnSendMapData()
     {
@@ -207,9 +203,10 @@ public class MapManager : MonoBehaviour
         targetElement.transform.SetAsLastSibling();
 
         // follow mouse position with object
-        Vector3 worldPosition = InputManager.Instance.mousePosition;
+        /*Vector3 worldPosition = InputManager.Instance.mousePosition;
         worldPosition.z = PlayerController.Instance.cameraObject.nearClipPlane + 1f;
-        Vector3 targetPosition = PlayerController.Instance.cameraObject.ScreenToWorldPoint(worldPosition);
+        Vector3 targetPosition = PlayerController.Instance.cameraObject.ScreenToWorldPoint(worldPosition);*/
+        Vector3 targetPosition = InputManager.Instance.mousePosition;
         targetElement.transform.position = Vector3.Lerp(targetElement.transform.position, targetPosition, Time.deltaTime * dragSmoothing);
     }
 
@@ -227,14 +224,15 @@ public class MapManager : MonoBehaviour
         if (activeTool != pencilIcon || !enablePlacement || enableDiscard || InputManager.Instance.lookAction.ReadValue<Vector2>() == Vector2.zero) return;
 
         // instantiate new dots in world space based on mouse position
-        Vector3 worldPosition = InputManager.Instance.mousePosition;
+        /*Vector3 worldPosition = InputManager.Instance.mousePosition;
         worldPosition.z = PlayerController.Instance.cameraObject.nearClipPlane + 1f;
-        Vector3 targetPosition = PlayerController.Instance.cameraObject.ScreenToWorldPoint(worldPosition);
+        Vector3 targetPosition = PlayerController.Instance.cameraObject.ScreenToWorldPoint(worldPosition);*/
+        Vector3 targetPosition = InputManager.Instance.mousePosition;
         GameObject newDot = Instantiate(drawDot, targetPosition, Quaternion.Euler(0f, 0f, 0f), mapObject.transform);
         newDot.transform.localEulerAngles = Vector3.zero;
         newDot.SetActive(true);
 
-        // add pointer enter event to allowed detecting existance
+        // add pointer enter event to allow detecting existance
         newDot.AddComponent<EventTrigger>();
         EventTrigger.Entry enterHoverEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerEnter};
         enterHoverEntry.callback.AddListener((eventData) => { SetHoveredDot(newDot); });
