@@ -224,7 +224,7 @@ public class MapManager : MonoBehaviour
 
     public void OnDrawLine()
     {
-        if (activeTool != pencilIcon || !enablePlacement || InputManager.Instance.lookAction.ReadValue<Vector2>() == Vector2.zero) return;
+        if (activeTool != pencilIcon || !enablePlacement || enableDiscard || InputManager.Instance.lookAction.ReadValue<Vector2>() == Vector2.zero) return;
 
         // instantiate new dots in world space based on mouse position
         Vector3 worldPosition = InputManager.Instance.mousePosition;
