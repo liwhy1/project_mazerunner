@@ -111,7 +111,15 @@ public class MapManager : MonoBehaviour
 
     public void OnSendMapData()
     {
+        pencilIcon.gameObject.SetActive(false);
+        eraserIcon.gameObject.SetActive(false);
+        trashIcon.gameObject.SetActive(false);
+        saveIcon.gameObject.SetActive(false);
+        iconPile.gameObject.SetActive(false);
+        activeTool = null;
+
         if (GameManager.Instance.isOffline) return;
+
         List<MapElementData> mapElements = new List<MapElementData>();
         foreach (var icon in activeIcons)
         {
@@ -127,6 +135,8 @@ public class MapManager : MonoBehaviour
 
     public void OnStartElementDrag(GameObject targetElement)
     {
+        if (activeTool == null) return;
+
         // save element position
         savedElementPosition = targetElement.transform.position;
 
