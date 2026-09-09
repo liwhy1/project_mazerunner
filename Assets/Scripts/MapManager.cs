@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.Rendering;
 using UnityEngine.UI;
 
 public class MapManager : MonoBehaviour
@@ -11,8 +11,9 @@ public class MapManager : MonoBehaviour
     public static MapManager Instance;
 
     [Header("Map Data")]
-    [SerializeField] private GameObject mapObject;
+    public GameObject mapObject;
     public bool isMapActive;
+    [SerializeField] private GameObject sendMapDataIcon;
 
     [Header("Icon Data")]
     [SerializeField] private GameObject iconPile;
@@ -108,6 +109,21 @@ public class MapManager : MonoBehaviour
         mapObject.SetActive(!mapObject.activeSelf);
     }
 
+    public void OnSendMapData()
+    {
+        List<MapElementData> mapElements = new List<MapElementData>();
+        foreach (var icon in activeIcons)
+        {
+            mapElements.Add(new MapElementData{iconPrefab = "MapIcon", iconSprite = icon.name, iconPosition = icon.transform.localPosition});
+        }
+        foreach (var icon in activeDrawDots)
+        {
+            mapElements.Add(new MapElementData{iconPrefab = "DrawDot", iconSprite = "DrawDot", iconPosition = icon.transform.localPosition});
+        }
+
+        GameManager.Instance.SpawnMapElementsServerRpc(mapElements.ToArray());
+    }
+
     public void OnStartElementDrag(GameObject targetElement)
     {
         // save element position
@@ -117,12 +133,14 @@ public class MapManager : MonoBehaviour
         if (targetElement.transform.parent == iconPile.transform)
         {
             // duplicate and replace original element
+            //GameObject newElement = GameManager.Instance.SpawnObject("MapIcon", targetElement.transform.position, targetElement.transform.rotation);
             var newElement = Instantiate(targetElement, targetElement.transform.position, targetElement.transform.rotation, iconPile.transform);
             int siblingIndex = targetElement.transform.GetSiblingIndex();
             targetElement.transform.SetParent(mapObject.transform);
             targetElement.transform.GetChild(0).gameObject.SetActive(false);
             newElement.transform.SetSiblingIndex(siblingIndex);
             SetupElementTriggers(newElement);
+
 
             // pile position shouldn't be saved, this will be used to destroy instead
             savedElementPosition = Vector3.zero;
@@ -168,6 +186,8 @@ public class MapManager : MonoBehaviour
 
         // conditionally enable drawdot raycast state
         SetDrawDotRaycastState(activeTool == eraserIcon);
+
+        //GameManager.Instance.SpawnObjectClientRpc(GameManager.Instance.FetchLocalClientID(), "MapIcon", targetElement.GetComponent<Image>().sprite.name, targetElement.transform.localPosition);
     }
 
     public void OnElementDrag(GameObject targetElement)
@@ -285,8 +305,24 @@ public class MapManager : MonoBehaviour
             OnEraseLine();
         }
     }
+
     public void OnEnablePlacement() => enablePlacement = true;
     public void OnDisablePlacement() => enablePlacement = false;
     public void OnEnableDiscard() => enableDiscard = true;
     public void OnDisableDiscard() => enableDiscard = false;
+}
+
+public struct MapElementData : INetworkSerializable
+{
+    public string iconPrefab;
+    public string iconSprite;
+    public Vector3 iconPosition;
+
+    public void NetworkSerialize<T>(BufferSerializer<T> serializer)
+        where T : IReaderWriter
+    {
+        serializer.SerializeValue(ref iconPrefab);
+        serializer.SerializeValue(ref iconSprite);
+        serializer.SerializeValue(ref iconPosition);
+    }
 }

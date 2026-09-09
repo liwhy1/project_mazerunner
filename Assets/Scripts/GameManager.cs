@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class GameManager : NetworkBehaviour
 {
@@ -209,5 +211,38 @@ public class GameManager : NetworkBehaviour
 
         playerList.RemoveAll(player => player.OwnerClientId == clientId);
         UIManager.Instance.OnRefreshPlayerList();
+    }
+
+    [ClientRpc]
+    public void SpawnMapElementsClientRpc(ulong clientId, MapElementData[] mapElements)
+    {
+        if (clientId == NetworkManager.LocalClientId) return;
+
+        foreach (var element in mapElements)
+        {
+            Debug.Log("GameManager: Spawning new object with type: " + element.iconPrefab);
+            GameObject newObject = Instantiate(Resources.Load<GameObject>(element.iconPrefab));
+            if (element.iconPrefab == "MapIcon")
+            {
+                newObject.GetComponent<Image>().sprite = Resources.LoadAll<Sprite>("MapIcons").FirstOrDefault(i => i.name.Contains(element.iconSprite));                
+                newObject.transform.GetChild(0).GetComponent<TMP_Text>().text = "";
+            }
+            newObject.transform.SetParent(MapManager.Instance.mapObject.transform);
+            newObject.transform.localPosition = element.iconPosition;
+            newObject.transform.localEulerAngles = Vector3.zero;
+            newObject.transform.localScale = new Vector3(1f, 1f, 1f);
+        }
+    }
+
+    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+    public void SpawnMapElementsServerRpc(MapElementData[] mapElements, RpcParams rpcParams = default)
+    {
+        ulong senderClientId = rpcParams.Receive.SenderClientId;
+        SpawnMapElementsClientRpc(senderClientId, mapElements);
+    }
+
+    public ulong FetchLocalClientID()
+    {
+        return NetworkManager.LocalClientId;
     }
 }
