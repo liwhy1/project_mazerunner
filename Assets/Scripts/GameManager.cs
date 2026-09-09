@@ -115,6 +115,7 @@ public class GameManager : NetworkBehaviour
         // move to lobby ui
         if (clientId == NetworkManager.LocalClientId)
         {
+            UIManager.Instance.OnSessionConnect();
         }
 
         if (!NetworkManager.IsHost) return;
@@ -143,7 +144,6 @@ public class GameManager : NetworkBehaviour
         if (!string.IsNullOrEmpty(joinCode))
         {
             UIManager.Instance.SetJoinCodeText("Join Code: " + joinCode);
-            UIManager.Instance.OnSessionConnect();
         }
     }
 
@@ -158,8 +158,6 @@ public class GameManager : NetworkBehaviour
             Debug.Log("GameManager: Failed to join game.");
             return;
         }
-
-        UIManager.Instance.OnSessionConnect();
     }
 
     public void OnDisconnectClient()
