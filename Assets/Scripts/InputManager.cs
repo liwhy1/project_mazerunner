@@ -34,7 +34,7 @@ public class InputManager : MonoBehaviour
 
         // subscribe to input events
         pauseAction.performed += context => GameManager.Instance.OnPauseToggle();
-        mapAction.performed += context => GameManager.Instance.OnMapToggle();
+        mapAction.performed += context => GameManager.Instance.OnInventoryToggle();
         jumpAction.performed += context => PlayerController.Instance.OnJump();
         interactAction.performed += context => GameManager.Instance.OnInteract();
     }
@@ -51,7 +51,7 @@ public class InputManager : MonoBehaviour
         // webgl doesn't like this, drop it in a try catch
         try
         {
-            if (GameManager.Instance.isPaused || (MapManager.Instance && MapManager.Instance.isMapActive))
+            if (GameManager.Instance.isPaused || (UIManager.Instance && UIManager.Instance.isInventoryActive))
             {
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;

@@ -83,11 +83,11 @@ public class GameManager : NetworkBehaviour
         UIManager.Instance.OnPauseToggle();
     }
 
-    public void OnMapToggle()
+    public void OnInventoryToggle()
     {
         if (isPaused) return;
 
-        MapManager.Instance.OnMapToggle();
+        UIManager.Instance.OnToggleInventory();
     }
 
     public void OnNameChanged(string inputText)

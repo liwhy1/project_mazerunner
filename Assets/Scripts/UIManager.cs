@@ -38,6 +38,14 @@ public class UIManager : NetworkBehaviour
     [Header("HUD Data")]
     [SerializeField] private Image crossHair;
 
+    [Header("Inventory Data")]
+    public bool isInventoryActive;
+    [SerializeField] private GameObject inventoryObject;
+    [SerializeField] private GameObject bookObject;
+    [SerializeField] private GameObject mapObject;
+    [SerializeField] private GameObject noteObject;
+
+
     private void Awake()
     {
         Instance = this;
@@ -97,6 +105,10 @@ public class UIManager : NetworkBehaviour
         joinObject.SetActive(false);
         menuObject.SetActive(false);
         loadingIcon.SetActive(false);
+        inventoryObject.SetActive(false);
+        bookObject.SetActive(false);
+        mapObject.SetActive(false);
+        noteObject.SetActive(false);
     }
 
     private void OnJoinGame()
@@ -193,5 +205,35 @@ public class UIManager : NetworkBehaviour
     {
         resumeButton.gameObject.SetActive(true);
         waitingOnHostText.gameObject.SetActive(false);
+    }
+
+    public void OnToggleInventory()
+    {
+        isInventoryActive = !isInventoryActive;
+        inventoryObject.SetActive(isInventoryActive);
+    }
+
+    public void OnElementHighlight(GameObject targetElement) => targetElement.GetComponent<Image>().color = Color.lightGray;
+    public void OnElementUnHighlight(GameObject targetElement) => targetElement.GetComponent<Image>().color = Color.white;
+    public void OnElementGrow(GameObject targetElement)
+    {
+        targetElement.transform.localScale = new Vector3(1.05f, 1.05f, 1.05f);
+        OnElementHighlight(targetElement);
+    }
+    public void OnElementShrink(GameObject targetElement)
+    {
+        targetElement.transform.localScale = new Vector3(1f, 1f, 1f);
+        OnElementUnHighlight(targetElement);
+    }
+
+    public void OnOpenBook() => bookObject.SetActive(true);
+    public void OnOpenMap() => mapObject.SetActive(true);
+    public void OnToggleNote() => noteObject.SetActive(!noteObject.activeSelf);
+    public void OnCloseNote() => noteObject.SetActive(false);
+
+    public void OnInventoryBack()
+    {
+        bookObject.SetActive(false);
+        mapObject.SetActive(false);
     }
 }

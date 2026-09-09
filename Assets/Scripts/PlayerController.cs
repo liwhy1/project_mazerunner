@@ -112,7 +112,7 @@ public class PlayerController : NetworkBehaviour
 
     private void CameraHandler()
     {
-        if (!enableCamera || GameManager.Instance.isPaused || MapManager.Instance.isMapActive) 
+        if (!enableCamera || GameManager.Instance.isPaused || UIManager.Instance.isInventoryActive) 
         {
             lookVector = Vector2.zero;
             return;
@@ -134,7 +134,7 @@ public class PlayerController : NetworkBehaviour
 
     private void MovementHandler()
     {
-        if (!enableMovement || GameManager.Instance.isPaused || playerRigidbody.isKinematic || MapManager.Instance.isMapActive) 
+        if (!enableMovement || GameManager.Instance.isPaused || playerRigidbody.isKinematic || UIManager.Instance.isInventoryActive) 
         {
             playerRigidbody.linearVelocity = Vector3.zero;
             playerRigidbody.angularVelocity = Vector3.zero;
@@ -154,7 +154,7 @@ public class PlayerController : NetworkBehaviour
 
     public void OnJump()
     {
-        if (GameManager.Instance.isPaused || !isGrounded || !enableMovement || playerRigidbody.isKinematic || MapManager.Instance.isMapActive) return;
+        if (GameManager.Instance.isPaused || !isGrounded || !enableMovement || playerRigidbody.isKinematic || UIManager.Instance.isInventoryActive) return;
 
         playerRigidbody.linearVelocity = gameObject.transform.up * jumpStrength;
     }
