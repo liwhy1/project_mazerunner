@@ -33,6 +33,7 @@ public class UIManager : NetworkBehaviour
     [SerializeField] private Button hostButton;
     [SerializeField] private Button joinButton;
     [SerializeField] private Button offlineButton;
+    public GameObject loadingIcon;
 
     [Header("HUD Data")]
     [SerializeField] private Image crossHair;
@@ -95,6 +96,7 @@ public class UIManager : NetworkBehaviour
         hostObject.SetActive(false);
         joinObject.SetActive(false);
         menuObject.SetActive(false);
+        loadingIcon.SetActive(false);
     }
 
     private void OnJoinGame()
@@ -130,6 +132,8 @@ public class UIManager : NetworkBehaviour
         // reset networking & ui state
         GameManager.Instance.OnDisconnectClient();
         ResetUIState();
+        PlayerPrefs.DeleteAll();
+        PlayerPrefs.Save();
 
         menuObject.SetActive(true);
 
@@ -145,6 +149,8 @@ public class UIManager : NetworkBehaviour
         ResetUIState();
         pauseObject.SetActive(true);
         resumeButton.transform.GetChild(0).GetComponent<TMP_Text>().text = "Start";
+
+        loadingIcon.SetActive(false);
 
         if (!NetworkManager.IsHost)
         {

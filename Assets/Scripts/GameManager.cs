@@ -139,12 +139,16 @@ public class GameManager : NetworkBehaviour
     {
         if (PlayerPrefs.GetString("PlayerName").IsNullOrEmpty()) return;
 
+        UIManager.Instance.loadingIcon.SetActive(true);
         string joinCode = await RelayManager.Instance.StartHost(3);
 
         if (!string.IsNullOrEmpty(joinCode))
         {
             UIManager.Instance.SetJoinCodeText("Join Code: " + joinCode);
+            return;
         }
+
+        UIManager.Instance.loadingIcon.SetActive(false);
     }
 
     public async void OnStartClient()
@@ -153,9 +157,11 @@ public class GameManager : NetworkBehaviour
 
         if (PlayerPrefs.GetString("PlayerName").IsNullOrEmpty() || joinCode.IsNullOrEmpty()) return;
 
+        UIManager.Instance.loadingIcon.SetActive(true);
         if (!await RelayManager.Instance.JoinHost(joinCode))
         {
             Debug.Log("GameManager: Failed to join game.");
+            UIManager.Instance.loadingIcon.SetActive(false);
             return;
         }
     }
