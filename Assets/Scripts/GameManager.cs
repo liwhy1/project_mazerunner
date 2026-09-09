@@ -101,6 +101,8 @@ public class GameManager : NetworkBehaviour
         mainCamera.SetActive(false);
         OnPauseToggle();
 
+        if (isOffline) return;
+
         // notify clients about lobby start
         OnLobbyStartClientRpc();
     }
@@ -119,7 +121,7 @@ public class GameManager : NetworkBehaviour
         SpawnPlayer(clientId);
 
         // notify new clients about lobby status
-        if (isConnected)
+        if (!isOffline && isConnected)
         {
             OnLobbyStartClientRpc();            
         }

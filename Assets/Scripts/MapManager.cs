@@ -111,6 +111,7 @@ public class MapManager : MonoBehaviour
 
     public void OnSendMapData()
     {
+        if (GameManager.Instance.isOffline) return;
         List<MapElementData> mapElements = new List<MapElementData>();
         foreach (var icon in activeIcons)
         {
@@ -186,8 +187,6 @@ public class MapManager : MonoBehaviour
 
         // conditionally enable drawdot raycast state
         SetDrawDotRaycastState(activeTool == eraserIcon);
-
-        //GameManager.Instance.SpawnObjectClientRpc(GameManager.Instance.FetchLocalClientID(), "MapIcon", targetElement.GetComponent<Image>().sprite.name, targetElement.transform.localPosition);
     }
 
     public void OnElementDrag(GameObject targetElement)
