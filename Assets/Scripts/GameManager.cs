@@ -238,6 +238,14 @@ public class GameManager : NetworkBehaviour
         UIManager.Instance.OnRefreshPlayerList();
     }
 
+    public void OnInteract()
+    {
+        if (PlayerController.Instance)
+        {
+            PlayerController.Instance.OnInteract();
+        }
+    }
+
     [ClientRpc]
     private void PlayerLeftClientRpc(ulong clientId)
     {
@@ -254,129 +262,10 @@ public class GameManager : NetworkBehaviour
         UIManager.Instance.OnRefreshPlayerList();
     }
 
-    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
-    public void SpawnMapElementServerRpc(string iconPrefab, string iconSprite, Vector3 iconPosition)
-    {
-        Debug.Log("GameManager: Spawning new object with type: " + iconPrefab);
-        GameObject newObject = Instantiate(Resources.Load<GameObject>(iconPrefab + "2"));
-        newObject.GetComponent<NetworkObject>().Spawn();
-        newObject.name = iconSprite;
-
-        if (iconPrefab == "MapIcon")
-        {
-            newObject.GetComponent<Image>().sprite = Resources.LoadAll<Sprite>("MapIcons").FirstOrDefault(i => i.name.Contains(iconSprite));                
-            newObject.transform.GetChild(0).GetComponent<TMP_Text>().text = "";
-            SharedMapManager.Instance.SetupElementTriggers(newObject);
-        }
-        newObject.transform.SetParent(SharedMapManager.Instance.transform);
-        newObject.transform.localPosition = new Vector3(iconPosition.x, iconPosition.y, 1f);
-        newObject.transform.localEulerAngles = Vector3.zero;
-        newObject.transform.localScale = new Vector3(1f, 1f, 1f);
-        if (iconPrefab == "DrawDot") SharedMapManager.Instance.SetupDotEventTriggers(newObject);
-
-        ulong objectId = newObject.GetComponent<NetworkObject>().NetworkObjectId;
-        SetElementDataClientRpc(objectId, iconSprite);
-    }
-
-    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
-    public void MoveMapElementServerRpc(ulong targetElement, Vector3 targetPosition)
-    {
-        if (NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(targetElement, out NetworkObject targetObject))
-        {
-            targetObject.transform.position = new Vector3(targetPosition.x, targetPosition.y, 1f);
-        }
-    }
-
-    [ClientRpc]
-    public void SetElementDataClientRpc(ulong targetElement, string targetSprite)
-    {
-        if (NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(targetElement, out NetworkObject targetObject))
-        {
-            targetObject.GetComponent<Image>().sprite = Resources.LoadAll<Sprite>("MapIcons").FirstOrDefault(i => i.name.Contains(targetSprite));
-            targetObject.name = targetSprite;
-            if (targetSprite != "DrawDot")
-            {
-                SharedMapManager.Instance.SetupElementTriggers(targetObject.gameObject);                
-            }
-            else
-            {
-                SharedMapManager.Instance.SetupDotEventTriggers(targetObject.gameObject);
-            }
-        }
-    }
-
-    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
-    public void DestroyElementServerRpc(ulong targetElement)
-    {
-        Debug.Log("destory" + targetElement);
-        if (NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(targetElement, out NetworkObject targetObject))
-        {
-            targetObject.Despawn();
-        }
-    }
-
-    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
-    public void ClearMapServerRpc()
-    {
-        foreach (Transform element in SharedMapManager.Instance.transform)
-        {
-            if (element.name.Contains("DrawDot") || element.name.Contains("Icon"))
-            {
-                element.gameObject.GetComponent<NetworkObject>().Despawn();
-            }
-        }
-    }
-
-    [ClientRpc]
-    public void SpawnMapElementsClientRpc(ulong clientId, MapElementData[] mapElements)
-    {
-        if (clientId == NetworkManager.LocalClientId) return;
-
-        GameObject targetMap = MapManager.Instance.mapObjectP1.transform.childCount > 1 ? MapManager.Instance.mapObjectP2 : MapManager.Instance.mapObjectP1;
-       
-        string targetName = playerList.FirstOrDefault(p => p.OwnerClientId == clientId).PlayerName.Value.ToString();
-        targetMap.transform.Find("Title").GetComponent<TMP_Text>().text = targetName;
-        foreach (var element in mapElements)
-        {
-            Debug.Log("GameManager: Spawning new object with type: " + element.iconPrefab);
-            GameObject newObject = Instantiate(Resources.Load<GameObject>(element.iconPrefab));
-            newObject.name = element.iconSprite;
-            if (element.iconPrefab == "MapIcon")
-            {
-                newObject.GetComponent<Image>().sprite = Resources.LoadAll<Sprite>("MapIcons").FirstOrDefault(i => i.name.Contains(element.iconSprite));                
-                newObject.transform.GetChild(0).GetComponent<TMP_Text>().text = "";
-            }
-            newObject.transform.SetParent(targetMap.transform);
-            newObject.transform.localPosition = element.iconPosition;
-            newObject.transform.localEulerAngles = Vector3.zero;
-            newObject.transform.localScale = new Vector3(1f, 1f, 1f);
-        }
-    }
-
-    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
-    public void SpawnMapElementsServerRpc(MapElementData[] mapElements, RpcParams rpcParams = default)
-    {
-        ulong senderClientId = rpcParams.Receive.SenderClientId;
-        SpawnMapElementsClientRpc(senderClientId, mapElements);
-    }
-
     [ClientRpc]
     public void OnLobbyStartClientRpc()
     {
         if (NetworkManager.IsHost) return;
         UIManager.Instance.OnLobbyStart();
-    }
-
-    public ulong FetchLocalClientID()
-    {
-        return NetworkManager.LocalClientId;
-    }
-
-    public void OnInteract()
-    {
-        if (PlayerController.Instance)
-        {
-            PlayerController.Instance.OnInteract();
-        }
     }
 }

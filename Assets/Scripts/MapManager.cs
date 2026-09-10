@@ -110,12 +110,6 @@ public class MapManager : MonoBehaviour
         targetElement.GetComponent<EventTrigger>().triggers.Add(exitHoverEntry);
     }
 
-    //public void OnMapToggle()
-    //{
-    //    isMapActive = !isMapActive;
-    //    mapObject.SetActive(!mapObject.activeSelf);
-    //}
-
     public void OnSendMapData()
     {
         pencilIcon.gameObject.SetActive(false);
@@ -137,7 +131,7 @@ public class MapManager : MonoBehaviour
             mapElements.Add(new MapElementData{iconPrefab = "DrawDot", iconSprite = "DrawDot", iconPosition = icon.transform.localPosition});
         }
 
-        GameManager.Instance.SpawnMapElementsServerRpc(mapElements.ToArray());
+        SharedMapManager.Instance.SpawnMapElementsServerRpc(mapElements.ToArray());
     }
 
     public void OnStartElementDrag(GameObject targetElement)
