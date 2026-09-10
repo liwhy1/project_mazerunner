@@ -48,7 +48,7 @@ public class SharedMapManager : NetworkBehaviour
         // setup icons
         foreach (var icon in mapIcons)
         {
-            GameObject newIcon = Instantiate(Resources.Load<GameObject>("MapIcon"), iconPile.transform);
+            GameObject newIcon = Instantiate(Resources.Load<GameObject>("MapIconOld"), iconPile.transform);
             newIcon.name = icon.name;
             newIcon.transform.localPosition = Vector3.zero;
             newIcon.transform.localEulerAngles = Vector3.zero;
