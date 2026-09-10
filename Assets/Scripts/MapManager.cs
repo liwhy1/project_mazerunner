@@ -330,7 +330,10 @@ public class MapManager : MonoBehaviour
         PlayerController.Instance.cameraObject.gameObject.SetActive(true);
         if (pageNumber == 1)
         {
-            iconPile.SetActive(true);
+            if (pencilIcon.activeSelf)
+            {
+                iconPile.SetActive(true);                
+            }
             mapComponenets.SetActive(true);
             transform.Find("Tools").gameObject.SetActive(true);
             transform.parent.Find("ContentLayout").gameObject.SetActive(false);
