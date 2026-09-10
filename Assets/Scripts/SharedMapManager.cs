@@ -16,7 +16,6 @@ public class SharedMapManager : NetworkBehaviour
     [Header("Icon Data")]
     [SerializeField] private GameObject iconPile;
     private Vector3 savedElementPosition;
-    [SerializeField] private float dragSmoothing = 25f;
     [SerializeField] private bool enablePlacement;
     [SerializeField] private bool enableDiscard;
 
@@ -68,6 +67,11 @@ public class SharedMapManager : NetworkBehaviour
         {
             targetElement.AddComponent<EventTrigger>();
         }
+
+        // pointer down trigger
+        EventTrigger.Entry pointerDownEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerDown};
+        pointerDownEntry.callback.AddListener((eventData) => { OnElementPointerDown(targetElement); });
+        targetElement.GetComponent<EventTrigger>().triggers.Add(pointerDownEntry);
 
         // begin drag trigger
         EventTrigger.Entry beginDragEntry = new EventTrigger.Entry() {eventID = EventTriggerType.BeginDrag};
@@ -126,6 +130,29 @@ public class SharedMapManager : NetworkBehaviour
         SetDrawDotRaycastState(false);
     }
 
+    public void OnElementPointerDown(GameObject targetElement)
+    {
+        if (activeTool == null) return;
+
+        // get ownership
+        if (targetElement.GetComponent<NetworkObject>())
+        {
+            SetElementOwnershipServerRpc(targetElement.GetComponent<NetworkObject>().NetworkObjectId);
+        }
+    }
+
+    public void OnElementDrag(GameObject targetElement)
+    {
+        // force object to appear on top
+        targetElement.transform.SetAsLastSibling();
+
+        // follow mouse position with object
+        Vector3 worldPosition = InputManager.Instance.mousePosition;
+        worldPosition.z = GameManager.Instance.mapCamera.nearClipPlane + 1f;
+        Vector3 targetPosition = GameManager.Instance.mapCamera.ScreenToWorldPoint(worldPosition);
+        targetElement.transform.position = Vector3.Lerp(targetElement.transform.position, targetPosition, Time.deltaTime * 45f);
+    }
+
     public void OnStopElementDrag(GameObject targetElement)
     {
         // destroy element if its dropped over a discard allowed area
@@ -166,32 +193,18 @@ public class SharedMapManager : NetworkBehaviour
         targetElement.GetComponent<Image>().raycastTarget = true;
 
         // conditionally enable drawdot raycast state
-        //SetDrawDotRaycastState(activeTool == eraserIcon);
+        SetDrawDotRaycastState(activeTool == eraserIcon);
 
-        //NETCODE
+        // spawn networkobject if element was pulled from the pile
         if (savedElementPosition == Vector3.zero)
         {
             SpawnMapElementServerRpc("MapIcon", targetElement.name, targetElement.transform.localPosition);
             Destroy(targetElement);
         }
-    }
-
-    public void OnElementDrag(GameObject targetElement)
-    {
-        // force object to appear on top
-        targetElement.transform.SetAsLastSibling();
-
-        // follow mouse position with object
-        Vector3 worldPosition = InputManager.Instance.mousePosition;
-        worldPosition.z = GameManager.Instance.mapCamera.nearClipPlane + 1f;
-        Vector3 targetPosition = GameManager.Instance.mapCamera.ScreenToWorldPoint(worldPosition);
-        if (!NetworkManager.IsHost && savedElementPosition != Vector3.zero)
-        {
-        //    MoveMapElementServerRpc(targetElement.GetComponent<NetworkObject>().NetworkObjectId, targetPosition);            
-        }
         else
         {
-//            targetElement.transform.position = Vector3.Lerp(targetElement.transform.position, targetPosition, Time.deltaTime * dragSmoothing);            
+            // reset ownership
+            SetElementOwnershipServerRpc(targetElement.GetComponent<NetworkObject>().NetworkObjectId, true);
         }
     }
 
@@ -299,19 +312,8 @@ public class SharedMapManager : NetworkBehaviour
         Debug.Log("SMM: Spawning new object with type: " + iconPrefab);
         GameObject newObject = Instantiate(Resources.Load<GameObject>(iconPrefab + "2"));
         newObject.GetComponent<NetworkObject>().Spawn();
-        newObject.name = iconSprite;
-
-        if (iconPrefab == "MapIcon")
-        {
-            newObject.GetComponent<Image>().sprite = Resources.LoadAll<Sprite>("MapIcons").FirstOrDefault(i => i.name.Contains(iconSprite));                
-            newObject.transform.GetChild(0).GetComponent<TMP_Text>().text = "";
-            SetupElementTriggers(newObject);
-        }
-        newObject.transform.SetParent(transform);
+        newObject.transform.SetParent(transform, false);
         newObject.transform.localPosition = new Vector3(iconPosition.x, iconPosition.y, 1f);
-        newObject.transform.localEulerAngles = Vector3.zero;
-        newObject.transform.localScale = new Vector3(1f, 1f, 1f);
-        if (iconPrefab == "DrawDot") SetupDotEventTriggers(newObject);
 
         ulong objectId = newObject.GetComponent<NetworkObject>().NetworkObjectId;
         SetMapElementDataClientRpc(objectId, iconSprite);
@@ -334,13 +336,14 @@ public class SharedMapManager : NetworkBehaviour
             Debug.Log("SMM: Updating element data for: " + targetObject);
             targetObject.GetComponent<Image>().sprite = Resources.LoadAll<Sprite>("MapIcons").FirstOrDefault(i => i.name.Contains(targetSprite));
             targetObject.name = targetSprite;
-            if (targetSprite != "DrawDot")
+            if (targetSprite == "DrawDot")
             {
-                SetupElementTriggers(targetObject.gameObject);                
+                SetupDotEventTriggers(targetObject.gameObject);
             }
             else
             {
-                SetupDotEventTriggers(targetObject.gameObject);
+                targetObject.transform.GetChild(0).GetComponent<TMP_Text>().text = "";
+                SetupElementTriggers(targetObject.gameObject);
             }
         }
     }
@@ -399,5 +402,15 @@ public class SharedMapManager : NetworkBehaviour
     {
         ulong clientId = rpcParams.Receive.SenderClientId;
         SpawnMapElementsClientRpc(clientId, mapElements);
+    }
+
+    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+    public void SetElementOwnershipServerRpc(ulong targetElement, bool resetOwnership = false, RpcParams rpcParams = default)
+    {
+        if (NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(targetElement, out NetworkObject targetObject))
+        {
+            ulong clientId = resetOwnership ? NetworkManager.ServerClientId : rpcParams.Receive.SenderClientId;
+            targetObject.ChangeOwnership(clientId);    
+        }
     }
 }
