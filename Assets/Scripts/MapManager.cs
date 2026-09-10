@@ -14,7 +14,10 @@ public class MapManager : MonoBehaviour
     public GameObject mapComponenets;
     public GameObject mapObjectP1;
     public GameObject mapObjectP2;
-    //public bool isMapActive;
+    [SerializeField] public GameObject ownViewButton;
+    [SerializeField] public GameObject individualViewButton;
+    [SerializeField] public GameObject sharedViewButton;
+    public int activeMapPage;
 
     [Header("Icon Data")]
     [SerializeField] private GameObject iconPile;
@@ -29,6 +32,7 @@ public class MapManager : MonoBehaviour
     [SerializeField] private float maxAllowedDots = 500f;
     private List<GameObject> activeDrawDots = new List<GameObject>();
     private GameObject activeHoveredDot;
+    [SerializeField] private GameObject toolBar;
     [SerializeField] private GameObject activeTool;
     [SerializeField] private GameObject pencilIcon;
     [SerializeField] private GameObject eraserIcon;
@@ -41,6 +45,9 @@ public class MapManager : MonoBehaviour
 
         // set active map tool
         SetActiveTool(pencilIcon);
+
+        // set active page
+        SetMapPage(1);
 
         // generate icon objects
         GenerateIcons();
@@ -321,15 +328,23 @@ public class MapManager : MonoBehaviour
 
     public void SetMapPage(int pageNumber)
     {
+        
+        if (activeMapPage != 0) UIManager.Instance.inventoryLayout.gameObject.SetActive(false);
+
+        activeMapPage = pageNumber;
         iconPile.SetActive(false);
+        toolBar.gameObject.SetActive(false);
         mapObjectP1.SetActive(false);
         mapObjectP2.SetActive(false);
-        transform.Find("Tools").gameObject.SetActive(false);
-        transform.parent.Find("ContentLayout").gameObject.SetActive(true);
+
         transform.parent.GetComponent<Image>().enabled = true;
         mapComponenets.SetActive(false);
         GameManager.Instance.mapCamera.gameObject.SetActive(false);
         PlayerController.Instance.cameraObject.gameObject.SetActive(true);
+
+        ownViewButton.GetComponent<Image>().color = Color.white;
+        individualViewButton.GetComponent<Image>().color = Color.white;
+        sharedViewButton.GetComponent<Image>().color = Color.white;
         if (pageNumber == 1)
         {
             if (pencilIcon.activeSelf)
@@ -337,21 +352,21 @@ public class MapManager : MonoBehaviour
                 iconPile.SetActive(true);                
             }
             mapComponenets.SetActive(true);
-            transform.Find("Tools").gameObject.SetActive(true);
-            transform.parent.Find("ContentLayout").gameObject.SetActive(false);
+            toolBar.gameObject.SetActive(true);
+            ownViewButton.GetComponent<Image>().color = Color.gray;
         }
         else if (pageNumber == 2)
         {
             mapObjectP1.SetActive(true);
             mapObjectP2.SetActive(true);
-            transform.parent.Find("ContentLayout").gameObject.SetActive(false);
+            individualViewButton.GetComponent<Image>().color = Color.gray;
         }
         else
         {
             PlayerController.Instance.cameraObject.gameObject.SetActive(false);
             GameManager.Instance.mapCamera.gameObject.SetActive(true);
-            transform.parent.Find("ContentLayout").gameObject.SetActive(false);
             transform.parent.GetComponent<Image>().enabled = false;
+            sharedViewButton.GetComponent<Image>().color = Color.gray;
         }
     }
 

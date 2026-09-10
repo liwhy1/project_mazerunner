@@ -42,6 +42,7 @@ public class UIManager : NetworkBehaviour
     [Header("Inventory Data")]
     public bool isInventoryActive;
     [SerializeField] private GameObject inventoryObject;
+    public GameObject inventoryLayout;
     [SerializeField] private GameObject bookObject;
     [SerializeField] private GameObject mapObject;
     [SerializeField] private GameObject noteObject;
@@ -220,8 +221,8 @@ public class UIManager : NetworkBehaviour
         }
     }
 
-    public void OnElementHighlight(GameObject targetElement) => targetElement.GetComponent<Image>().color = Color.lightGray;
-    public void OnElementUnHighlight(GameObject targetElement) => targetElement.GetComponent<Image>().color = Color.white;
+    public void OnElementHighlight(GameObject targetElement) => targetElement.GetComponent<Image>().color = targetElement.GetComponent<Image>().color == Color.white ? Color.lightGray : targetElement.GetComponent<Image>().color;
+    public void OnElementUnHighlight(GameObject targetElement) => targetElement.GetComponent<Image>().color = targetElement.GetComponent<Image>().color == Color.lightGray ? Color.white : targetElement.GetComponent<Image>().color;
     public void OnElementGrow(GameObject targetElement)
     {
         targetElement.transform.localScale = new Vector3(1.05f, 1.05f, 1.05f);
@@ -249,11 +250,7 @@ public class UIManager : NetworkBehaviour
     public void OnOpenMap() 
     {
         mapObject.SetActive(true);
-        if (GameManager.Instance.mapCamera.gameObject.activeSelf)
-        {
-            PlayerController.Instance.cameraObject.gameObject.SetActive(false);
-            transform.Find("Inventory").transform.Find("ContentLayout").gameObject.SetActive(false);
-        }
+        MapManager.Instance.SetMapPage(MapManager.Instance.activeMapPage);
     }
 
     public void OnBookNextPage()
@@ -277,7 +274,7 @@ public class UIManager : NetworkBehaviour
     {
         bookObject.SetActive(false);
         mapObject.SetActive(false);
-        transform.Find("Inventory").transform.Find("ContentLayout").gameObject.SetActive(true);
+        inventoryLayout.gameObject.SetActive(true);
         PlayerController.Instance.cameraObject.gameObject.SetActive(true);
     }
 }
