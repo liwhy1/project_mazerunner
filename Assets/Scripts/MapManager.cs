@@ -44,6 +44,8 @@ public class MapManager : MonoBehaviour
 
         // generate icon objects
         GenerateIcons();
+
+        gameObject.SetActive(false);
     }
 
     private void GenerateIcons()

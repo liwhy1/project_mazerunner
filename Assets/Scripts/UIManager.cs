@@ -108,7 +108,7 @@ public class UIManager : NetworkBehaviour
         loadingIcon.SetActive(false);
         inventoryObject.SetActive(false);
         bookObject.SetActive(false);
-        mapObject.SetActive(false);
+        mapObject.SetActive(true);
         noteObject.SetActive(false);
     }
 
