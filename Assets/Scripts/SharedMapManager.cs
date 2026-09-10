@@ -22,7 +22,7 @@ public class SharedMapManager : NetworkBehaviour
 
     [Header("Draw Data")]
     [SerializeField] private GameObject drawDot;
-    [SerializeField] private float maxAllowedDots = 500f;
+    //[SerializeField] private float maxAllowedDots = 500f;
     public GameObject activeHoveredDot;
     [SerializeField] private GameObject activeTool;
     [SerializeField] private GameObject pencilIcon;

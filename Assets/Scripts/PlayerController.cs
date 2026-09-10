@@ -30,7 +30,7 @@ public class PlayerController : NetworkBehaviour
 
     [Header("Interaction Data")]
     public bool enableInteraction;
-    public RaycastHit rayHit;
+    public GameObject rayHitObject;
     public float rayLength = 3f;
 
     private void Start()
@@ -89,7 +89,7 @@ public class PlayerController : NetworkBehaviour
     {
         if (!enableInteraction || GameManager.Instance.isPaused) 
         {
-            rayHit = new RaycastHit();                
+            rayHitObject = null;                
             return;
         }
 
@@ -97,7 +97,11 @@ public class PlayerController : NetworkBehaviour
         Ray ray = cameraObject.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
 
         // fire ray
-        Physics.Raycast(ray, out rayHit, rayLength, Physics.AllLayers, QueryTriggerInteraction.Ignore);
+        RaycastHit rayHit;
+        if (Physics.Raycast(ray, out rayHit, rayLength, Physics.AllLayers, QueryTriggerInteraction.Ignore))
+        {
+            rayHitObject = rayHit.collider ? rayHit.collider.gameObject : null;
+        }
         Debug.DrawRay(ray.origin, ray.direction * rayLength, Color.cyan);
     }
 
@@ -161,7 +165,7 @@ public class PlayerController : NetworkBehaviour
 
     public void OnInteract()
     {
-        if (GameManager.Instance.isPaused || rayHit.collider == null) return;
+        if (GameManager.Instance.isPaused || rayHitObject == null) return;
         //MapManager.Instance.isMapActive = true;
     }
 }

@@ -89,7 +89,7 @@ public class UIManager : NetworkBehaviour
     {
         crossHair.gameObject.SetActive(!Cursor.visible);
 
-        if (PlayerController.Instance.rayHit.collider != null && PlayerController.Instance.rayHit.collider.gameObject.CompareTag("Interactable"))
+        if (PlayerController.Instance.rayHitObject != null && PlayerController.Instance.rayHitObject.CompareTag("Interactable"))
         {
             crossHair.gameObject.GetComponent<RectTransform>().sizeDelta = new Vector3(22f, 22f, 22f);
         }
