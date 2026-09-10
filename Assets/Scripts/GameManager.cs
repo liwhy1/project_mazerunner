@@ -101,7 +101,7 @@ public class GameManager : NetworkBehaviour
         isConnected = true;
         mainCamera.SetActive(false);
         OnPauseToggle();
-        GameManager.Instance.OnInventoryToggle();
+        OnInventoryToggle();
 
         if (isOffline) return;
         if (SharedMapManager.Instance)
@@ -215,7 +215,6 @@ public class GameManager : NetworkBehaviour
     {
         Debug.Log("GameManager: Spawning SharedMap for: " + clientId);
         GameObject mapObject = Instantiate(Resources.Load<GameObject>("MapUI2"), Vector3.zero, Quaternion.identity);
-        //mapObject.GetComponent<Canvas>().worldCamera = PlayerController.Instance.cameraObject;
         mapObject.GetComponent<Canvas>().worldCamera = mapCamera;
         mapObject.transform.position = new Vector3(0f, -100f, 0f);
         mapCamera.transform.position = new Vector3(0f, -100f, 0f);
@@ -334,7 +333,9 @@ public class GameManager : NetworkBehaviour
         if (clientId == NetworkManager.LocalClientId) return;
 
         GameObject targetMap = MapManager.Instance.mapObjectP1.transform.childCount > 1 ? MapManager.Instance.mapObjectP2 : MapManager.Instance.mapObjectP1;
-
+       
+        string targetName = playerList.FirstOrDefault(p => p.OwnerClientId == clientId).PlayerName.Value.ToString();
+        targetMap.transform.Find("Title").GetComponent<TMP_Text>().text = targetName;
         foreach (var element in mapElements)
         {
             Debug.Log("GameManager: Spawning new object with type: " + element.iconPrefab);
