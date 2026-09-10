@@ -96,7 +96,7 @@ MonoBehaviour:
         m_Calls:
         - m_Target: {fileID: 2823722697475839636}
           m_TargetAssemblyTypeName: SharedMapManager, Assembly-CSharp
-          m_MethodName: OnDrawLine
+          m_MethodName: OnDrawableDrag
           m_Mode: 1
           m_Arguments:
             m_ObjectArgument: {fileID: 0}
@@ -559,11 +559,11 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   isMapActive: 0
   iconPile: {fileID: 1413736821858039157}
-  dragSmoothing: 25
   enablePlacement: 0
   enableDiscard: 0
   drawDot: {fileID: 1925298198860093365, guid: 2d23a3f631f496b4cbfa1e41a2871b6c, type: 3}
   maxAllowedDots: 500
+  activeHoveredDot: {fileID: 0}
   activeTool: {fileID: 0}
   pencilIcon: {fileID: 363901241974541232}
   eraserIcon: {fileID: 4742275240348975062}

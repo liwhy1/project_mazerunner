@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
@@ -219,14 +220,14 @@ public class SharedMapManager : NetworkBehaviour
 
     public void OnDrawLine()
     {
-        if (activeTool != pencilIcon || !enablePlacement || InputManager.Instance.lookAction.ReadValue<Vector2>() == Vector2.zero) return;
+        if (activeTool != pencilIcon || !enablePlacement || enableDiscard || InputManager.Instance.lookAction.ReadValue<Vector2>() == Vector2.zero) return;
 
         // instantiate new dots in world space based on mouse position
         Vector3 worldPosition = InputManager.Instance.mousePosition;
         worldPosition.z = GameManager.Instance.mapCamera.nearClipPlane + 1f;
         Vector3 targetPosition = GameManager.Instance.mapCamera.ScreenToWorldPoint(worldPosition);
-        GameObject newDot = Instantiate(drawDot, targetPosition, Quaternion.Euler(0f, 0f, 0f), transform);
-        newDot.transform.localEulerAngles = Vector3.zero;
+        GameObject newDot = Instantiate(drawDot, targetPosition, Quaternion.identity, transform);
+        newDot.GetComponent<RectTransform>().sizeDelta = new Vector3(.02f, 0.02f);
         newDot.SetActive(true);
 
         SpawnMapElementServerRpc("DrawDot", "DrawDot", newDot.transform.localPosition);
@@ -334,7 +335,6 @@ public class SharedMapManager : NetworkBehaviour
         if (NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(targetElement, out NetworkObject targetObject))
         {
             Debug.Log("SMM: Updating element data for: " + targetObject);
-            targetObject.GetComponent<Image>().sprite = Resources.LoadAll<Sprite>("MapIcons").FirstOrDefault(i => i.name.Contains(targetSprite));
             targetObject.name = targetSprite;
             if (targetSprite == "DrawDot")
             {
@@ -342,6 +342,7 @@ public class SharedMapManager : NetworkBehaviour
             }
             else
             {
+                targetObject.GetComponent<Image>().sprite = Resources.LoadAll<Sprite>("MapIcons").FirstOrDefault(i => i.name.Contains(targetSprite));
                 targetObject.transform.GetChild(0).GetComponent<TMP_Text>().text = "";
                 SetupElementTriggers(targetObject.gameObject);
             }
