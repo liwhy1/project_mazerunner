@@ -101,6 +101,7 @@ public class GameManager : NetworkBehaviour
         isConnected = true;
         mainCamera.SetActive(false);
         OnPauseToggle();
+        GameManager.Instance.OnInventoryToggle();
 
         if (isOffline) return;
         if (SharedMapManager.Instance)

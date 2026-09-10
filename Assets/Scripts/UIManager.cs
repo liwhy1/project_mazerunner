@@ -171,6 +171,8 @@ public class UIManager : NetworkBehaviour
             resumeButton.gameObject.SetActive(false);
             joinCodeText.gameObject.SetActive(false);
         }
+
+        GameManager.Instance.OnInventoryToggle();
     }
 
     public void OnPauseToggle()
