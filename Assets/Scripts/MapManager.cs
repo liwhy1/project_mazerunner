@@ -72,8 +72,6 @@ public class MapManager : MonoBehaviour
             newIcon.name = icon.name;
             newIcon.transform.localPosition = Vector3.zero;
             newIcon.transform.localEulerAngles = Vector3.zero;
-            //newIcon.GetComponent<RectTransform>().sizeDelta = new Vector2(0.1f, 0.1f);
-            //newIcon.GetComponent<RectTransform>().localScale = new Vector3(100f, 100f, 100f);
             newIcon.GetComponent<Image>().sprite = icon;
             newIcon.transform.GetChild(0).GetComponent<TMP_Text>().text = icon.name.Remove(icon.name.Length - 6, 6);
 
@@ -113,36 +111,6 @@ public class MapManager : MonoBehaviour
         EventTrigger.Entry exitHoverEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerExit};
         exitHoverEntry.callback.AddListener((eventData) => { OnDisablePlacement(); });
         targetElement.GetComponent<EventTrigger>().triggers.Add(exitHoverEntry);
-    }
-
-    public void OnMapToggleReady()
-    {
-        bool isMapready = iconPile.activeSelf;
-        GameManager.Instance.SetPlayerMapStateServerRpc(isMapready);
-        pencilIcon.SetActive(!isMapready);
-        eraserIcon.SetActive(!isMapready);
-        trashIcon.SetActive(!isMapready);
-        iconPile.SetActive(!isMapready);
-        saveIcon.transform.GetChild(0).gameObject.SetActive(isMapready);
-        SetActiveTool(!isMapready ? pencilIcon : null);
-    }
-
-    public void OnSendMapData()
-    {
-        sharedViewButton.GetComponent<EventTrigger>().enabled = true;
-        sharedViewButton.GetComponent<Image>().color = Color.white;
-        saveIcon.SetActive(false);
-        List<MapElementData> mapElements = new List<MapElementData>();
-        foreach (var icon in activeIcons)
-        {
-            mapElements.Add(new MapElementData{iconPrefab = "MapIcon", iconSprite = icon.name, iconPosition = icon.transform.localPosition});
-        }
-        foreach (var icon in activeDrawDots)
-        {
-            mapElements.Add(new MapElementData{iconPrefab = "DrawDot", iconSprite = "DrawDot", iconPosition = icon.transform.localPosition});
-        }
-
-        SharedMapManager.Instance.SpawnMapInstanceServerRpc(mapElements.ToArray());
     }
 
     public void OnStartElementDrag(GameObject targetElement)
@@ -221,9 +189,6 @@ public class MapManager : MonoBehaviour
         targetElement.transform.SetAsLastSibling();
 
         // follow mouse position with object
-        /*Vector3 worldPosition = InputManager.Instance.mousePosition;
-        worldPosition.z = PlayerController.Instance.cameraObject.nearClipPlane + 1f;
-        Vector3 targetPosition = PlayerController.Instance.cameraObject.ScreenToWorldPoint(worldPosition);*/
         Vector3 targetPosition = InputManager.Instance.mousePosition;
         targetElement.transform.position = Vector3.Lerp(targetElement.transform.position, targetPosition, Time.deltaTime * dragSmoothing);
     }
@@ -242,9 +207,6 @@ public class MapManager : MonoBehaviour
         if (activeTool != pencilIcon || !enablePlacement || enableDiscard || InputManager.Instance.lookAction.ReadValue<Vector2>() == Vector2.zero) return;
 
         // instantiate new dots in world space based on mouse position
-        /*Vector3 worldPosition = InputManager.Instance.mousePosition;
-        worldPosition.z = PlayerController.Instance.cameraObject.nearClipPlane + 1f;
-        Vector3 targetPosition = PlayerController.Instance.cameraObject.ScreenToWorldPoint(worldPosition);*/
         Vector3 targetPosition = InputManager.Instance.mousePosition;
         GameObject newDot = Instantiate(drawDot, targetPosition, Quaternion.Euler(0f, 0f, 0f), mapComponenets.transform);
         newDot.transform.localEulerAngles = Vector3.zero;
@@ -267,6 +229,36 @@ public class MapManager : MonoBehaviour
             activeDrawDots.Remove(targetDot);
             Destroy(targetDot);
         }
+    }
+
+    public void OnMapToggleReady()
+    {
+        bool isMapready = iconPile.activeSelf;
+        GameManager.Instance.SetPlayerMapStateServerRpc(isMapready);
+        pencilIcon.SetActive(!isMapready);
+        eraserIcon.SetActive(!isMapready);
+        trashIcon.SetActive(!isMapready);
+        iconPile.SetActive(!isMapready);
+        saveIcon.transform.GetChild(0).gameObject.SetActive(isMapready);
+        SetActiveTool(!isMapready ? pencilIcon : null);
+    }
+
+    public void OnSendMapData()
+    {
+        sharedViewButton.GetComponent<EventTrigger>().enabled = true;
+        sharedViewButton.GetComponent<Image>().color = Color.white;
+        saveIcon.SetActive(false);
+        List<MapElementData> mapElements = new List<MapElementData>();
+        foreach (var icon in activeIcons)
+        {
+            mapElements.Add(new MapElementData{iconPrefab = "MapIcon", iconSprite = icon.name, iconPosition = icon.transform.localPosition});
+        }
+        foreach (var icon in activeDrawDots)
+        {
+            mapElements.Add(new MapElementData{iconPrefab = "DrawDot", iconSprite = "DrawDot", iconPosition = icon.transform.localPosition});
+        }
+
+        SharedMapManager.Instance.SpawnMapInstanceServerRpc(mapElements.ToArray());
     }
 
     public void OnClearMap()

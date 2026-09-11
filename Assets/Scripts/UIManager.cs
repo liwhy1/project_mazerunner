@@ -2,7 +2,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using Unity.Netcode;
-using Unity.VisualScripting;
 
 public class UIManager : NetworkBehaviour
 {
@@ -241,8 +240,8 @@ public class UIManager : NetworkBehaviour
             bookObject.transform.Find("Page1View").Find("Viewport").Find("Content").GetChild(0).GetComponent<TMP_Text>().text = Resources.Load<TextAsset>("Information/info" + (((int)NetworkManager.LocalClientId) + 1).ToString() + "_1").text;
             bookObject.transform.Find("Page2View").Find("Viewport").Find("Content").GetChild(0).GetComponent<TMP_Text>().text = Resources.Load<TextAsset>("Information/info" + (((int)NetworkManager.LocalClientId) + 1).ToString() + "_2").text;
 
-            bookObject.transform.Find("Page1View").Find("Viewport").Find("Content").AddComponent<VerticalLayoutGroup>();
-            bookObject.transform.Find("Page2View").Find("Viewport").Find("Content").AddComponent<VerticalLayoutGroup>();
+            bookObject.transform.Find("Page1View").Find("Viewport").Find("Content").gameObject.AddComponent<VerticalLayoutGroup>();
+            bookObject.transform.Find("Page2View").Find("Viewport").Find("Content").gameObject.AddComponent<VerticalLayoutGroup>();
         }
         bookObject.SetActive(true);
     }
