@@ -268,4 +268,15 @@ public class GameManager : NetworkBehaviour
         if (NetworkManager.IsHost) return;
         UIManager.Instance.OnLobbyStart();
     }
+
+    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+    public void SetPlayerMapStateServerRpc(bool targetState, RpcParams rpcParams = default)
+    {
+        playerList.FirstOrDefault(p => p.OwnerClientId == rpcParams.Receive.SenderClientId).IsMapReady.Value = targetState;
+        if (playerList.All(p => p.IsMapReady.Value == true))
+        {
+            Debug.Log("GameManager: All individual maps ready");
+            SharedMapManager.Instance.OnSendMapInsanceClientRpc();            
+        }
+    }
 }

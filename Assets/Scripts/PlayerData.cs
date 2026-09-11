@@ -6,6 +6,7 @@ using UnityEngine;
 public class PlayerData : NetworkBehaviour
 {
     public NetworkVariable<FixedString64Bytes> PlayerName = new NetworkVariable<FixedString64Bytes>("Player", NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    public NetworkVariable<bool> IsMapReady = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     private TMP_Text nameText;
 
     public override void OnNetworkSpawn()

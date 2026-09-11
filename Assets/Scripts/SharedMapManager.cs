@@ -1,6 +1,4 @@
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
@@ -373,11 +371,10 @@ public class SharedMapManager : NetworkBehaviour
     }
 
     [ClientRpc]
-    public void SpawnMapElementsClientRpc(ulong clientId, MapElementData[] mapElements)
+    public void SpawnMapInstanceClientRpc(ulong clientId, MapElementData[] mapElements)
     {
-        if (clientId == NetworkManager.LocalClientId) return;
-
-        GameObject targetMap = MapManager.Instance.mapObjectP1.transform.childCount > 1 ? MapManager.Instance.mapObjectP2 : MapManager.Instance.mapObjectP1;
+        // scalability on this is 0
+        GameObject targetMap = clientId == 0 ? MapManager.Instance.mapObjectP0 : clientId == 1 ? MapManager.Instance.mapObjectP1 : MapManager.Instance.mapObjectP2;
         string targetName = GameManager.Instance.playerList.FirstOrDefault(p => p.OwnerClientId == clientId).PlayerName.Value.ToString();
         targetMap.transform.Find("Title").GetComponent<TMP_Text>().text = targetName;
 
@@ -399,10 +396,16 @@ public class SharedMapManager : NetworkBehaviour
     }
 
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
-    public void SpawnMapElementsServerRpc(MapElementData[] mapElements, RpcParams rpcParams = default)
+    public void SpawnMapInstanceServerRpc(MapElementData[] mapElements, RpcParams rpcParams = default)
     {
         ulong clientId = rpcParams.Receive.SenderClientId;
-        SpawnMapElementsClientRpc(clientId, mapElements);
+        SpawnMapInstanceClientRpc(clientId, mapElements);
+    }
+
+    [ClientRpc]
+    public void OnSendMapInsanceClientRpc()
+    {
+        MapManager.Instance.OnSendMapData();
     }
 
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]

@@ -12,6 +12,7 @@ public class MapManager : MonoBehaviour
 
     [Header("Map Data")]
     public GameObject mapComponenets;
+    public GameObject mapObjectP0;
     public GameObject mapObjectP1;
     public GameObject mapObjectP2;
     [SerializeField] public GameObject ownViewButton;
@@ -52,6 +53,10 @@ public class MapManager : MonoBehaviour
         // generate icon objects
         GenerateIcons();
 
+        sharedViewButton.GetComponent<EventTrigger>().enabled = false;
+        sharedViewButton.GetComponent<Image>().color = Color.darkGray;
+        individualViewButton.GetComponent<EventTrigger>().enabled = false;
+        individualViewButton.GetComponent<Image>().color = Color.darkGray;
         gameObject.SetActive(false);
     }
 
@@ -110,17 +115,23 @@ public class MapManager : MonoBehaviour
         targetElement.GetComponent<EventTrigger>().triggers.Add(exitHoverEntry);
     }
 
+    public void OnMapToggleReady()
+    {
+        bool isMapready = iconPile.activeSelf;
+        GameManager.Instance.SetPlayerMapStateServerRpc(isMapready);
+        pencilIcon.SetActive(!isMapready);
+        eraserIcon.SetActive(!isMapready);
+        trashIcon.SetActive(!isMapready);
+        iconPile.SetActive(!isMapready);
+        saveIcon.transform.GetChild(0).gameObject.SetActive(isMapready);
+        SetActiveTool(!isMapready ? pencilIcon : null);
+    }
+
     public void OnSendMapData()
     {
-        pencilIcon.gameObject.SetActive(false);
-        eraserIcon.gameObject.SetActive(false);
-        trashIcon.gameObject.SetActive(false);
-        saveIcon.gameObject.SetActive(false);
-        iconPile.gameObject.SetActive(false);
-        activeTool = null;
-
-        if (GameManager.Instance.isOffline) return;
-
+        sharedViewButton.GetComponent<EventTrigger>().enabled = true;
+        sharedViewButton.GetComponent<Image>().color = Color.white;
+        saveIcon.SetActive(false);
         List<MapElementData> mapElements = new List<MapElementData>();
         foreach (var icon in activeIcons)
         {
@@ -131,7 +142,7 @@ public class MapManager : MonoBehaviour
             mapElements.Add(new MapElementData{iconPrefab = "DrawDot", iconSprite = "DrawDot", iconPosition = icon.transform.localPosition});
         }
 
-        SharedMapManager.Instance.SpawnMapElementsServerRpc(mapElements.ToArray());
+        SharedMapManager.Instance.SpawnMapInstanceServerRpc(mapElements.ToArray());
     }
 
     public void OnStartElementDrag(GameObject targetElement)
@@ -308,7 +319,10 @@ public class MapManager : MonoBehaviour
         saveIcon.GetComponent<Image>().color = Color.white;
 
         // highlight target tool
-        targetTool.GetComponent<Image>().color = Color.gray;
+        if (targetTool != null)
+        {
+            targetTool.GetComponent<Image>().color = Color.gray;
+        }
     }
 
     public void SetHoveredDot(GameObject targetDot) 
@@ -322,12 +336,12 @@ public class MapManager : MonoBehaviour
 
     public void SetMapPage(int pageNumber)
     {
-        
         if (activeMapPage != 0) UIManager.Instance.inventoryLayout.gameObject.SetActive(false);
 
         activeMapPage = pageNumber;
         iconPile.SetActive(false);
         toolBar.gameObject.SetActive(false);
+        mapObjectP0.SetActive(false);
         mapObjectP1.SetActive(false);
         mapObjectP2.SetActive(false);
 
@@ -336,9 +350,9 @@ public class MapManager : MonoBehaviour
         GameManager.Instance.mapCamera.gameObject.SetActive(false);
         PlayerController.Instance.cameraObject.gameObject.SetActive(true);
 
-        ownViewButton.GetComponent<Image>().color = Color.white;
-        individualViewButton.GetComponent<Image>().color = Color.white;
-        sharedViewButton.GetComponent<Image>().color = Color.white;
+        ownViewButton.GetComponent<Image>().color = ownViewButton.GetComponent<EventTrigger>().enabled ? Color.white : ownViewButton.GetComponent<Image>().color;
+        individualViewButton.GetComponent<Image>().color = individualViewButton.GetComponent<EventTrigger>().enabled ? Color.white : individualViewButton.GetComponent<Image>().color;
+        sharedViewButton.GetComponent<Image>().color = sharedViewButton.GetComponent<EventTrigger>().enabled ? Color.white : sharedViewButton.GetComponent<Image>().color;
         if (pageNumber == 1)
         {
             if (pencilIcon.activeSelf)
@@ -351,6 +365,7 @@ public class MapManager : MonoBehaviour
         }
         else if (pageNumber == 2)
         {
+            mapObjectP0.SetActive(true);
             mapObjectP1.SetActive(true);
             mapObjectP2.SetActive(true);
             individualViewButton.GetComponent<Image>().color = Color.gray;
