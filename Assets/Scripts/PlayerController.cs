@@ -162,10 +162,16 @@ public class PlayerController : NetworkBehaviour
             return;
         }
 
-        // checks which direction the player is trying to move reads as a vector2 for x and y;
+        // store move vector
         moveDirection = InputManager.Instance.moveAction.ReadValue<Vector2>();
 
-        // checks if the player is holding sprint button and changes the speed accordingly
+        if (moveDirection == Vector3.zero) return;
+        playerAgent.updatePosition = false;
+        playerAgent.updateRotation = false;
+        playerAgent.isStopped = true;
+        playerAgent.ResetPath();
+
+        // apply speed based on sprint state
         movementSpeed = InputManager.Instance.sprintAction.ReadValue<float>() == 1 ? sprintSpeed : walkSpeed;
 
         // apply movement to rigidbody
@@ -177,6 +183,9 @@ public class PlayerController : NetworkBehaviour
     {
         if (GameManager.Instance.isPaused || InventoryManager.Instance.isInventoryActive) return;
 
+        playerAgent.updatePosition = true;
+        playerAgent.updateRotation = true;
+        playerAgent.isStopped = false;
         GameObject targetMarker = Instantiate(Resources.Load<GameObject>("TargetMarker"));
         targetMarker.transform.position = targetPosition;
         playerAgent.SetDestination(targetPosition);
