@@ -261,6 +261,18 @@ public class GameManager : NetworkBehaviour
         }
     }
 
+    public void OnPrimaryAction()
+    {
+        if (PlayerController.Instance)
+        {
+            Ray ray = PlayerController.Instance.playerCamera.GetComponent<Camera>().ScreenPointToRay(InputManager.Instance.mousePosition);
+            if (Physics.Raycast(ray, out RaycastHit hit))
+            {
+                PlayerController.Instance.OnMove(hit.point);
+            }
+        }
+    }
+
     [ClientRpc]
     private void PlayerLeftClientRpc(ulong clientId)
     {

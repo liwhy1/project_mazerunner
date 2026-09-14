@@ -62,7 +62,10 @@ public class MapManager : MonoBehaviour
         individualViewButton.GetComponent<UIElement>().OnElementDisable();
 
         // sync map state
-        GameManager.Instance.SyncPlayerMapStateServerRpc();
+        if (!GameManager.Instance.isOffline)
+        {
+            GameManager.Instance.SyncPlayerMapStateServerRpc();            
+        }
     }
 
     private void GenerateIcons()

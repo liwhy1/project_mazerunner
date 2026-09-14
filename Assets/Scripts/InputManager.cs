@@ -37,6 +37,7 @@ public class InputManager : MonoBehaviour
         mapAction.performed += context => GameManager.Instance.OnInventoryToggle();
         jumpAction.performed += context => PlayerController.Instance.OnJump();
         interactAction.performed += context => GameManager.Instance.OnInteract();
+        primaryAction.performed += context => GameManager.Instance.OnPrimaryAction();
     }
 
     private void OnEnable() => inputSystem.Enable();
@@ -48,8 +49,10 @@ public class InputManager : MonoBehaviour
         mousePosition = Mouse.current.position.ReadValue();
 
         // set cursor state
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
         // webgl doesn't like this, drop it in a try catch
-        try
+        /*try
         {
             if (GameManager.Instance.isPaused || (InventoryManager.Instance && InventoryManager.Instance.isInventoryActive))
             {
@@ -62,6 +65,6 @@ public class InputManager : MonoBehaviour
                 Cursor.visible = false;
             }
         }
-        catch {}
+        catch {}*/
     }
 }

@@ -44,6 +44,11 @@ public class UIManager : NetworkBehaviour
         Debug.Log("UIManager: Setting up");
         Instance = this;
 
+        if (transform.Find("Inventory"))
+        {
+            transform.Find("Inventory").gameObject.SetActive(true);
+        }
+
         // reset ui
         ResetUIState();
 
@@ -51,7 +56,6 @@ public class UIManager : NetworkBehaviour
         menuObject.SetActive(true);
 
         // subscribe to events(watch vod)
-
         // menu
         EventTrigger.Entry hostClickEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerClick};
         hostClickEntry.callback.AddListener((eventData) => { OnHostGame(); });

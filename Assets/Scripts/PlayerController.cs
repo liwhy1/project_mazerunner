@@ -1,6 +1,7 @@
 using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class PlayerController : NetworkBehaviour
 {
@@ -8,7 +9,9 @@ public class PlayerController : NetworkBehaviour
 
     [Header("Player Data")]
     public Rigidbody playerRigidbody;
+    public NavMeshAgent playerAgent;
     public Camera cameraObject;
+    public GameObject playerCamera;
 
     [Header("Movement Data")]
     public bool enableMovement;
@@ -41,9 +44,12 @@ public class PlayerController : NetworkBehaviour
         Instance = this;
         playerRigidbody = GetComponent<Rigidbody>();
         playerRigidbody.isKinematic = false;
-        enableInteraction = true;
-        enableMovement = true;
-        enableCamera = true;
+        playerAgent = GetComponent<NavMeshAgent>();
+        enableInteraction = false;
+        enableMovement = false;
+        enableCamera = false;
+
+        playerCamera = Instantiate(Resources.Load<GameObject>("PlayerCamera"));
     }
 
     public override void OnNetworkSpawn()
@@ -59,11 +65,13 @@ public class PlayerController : NetworkBehaviour
         // setup local player
         Instance = this;
         playerRigidbody = GetComponent<Rigidbody>();
-        enableInteraction = true;
-        enableMovement = true;
-        enableCamera = true;
+        enableInteraction = false;
+        enableMovement = false;
+        enableCamera = false;
         accumulatedRotationX = cameraObject.transform.localEulerAngles.x;
         accumulatedRotationY = transform.localEulerAngles.y;
+
+        playerCamera = Instantiate(Resources.Load<GameObject>("PlayerCamera"));
     }
 
 
@@ -116,8 +124,14 @@ public class PlayerController : NetworkBehaviour
 
     private void CameraHandler()
     {
+        if (playerCamera != null)
+        {
+            playerCamera.transform.LookAt(transform);
+            playerCamera.transform.position = Vector3.Lerp(playerCamera.transform.position, new Vector3(transform.position.x, transform.position.y + 4f, transform.position.z) - gameObject.transform.forward * 1.5f, Time.deltaTime * 3f);
+        }
+
         // toggle camera based on shared map view activity
-        cameraObject.gameObject.SetActive(!(GameManager.Instance.mapCamera.gameObject.activeSelf && InventoryManager.Instance.isInventoryActive));
+        playerCamera.gameObject.SetActive(!(GameManager.Instance.mapCamera.gameObject.activeSelf && InventoryManager.Instance.isInventoryActive));
 
         if (!enableCamera || GameManager.Instance.isPaused || InventoryManager.Instance.isInventoryActive) 
         {
@@ -143,6 +157,7 @@ public class PlayerController : NetworkBehaviour
     {
         if (!enableMovement || GameManager.Instance.isPaused || playerRigidbody.isKinematic || InventoryManager.Instance.isInventoryActive) 
         {
+            if (playerRigidbody.isKinematic) return;
             playerRigidbody.linearVelocity = Vector3.zero;
             playerRigidbody.angularVelocity = Vector3.zero;
             return;
@@ -157,6 +172,15 @@ public class PlayerController : NetworkBehaviour
         // apply movement to rigidbody
         Vector3 targetVelocity = (gameObject.transform.forward * moveDirection.y + gameObject.transform.right * moveDirection.x) * movementSpeed * 10f * Time.deltaTime;
         playerRigidbody.linearVelocity = new Vector3(targetVelocity.x, playerRigidbody.linearVelocity.y, targetVelocity.z);
+    }
+
+    public void OnMove(Vector3 targetPosition)
+    {
+        if (GameManager.Instance.isPaused || InventoryManager.Instance.isInventoryActive) return;
+
+        GameObject targetMarker = Instantiate(Resources.Load<GameObject>("TargetMarker"));
+        targetMarker.transform.position = targetPosition;
+        playerAgent.SetDestination(targetPosition);
     }
 
     public void OnJump()
