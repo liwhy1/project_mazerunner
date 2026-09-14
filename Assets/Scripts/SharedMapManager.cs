@@ -101,7 +101,7 @@ public class SharedMapManager : NetworkBehaviour
 
     public void OnStartElementDrag(GameObject targetElement)
     {
-        if (activeTool == null) return;
+        if (activeTool == null || PlayerController.Instance.playerCamera.activeSelf) return;
 
         // get ownership
         if (targetElement.GetComponent<NetworkObject>())
@@ -137,7 +137,7 @@ public class SharedMapManager : NetworkBehaviour
 
     public void OnElementDrag(GameObject targetElement)
     {
-        if (activeTool == null) return;
+        if (activeTool == null || PlayerController.Instance.playerCamera.activeSelf) return;
 
         // force object to appear on top
         targetElement.transform.SetAsLastSibling();
@@ -151,12 +151,19 @@ public class SharedMapManager : NetworkBehaviour
 
     public void OnStopElementDrag(GameObject targetElement)
     {
-        if (activeTool == null) return;
+        if (activeTool == null || PlayerController.Instance.playerCamera.activeSelf) return;
 
         // destroy element if its dropped over a discard allowed area
         if (enableDiscard)
         {
-            DestroyMapElementServerRpc(targetElement.GetComponent<NetworkObject>().NetworkObjectId);
+            if (targetElement.GetComponent<NetworkObject>())
+            {
+                DestroyMapElementServerRpc(targetElement.GetComponent<NetworkObject>().NetworkObjectId);                
+            }
+            else
+            {
+                Destroy(targetElement);
+            }
             return;
         }
 
@@ -166,7 +173,14 @@ public class SharedMapManager : NetworkBehaviour
             // this should only be true if the element wasn't place on the map yet, causing a saved position to "not exist"
             if (savedElementPosition == Vector3.zero)
             {
-                DestroyMapElementServerRpc(targetElement.GetComponent<NetworkObject>().NetworkObjectId);
+                if (targetElement.GetComponent<NetworkObject>())
+                {
+                    DestroyMapElementServerRpc(targetElement.GetComponent<NetworkObject>().NetworkObjectId);                
+                }
+                else
+                {
+                    Destroy(targetElement);
+                }
                 return;
             }
 
@@ -187,18 +201,9 @@ public class SharedMapManager : NetworkBehaviour
         }
     }
 
-    public void OnDrawableDrag()
-    {
-        // determine target action based on active tool
-        if (activeTool == pencilIcon)
-        {
-            OnDrawLine();
-        }
-    }
-
     public void OnDrawLine()
     {
-        if (activeTool != pencilIcon || !enablePlacement || enableDiscard || InputManager.Instance.lookAction.ReadValue<Vector2>() == Vector2.zero) return;
+        if (activeTool != pencilIcon || PlayerController.Instance.playerCamera.activeSelf || !enablePlacement || enableDiscard || InputManager.Instance.lookAction.ReadValue<Vector2>() == Vector2.zero) return;
 
         // instantiate new dots in world space based on mouse position
         Vector3 worldPosition = InputManager.Instance.mousePosition;
