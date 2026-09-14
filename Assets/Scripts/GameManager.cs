@@ -235,7 +235,7 @@ public class GameManager : NetworkBehaviour
         mapCamera.transform.position = new Vector3(0f, -100f, 0f);
         if (!isOffline)
         {
-            mapObject.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientId);
+            mapObject.GetComponent<NetworkObject>().Spawn();
         }
     }
 
