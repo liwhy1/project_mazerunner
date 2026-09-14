@@ -154,7 +154,7 @@ public class PlayerController : NetworkBehaviour
 
     private void MovementHandler()
     {
-        if (!enableMovement || GameManager.Instance.isPaused || playerRigidbody.isKinematic || InventoryManager.Instance.isInventoryActive) 
+        if (!enableMovement || GameManager.Instance.isPaused || UIManager.Instance.activeDialog || playerRigidbody.isKinematic || InventoryManager.Instance.isInventoryActive) 
         {
             if (playerRigidbody.isKinematic) return;
             playerRigidbody.linearVelocity = Vector3.zero;

@@ -253,14 +253,6 @@ public class GameManager : NetworkBehaviour
         UIManager.Instance.OnRefreshPlayerList();
     }
 
-    public void OnInteract()
-    {
-        if (PlayerController.Instance)
-        {
-            PlayerController.Instance.OnInteract();
-        }
-    }
-
     public void OnPrimaryAction()
     {
         if (PlayerController.Instance)
@@ -268,7 +260,14 @@ public class GameManager : NetworkBehaviour
             Ray ray = PlayerController.Instance.playerCamera.GetComponent<Camera>().ScreenPointToRay(InputManager.Instance.mousePosition);
             if (Physics.Raycast(ray, out RaycastHit hit))
             {
-                PlayerController.Instance.OnMove(hit.point);
+                if (hit.collider.gameObject.CompareTag("Interactable"))
+                {
+                    UIManager.Instance.OnOpenDialog();
+                }
+                else
+                {
+                    PlayerController.Instance.OnMove(hit.point);                    
+                }
             }
         }
     }

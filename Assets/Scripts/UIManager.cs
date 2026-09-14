@@ -39,6 +39,9 @@ public class UIManager : NetworkBehaviour
     [Header("HUD Data")]
     [SerializeField] private Image crossHair;
 
+    [Header("Dialog Data")]
+    public GameObject activeDialog;
+
     private void Start()
     {
         Debug.Log("UIManager: Setting up");
@@ -232,5 +235,30 @@ public class UIManager : NetworkBehaviour
     {
         resumeButton.gameObject.SetActive(true);
         waitingOnHostText.gameObject.SetActive(false);
+    }
+
+    public void OnOpenDialog()
+    {
+        // close any active dialogs
+        OnCloseDialog();
+
+        // create new dialog
+        GameObject newDialog = Instantiate(Resources.Load<GameObject>("TextDialog"), transform);
+        newDialog.transform.localPosition = Vector3.zero;
+        activeDialog = newDialog;
+
+        // setup triggers
+        EventTrigger.Entry pointerClickEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerClick};
+        pointerClickEntry.callback.AddListener((eventData) => { OnCloseDialog(); });
+        activeDialog.transform.Find("CloseButton").GetComponent<EventTrigger>().triggers.Add(pointerClickEntry);
+    }
+
+    public void OnCloseDialog()
+    {
+        if (activeDialog)
+        {
+            Destroy(activeDialog);
+            activeDialog = null;
+        }
     }
 }
