@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using Unity.Netcode;
+using UnityEngine.EventSystems;
 
 public class UIManager : NetworkBehaviour
 {
@@ -9,71 +10,91 @@ public class UIManager : NetworkBehaviour
 
     [Header("Host Data")]
     [SerializeField] private GameObject hostObject;
-    [SerializeField] private Button startHostButton;
-    [SerializeField] private Button hostBackButton;
+    [SerializeField] private GameObject startHostButton;
+    [SerializeField] private GameObject hostBackButton;
     [SerializeField] private TMP_InputField hostPlayerNameInput;
 
     [Header("Join Data")]
     [SerializeField] private GameObject joinObject;
-    [SerializeField] private Button startClientButton;
-    [SerializeField] private Button joinBackButton;
+    [SerializeField] private GameObject startClientButton;
+    [SerializeField] private GameObject joinBackButton;
     [SerializeField] private TMP_InputField joinCodeInput;
     [SerializeField] private TMP_InputField joinPlayerNameInput;
 
     [Header("Pause Data")]
     [SerializeField] private GameObject pauseObject;
-    [SerializeField] public Button resumeButton;
-    [SerializeField] private Button quitButton;
+    [SerializeField] public GameObject resumeButton;
+    [SerializeField] private GameObject quitButton;
     [SerializeField] private TMP_Text joinCodeText;
     [SerializeField] private TMP_Text playerListText;
     [SerializeField] private TMP_Text waitingOnHostText;
 
     [Header("Menu Data")]
     [SerializeField] private GameObject menuObject;
-    [SerializeField] private Button hostButton;
-    [SerializeField] private Button joinButton;
-    [SerializeField] private Button offlineButton;
+    [SerializeField] private GameObject hostButton;
+    [SerializeField] private GameObject joinButton;
+    [SerializeField] private GameObject offlineButton;
     public GameObject loadingIcon;
 
     [Header("HUD Data")]
     [SerializeField] private Image crossHair;
 
-    [Header("Inventory Data")]
-    public bool isInventoryActive;
-    [SerializeField] private GameObject inventoryObject;
-    public GameObject inventoryLayout;
-    [SerializeField] private GameObject bookObject;
-    [SerializeField] private GameObject mapObject;
-    [SerializeField] private GameObject noteObject;
-
-
-    private void Awake()
+    private void Start()
     {
+        Debug.Log("UIManager: Setting up");
         Instance = this;
 
         // reset ui
         ResetUIState();
+
+        // enable menu
         menuObject.SetActive(true);
 
-        // subscribe to events
-        // join
-        joinBackButton.onClick.AddListener(delegate { OnBackButton(); });
-        startClientButton.onClick.AddListener(delegate { GameManager.Instance.OnStartClient(); });
-        joinPlayerNameInput.onValueChanged.AddListener(delegate { GameManager.Instance.OnNameChanged(joinPlayerNameInput.text); });
-
-        // host
-        hostBackButton.onClick.AddListener(delegate { OnBackButton(); });
-        startHostButton.onClick.AddListener(delegate { GameManager.Instance.OnStartHost(); });
-        hostPlayerNameInput.onValueChanged.AddListener(delegate { GameManager.Instance.OnNameChanged(hostPlayerNameInput.text); });
+        // subscribe to events(watch vod)
 
         // menu
-        joinButton.onClick.AddListener(delegate { OnJoinGame(); });
-        hostButton.onClick.AddListener(delegate { OnHostGame(); });
-        offlineButton.onClick.AddListener(delegate { OnOfflineGame(); });
+        EventTrigger.Entry hostClickEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerClick};
+        hostClickEntry.callback.AddListener((eventData) => { OnHostGame(); });
+        hostButton.GetComponent<EventTrigger>().triggers.Add(hostClickEntry);
+
+        EventTrigger.Entry joinClickEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerClick};
+        joinClickEntry.callback.AddListener((eventData) => { OnJoinGame(); });
+        joinButton.GetComponent<EventTrigger>().triggers.Add(joinClickEntry);
+
+        EventTrigger.Entry offlineClickEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerClick};
+        offlineClickEntry.callback.AddListener((eventData) => { OnOfflineGame(); });
+        offlineButton.GetComponent<EventTrigger>().triggers.Add(offlineClickEntry);
+
+        // host
+        EventTrigger.Entry hostStartClickEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerClick};
+        hostStartClickEntry.callback.AddListener((eventData) => { GameManager.Instance.OnStartHost(); });
+        startHostButton.GetComponent<EventTrigger>().triggers.Add(hostStartClickEntry);
+
+        EventTrigger.Entry hostBackClickEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerClick};
+        hostBackClickEntry.callback.AddListener((eventData) => { OnBackButton(); });
+        hostBackButton.GetComponent<EventTrigger>().triggers.Add(hostBackClickEntry);
+
+        hostPlayerNameInput.onValueChanged.AddListener(delegate { GameManager.Instance.OnNameChanged(hostPlayerNameInput.text); });
+
+        // join
+        EventTrigger.Entry clientStartClickEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerClick};
+        clientStartClickEntry.callback.AddListener((eventData) => { GameManager.Instance.OnStartClient(); });
+        startClientButton.GetComponent<EventTrigger>().triggers.Add(clientStartClickEntry);
+
+        EventTrigger.Entry clientBackClickEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerClick};
+        clientBackClickEntry.callback.AddListener((eventData) => { OnBackButton(); });
+        joinBackButton.GetComponent<EventTrigger>().triggers.Add(clientBackClickEntry);
+
+        joinPlayerNameInput.onValueChanged.AddListener(delegate { GameManager.Instance.OnNameChanged(joinPlayerNameInput.text); });
 
         // pause
-        resumeButton.onClick.AddListener(delegate { GameManager.Instance.OnStartGame(); });
-        quitButton.onClick.AddListener(delegate { OnBackButton(); });
+        EventTrigger.Entry resumeClickEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerClick};
+        resumeClickEntry.callback.AddListener((eventData) => { GameManager.Instance.OnStartGame(); });
+        resumeButton.GetComponent<EventTrigger>().triggers.Add(resumeClickEntry);
+
+        EventTrigger.Entry quitClickEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerClick};
+        quitClickEntry.callback.AddListener((eventData) => { OnBackButton(); });
+        quitButton.GetComponent<EventTrigger>().triggers.Add(quitClickEntry);
     }
 
     private void Update()
@@ -106,10 +127,6 @@ public class UIManager : NetworkBehaviour
         joinObject.SetActive(false);
         menuObject.SetActive(false);
         loadingIcon.SetActive(false);
-        inventoryObject.SetActive(false);
-        bookObject.SetActive(false);
-        mapObject.SetActive(true);
-        noteObject.SetActive(false);
     }
 
     private void OnJoinGame()
@@ -208,72 +225,5 @@ public class UIManager : NetworkBehaviour
     {
         resumeButton.gameObject.SetActive(true);
         waitingOnHostText.gameObject.SetActive(false);
-    }
-
-    public void OnToggleInventory()
-    {
-        isInventoryActive = !isInventoryActive;
-        inventoryObject.SetActive(isInventoryActive);
-        if (GameManager.Instance.mapCamera.gameObject.activeSelf)
-        {
-            PlayerController.Instance.cameraObject.gameObject.SetActive(!isInventoryActive);            
-        }
-    }
-
-    public void OnElementHighlight(GameObject targetElement) => targetElement.GetComponent<Image>().color = targetElement.GetComponent<Image>().color == Color.white ? Color.lightGray : targetElement.GetComponent<Image>().color;
-    public void OnElementUnHighlight(GameObject targetElement) => targetElement.GetComponent<Image>().color = targetElement.GetComponent<Image>().color == Color.lightGray ? Color.white : targetElement.GetComponent<Image>().color;
-    public void OnElementGrow(GameObject targetElement)
-    {
-        targetElement.transform.localScale = new Vector3(1.05f, 1.05f, 1.05f);
-        OnElementHighlight(targetElement);
-    }
-    public void OnElementShrink(GameObject targetElement)
-    {
-        targetElement.transform.localScale = new Vector3(1f, 1f, 1f);
-        OnElementUnHighlight(targetElement);
-    }
-
-    public void OnOpenBook() 
-    {
-        if (!bookObject.transform.Find("Page1View").Find("Viewport").Find("Content").GetComponent<VerticalLayoutGroup>())
-        {
-            bookObject.transform.Find("Page1View").Find("Viewport").Find("Content").GetChild(0).GetComponent<TMP_Text>().text = Resources.Load<TextAsset>("Information/info" + (((int)NetworkManager.LocalClientId) + 1).ToString() + "_1").text;
-            bookObject.transform.Find("Page2View").Find("Viewport").Find("Content").GetChild(0).GetComponent<TMP_Text>().text = Resources.Load<TextAsset>("Information/info" + (((int)NetworkManager.LocalClientId) + 1).ToString() + "_2").text;
-
-            bookObject.transform.Find("Page1View").Find("Viewport").Find("Content").gameObject.AddComponent<VerticalLayoutGroup>();
-            bookObject.transform.Find("Page2View").Find("Viewport").Find("Content").gameObject.AddComponent<VerticalLayoutGroup>();
-        }
-        bookObject.SetActive(true);
-    }
-
-    public void OnOpenMap() 
-    {
-        mapObject.SetActive(true);
-        MapManager.Instance.SetMapPage(MapManager.Instance.activeMapPage);
-    }
-
-    public void OnBookNextPage()
-    {
-        if (bookObject.transform.Find("Page1View").gameObject.activeSelf)
-        {
-            bookObject.transform.Find("Page1View").gameObject.SetActive(false);
-            bookObject.transform.Find("Page2View").gameObject.SetActive(true);
-        }
-        else
-        {
-            bookObject.transform.Find("Page1View").gameObject.SetActive(true);
-            bookObject.transform.Find("Page2View").gameObject.SetActive(false);
-        }
-    }
-
-    public void OnToggleNote() => noteObject.SetActive(!noteObject.activeSelf);
-    public void OnCloseNote() => noteObject.SetActive(false);
-
-    public void OnInventoryBack()
-    {
-        bookObject.SetActive(false);
-        mapObject.SetActive(false);
-        inventoryLayout.gameObject.SetActive(true);
-        PlayerController.Instance.cameraObject.gameObject.SetActive(true);
     }
 }

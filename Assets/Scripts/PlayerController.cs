@@ -116,7 +116,10 @@ public class PlayerController : NetworkBehaviour
 
     private void CameraHandler()
     {
-        if (!enableCamera || GameManager.Instance.isPaused || UIManager.Instance.isInventoryActive) 
+        // toggle camera based on shared map view activity
+        cameraObject.gameObject.SetActive(!(GameManager.Instance.mapCamera.gameObject.activeSelf && InventoryManager.Instance.isInventoryActive));
+
+        if (!enableCamera || GameManager.Instance.isPaused || InventoryManager.Instance.isInventoryActive) 
         {
             lookVector = Vector2.zero;
             return;
@@ -138,7 +141,7 @@ public class PlayerController : NetworkBehaviour
 
     private void MovementHandler()
     {
-        if (!enableMovement || GameManager.Instance.isPaused || playerRigidbody.isKinematic || UIManager.Instance.isInventoryActive) 
+        if (!enableMovement || GameManager.Instance.isPaused || playerRigidbody.isKinematic || InventoryManager.Instance.isInventoryActive) 
         {
             playerRigidbody.linearVelocity = Vector3.zero;
             playerRigidbody.angularVelocity = Vector3.zero;
@@ -158,7 +161,7 @@ public class PlayerController : NetworkBehaviour
 
     public void OnJump()
     {
-        if (GameManager.Instance.isPaused || !isGrounded || !enableMovement || playerRigidbody.isKinematic || UIManager.Instance.isInventoryActive) return;
+        if (GameManager.Instance.isPaused || !isGrounded || !enableMovement || playerRigidbody.isKinematic || InventoryManager.Instance.isInventoryActive) return;
 
         playerRigidbody.linearVelocity = gameObject.transform.up * jumpStrength;
     }

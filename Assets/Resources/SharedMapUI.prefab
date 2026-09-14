@@ -12,9 +12,10 @@ GameObject:
   - component: {fileID: 3031397144893294144}
   - component: {fileID: 8982143657783366580}
   - component: {fileID: 6135096997191649066}
+  - component: {fileID: 7937188912461286947}
   m_Layer: 5
   m_Name: Background
-  m_TagString: Untagged
+  m_TagString: Interactable
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -26,12 +27,12 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 345499324227434142}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: 0.09193608, y: -0, z: -0, w: 0.995765}
+  m_LocalPosition: {x: 0, y: 0, z: 1}
   m_LocalScale: {x: 0.00035, y: 0.00035, z: 0.00035}
   m_ConstrainProportionsScale: 1
   m_Children: []
-  m_Father: {fileID: 5605831461998759158}
+  m_Father: {fileID: 8434865411725478924}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -93,8 +94,8 @@ MonoBehaviour:
     callback:
       m_PersistentCalls:
         m_Calls:
-        - m_Target: {fileID: 7413670657887888127}
-          m_TargetAssemblyTypeName: MapManager, Assembly-CSharp
+        - m_Target: {fileID: 2823722697475839636}
+          m_TargetAssemblyTypeName: SharedMapManager, Assembly-CSharp
           m_MethodName: OnDrawableDrag
           m_Mode: 1
           m_Arguments:
@@ -109,8 +110,8 @@ MonoBehaviour:
     callback:
       m_PersistentCalls:
         m_Calls:
-        - m_Target: {fileID: 7413670657887888127}
-          m_TargetAssemblyTypeName: MapManager, Assembly-CSharp
+        - m_Target: {fileID: 2823722697475839636}
+          m_TargetAssemblyTypeName: SharedMapManager, Assembly-CSharp
           m_MethodName: OnDisablePlacement
           m_Mode: 1
           m_Arguments:
@@ -125,8 +126,8 @@ MonoBehaviour:
     callback:
       m_PersistentCalls:
         m_Calls:
-        - m_Target: {fileID: 7413670657887888127}
-          m_TargetAssemblyTypeName: MapManager, Assembly-CSharp
+        - m_Target: {fileID: 2823722697475839636}
+          m_TargetAssemblyTypeName: SharedMapManager, Assembly-CSharp
           m_MethodName: OnEnablePlacement
           m_Mode: 1
           m_Arguments:
@@ -137,6 +138,27 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
+--- !u!65 &7937188912461286947
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 345499324227434142}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 3401.6052, y: 2265.5254, z: 381.23483}
+  m_Center: {x: 52.45652, y: 12.284818, z: -120.69069}
 --- !u!1 &363901241974541232
 GameObject:
   m_ObjectHideFlags: 0
@@ -149,6 +171,7 @@ GameObject:
   - component: {fileID: 9154501738596592718}
   - component: {fileID: 7154795479950138828}
   - component: {fileID: 7732824008618904591}
+  - component: {fileID: 5396083796889664759}
   m_Layer: 5
   m_Name: PencilIcon
   m_TagString: Untagged
@@ -230,8 +253,8 @@ MonoBehaviour:
     callback:
       m_PersistentCalls:
         m_Calls:
-        - m_Target: {fileID: 7413670657887888127}
-          m_TargetAssemblyTypeName: MapManager, Assembly-CSharp
+        - m_Target: {fileID: 2823722697475839636}
+          m_TargetAssemblyTypeName: SharedMapManager, Assembly-CSharp
           m_MethodName: SetActiveTool
           m_Mode: 2
           m_Arguments:
@@ -242,6 +265,26 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
+--- !u!114 &5396083796889664759
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 363901241974541232}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2521ec99056149e4f8675ba8ee467b90, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIElement
+  normalColor: {r: 1, g: 1, b: 1, a: 1}
+  highlightColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  selectColor: {r: 0.6627451, g: 0.6627451, b: 0.6627451, a: 1}
+  disabledColor: {r: 1, g: 1, b: 1, a: 1}
+  enableHighlight: 1
+  enableGrow: 1
+  isSelected: 0
+  isEnabled: 1
 --- !u!1 &1413736821858039157
 GameObject:
   m_ObjectHideFlags: 0
@@ -256,7 +299,7 @@ GameObject:
   - component: {fileID: 1368767425257632686}
   - component: {fileID: 1741203845351981584}
   m_Layer: 5
-  m_Name: IconPile
+  m_Name: SpritePile
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -269,16 +312,16 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1413736821858039157}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0.00000011719}
-  m_LocalScale: {x: 0.01, y: 0.01, z: 0.01}
+  m_LocalRotation: {x: 0.09193608, y: -0, z: -0, w: 0.995765}
+  m_LocalPosition: {x: 0, y: 0, z: 1}
+  m_LocalScale: {x: 0.01, y: 0.010000001, z: 0.010000001}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 5605831461998759158}
+  m_Father: {fileID: 8434865411725478924}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -0.693, y: -0.000000021826}
+  m_AnchoredPosition: {x: -0.693, y: 0}
   m_SizeDelta: {x: 50, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &8606347543782078395
@@ -336,8 +379,8 @@ MonoBehaviour:
     callback:
       m_PersistentCalls:
         m_Calls:
-        - m_Target: {fileID: 7413670657887888127}
-          m_TargetAssemblyTypeName: MapManager, Assembly-CSharp
+        - m_Target: {fileID: 2823722697475839636}
+          m_TargetAssemblyTypeName: SharedMapManager, Assembly-CSharp
           m_MethodName: OnEnableDiscard
           m_Mode: 1
           m_Arguments:
@@ -352,8 +395,8 @@ MonoBehaviour:
     callback:
       m_PersistentCalls:
         m_Calls:
-        - m_Target: {fileID: 7413670657887888127}
-          m_TargetAssemblyTypeName: MapManager, Assembly-CSharp
+        - m_Target: {fileID: 2823722697475839636}
+          m_TargetAssemblyTypeName: SharedMapManager, Assembly-CSharp
           m_MethodName: OnDisableDiscard
           m_Mode: 1
           m_Arguments:
@@ -384,8 +427,8 @@ MonoBehaviour:
   m_ChildAlignment: 4
   m_StartCorner: 0
   m_StartAxis: 0
-  m_CellSize: {x: 0.1, y: 0.1}
-  m_Spacing: {x: 14, y: 12}
+  m_CellSize: {x: 10, y: 10}
+  m_Spacing: {x: 5, y: 4}
   m_Constraint: 1
   m_ConstraintCount: 2
 --- !u!1 &1801697020777382791
@@ -400,9 +443,10 @@ GameObject:
   - component: {fileID: 2678117528084373012}
   - component: {fileID: 1236748488512554569}
   - component: {fileID: 2767205654804382649}
-  - component: {fileID: 7413670657887888127}
+  - component: {fileID: 8667952909280713039}
+  - component: {fileID: 2823722697475839636}
   m_Layer: 5
-  m_Name: MapUI
+  m_Name: SharedMapUI
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -420,11 +464,13 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 5605831461998759158}
+  - {fileID: 8666318911336120638}
+  - {fileID: 600764192240637178}
+  - {fileID: 2518813498269759107}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -492,7 +538,7 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
---- !u!114 &7413670657887888127
+--- !u!114 &8667952909280713039
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -501,100 +547,47 @@ MonoBehaviour:
   m_GameObject: {fileID: 1801697020777382791}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 403190bda8166f84ca2bdf4e15fc832a, type: 3}
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MapManager
-  mapObject: {fileID: 3260031592883449448}
-  isMapActive: 0
-  iconPile: {fileID: 1413736821858039157}
-  dragSmoothing: 25
-  enablePlacement: 0
-  enableDiscard: 0
-  drawDot: {fileID: 1925298198860093365, guid: 2d23a3f631f496b4cbfa1e41a2871b6c, type: 3}
-  maxAllowedDots: 500
-  activeTool: {fileID: 0}
-  pencilIcon: {fileID: 363901241974541232}
-  eraserIcon: {fileID: 4742275240348975062}
-  trashIcon: {fileID: 5697104052686752615}
-  saveIcon: {fileID: 7538703051608637086}
---- !u!1 &3260031592883449448
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 5605831461998759158}
-  - component: {fileID: 588430577556646979}
-  - component: {fileID: 5039474837401456931}
-  m_Layer: 5
-  m_Name: Map
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!224 &5605831461998759158
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3260031592883449448}
-  m_LocalRotation: {x: 0.09193608, y: 0, z: 0, w: 0.995765}
-  m_LocalPosition: {x: 0, y: 0, z: 1}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 8666318911336120638}
-  - {fileID: 600764192240637178}
-  - {fileID: 2518813498269759107}
-  m_Father: {fileID: 8434865411725478924}
-  m_LocalEulerAnglesHint: {x: 10.55, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 1, y: 1}
-  m_Pivot: {x: 0.5, y: 0.5}
---- !u!222 &588430577556646979
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3260031592883449448}
-  m_CullTransparentMesh: 1
---- !u!114 &5039474837401456931
+  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
+  GlobalObjectIdHash: 1419324591
+  InScenePlacedSourceGlobalObjectIdHash: 4265903931
+  m_InScenePlacedDisabledByDefault: 0
+  DeferredDespawnTick: 0
+  Ownership: 1
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  m_InScenePlaced: 0
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 0
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+  SyncOwnerTransformWhenParented: 1
+  AllowOwnerToParent: 0
+--- !u!114 &2823722697475839636
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3260031592883449448}
-  m_Enabled: 0
+  m_GameObject: {fileID: 1801697020777382791}
+  m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Script: {fileID: 11500000, guid: d4e88baf13bae8e46afa77326375bb00, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
-  m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  m_Sprite: {fileID: 0}
-  m_Type: 0
-  m_PreserveAspect: 0
-  m_FillCenter: 1
-  m_FillMethod: 4
-  m_FillAmount: 1
-  m_FillClockwise: 1
-  m_FillOrigin: 0
-  m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
+  m_EditorClassIdentifier: Assembly-CSharp::SharedMapManager
+  ShowTopMostFoldoutHeaderGroup: 1
+  isMapActive: 0
+  iconPile: {fileID: 1413736821858039157}
+  enablePlacement: 0
+  enableDiscard: 0
+  activeHoveredDot: {fileID: 0}
+  activeTool: {fileID: 0}
+  pencilIcon: {fileID: 363901241974541232}
+  eraserIcon: {fileID: 4742275240348975062}
+  trashIcon: {fileID: 5697104052686752615}
+  saveIcon: {fileID: 7538703051608637086}
 --- !u!1 &4742275240348975062
 GameObject:
   m_ObjectHideFlags: 0
@@ -607,6 +600,7 @@ GameObject:
   - component: {fileID: 8326628327154662960}
   - component: {fileID: 7947559231387145716}
   - component: {fileID: 4176742001374300612}
+  - component: {fileID: 1756483951833872595}
   m_Layer: 5
   m_Name: EraserIcon
   m_TagString: Untagged
@@ -688,8 +682,8 @@ MonoBehaviour:
     callback:
       m_PersistentCalls:
         m_Calls:
-        - m_Target: {fileID: 7413670657887888127}
-          m_TargetAssemblyTypeName: MapManager, Assembly-CSharp
+        - m_Target: {fileID: 2823722697475839636}
+          m_TargetAssemblyTypeName: SharedMapManager, Assembly-CSharp
           m_MethodName: SetActiveTool
           m_Mode: 2
           m_Arguments:
@@ -700,6 +694,26 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
+--- !u!114 &1756483951833872595
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4742275240348975062}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2521ec99056149e4f8675ba8ee467b90, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIElement
+  normalColor: {r: 1, g: 1, b: 1, a: 1}
+  highlightColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  selectColor: {r: 0.6627451, g: 0.6627451, b: 0.6627451, a: 1}
+  disabledColor: {r: 1, g: 1, b: 1, a: 1}
+  enableHighlight: 1
+  enableGrow: 1
+  isSelected: 0
+  isEnabled: 1
 --- !u!1 &5374140364636734484
 GameObject:
   m_ObjectHideFlags: 0
@@ -723,8 +737,8 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5374140364636734484}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: 0.09193608, y: -0, z: -0, w: 0.995765}
+  m_LocalPosition: {x: 0, y: 0, z: 1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -732,7 +746,7 @@ RectTransform:
   - {fileID: 779275472313660819}
   - {fileID: 7893740391165924101}
   - {fileID: 2053681541753284573}
-  m_Father: {fileID: 5605831461998759158}
+  m_Father: {fileID: 8434865411725478924}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -751,6 +765,7 @@ GameObject:
   - component: {fileID: 5920222301202316737}
   - component: {fileID: 8834589888600859103}
   - component: {fileID: 4189826068702318188}
+  - component: {fileID: 5578325371020694208}
   m_Layer: 5
   m_Name: TrashIcon
   m_TagString: Untagged
@@ -832,8 +847,8 @@ MonoBehaviour:
     callback:
       m_PersistentCalls:
         m_Calls:
-        - m_Target: {fileID: 7413670657887888127}
-          m_TargetAssemblyTypeName: MapManager, Assembly-CSharp
+        - m_Target: {fileID: 2823722697475839636}
+          m_TargetAssemblyTypeName: SharedMapManager, Assembly-CSharp
           m_MethodName: OnClearMap
           m_Mode: 1
           m_Arguments:
@@ -844,6 +859,26 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
+--- !u!114 &5578325371020694208
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5697104052686752615}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2521ec99056149e4f8675ba8ee467b90, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIElement
+  normalColor: {r: 1, g: 1, b: 1, a: 1}
+  highlightColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  selectColor: {r: 0.6627451, g: 0.6627451, b: 0.6627451, a: 1}
+  disabledColor: {r: 1, g: 1, b: 1, a: 1}
+  enableHighlight: 1
+  enableGrow: 1
+  isSelected: 0
+  isEnabled: 1
 --- !u!1 &7538703051608637086
 GameObject:
   m_ObjectHideFlags: 0
@@ -856,13 +891,14 @@ GameObject:
   - component: {fileID: 2857656678240622654}
   - component: {fileID: 2427528335129402892}
   - component: {fileID: 2676586314553792096}
+  - component: {fileID: 4575763044943330045}
   m_Layer: 5
   m_Name: SaveIcon
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &2053681541753284573
 RectTransform:
   m_ObjectHideFlags: 0
@@ -937,9 +973,9 @@ MonoBehaviour:
     callback:
       m_PersistentCalls:
         m_Calls:
-        - m_Target: {fileID: 7413670657887888127}
+        - m_Target: {fileID: 1801697020777382791}
           m_TargetAssemblyTypeName: MapManager, Assembly-CSharp
-          m_MethodName: OnSendMapData
+          m_MethodName: 
           m_Mode: 1
           m_Arguments:
             m_ObjectArgument: {fileID: 0}
@@ -949,3 +985,23 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
+--- !u!114 &4575763044943330045
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7538703051608637086}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2521ec99056149e4f8675ba8ee467b90, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIElement
+  normalColor: {r: 1, g: 1, b: 1, a: 1}
+  highlightColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  selectColor: {r: 0.6627451, g: 0.6627451, b: 0.6627451, a: 1}
+  disabledColor: {r: 1, g: 1, b: 1, a: 1}
+  enableHighlight: 1
+  enableGrow: 1
+  isSelected: 0
+  isEnabled: 1

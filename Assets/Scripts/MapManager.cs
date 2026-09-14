@@ -15,10 +15,13 @@ public class MapManager : MonoBehaviour
     public GameObject mapObjectP0;
     public GameObject mapObjectP1;
     public GameObject mapObjectP2;
-    [SerializeField] public GameObject ownViewButton;
-    [SerializeField] public GameObject individualViewButton;
-    [SerializeField] public GameObject sharedViewButton;
-    public int activeMapPage;
+    [SerializeField] private GameObject ownViewButton;
+    [SerializeField] private GameObject individualViewButton;
+    [SerializeField] private GameObject sharedViewButton;
+    [SerializeField] private GameObject ownViewPage;
+    [SerializeField] private GameObject individualViewPage;
+    [SerializeField] private GameObject sharedViewPage;
+    public GameObject activeMapPage;
 
     [Header("Icon Data")]
     [SerializeField] private GameObject iconPile;
@@ -40,24 +43,26 @@ public class MapManager : MonoBehaviour
     [SerializeField] private GameObject trashIcon;
     [SerializeField] private GameObject saveIcon;
 
-    private void Start()
+    public void OnSetup()
     {
+        Debug.Log("MapManager: Setting up");
         Instance = this;
 
         // set active map tool
         SetActiveTool(pencilIcon);
 
         // set active page
-        SetMapPage(1);
+        SetMapPage(ownViewPage);
 
         // generate icon objects
         GenerateIcons();
 
-        sharedViewButton.GetComponent<EventTrigger>().enabled = false;
-        sharedViewButton.GetComponent<Image>().color = Color.darkGray;
-        individualViewButton.GetComponent<EventTrigger>().enabled = false;
-        individualViewButton.GetComponent<Image>().color = Color.darkGray;
-        gameObject.SetActive(false);
+        // disable inactive buttons
+        sharedViewButton.GetComponent<UIElement>().OnElementDisable();
+        individualViewButton.GetComponent<UIElement>().OnElementDisable();
+
+        // sync map state
+        GameManager.Instance.SyncPlayerMapStateServerRpc();
     }
 
     private void GenerateIcons()
@@ -150,8 +155,25 @@ public class MapManager : MonoBehaviour
         SetDrawDotRaycastState(false);
     }
 
+    public void OnElementDrag(GameObject targetElement)
+    {
+        if (activeTool == null) return;
+
+        // prevent dragging while the map isn't active
+        if (!gameObject.activeSelf) return;
+
+        // force object to appear on top
+        targetElement.transform.SetAsLastSibling();
+
+        // follow mouse position with object
+        Vector3 targetPosition = InputManager.Instance.mousePosition;
+        targetElement.transform.position = Vector3.Lerp(targetElement.transform.position, targetPosition, Time.deltaTime * dragSmoothing);
+    }
+
     public void OnStopElementDrag(GameObject targetElement)
     {
+        if (activeTool == null) return;
+
         // destroy element if its dropped over a discard allowed area
         if (enableDiscard)
         {
@@ -178,28 +200,6 @@ public class MapManager : MonoBehaviour
 
         // conditionally enable drawdot raycast state
         SetDrawDotRaycastState(activeTool == eraserIcon);
-    }
-
-    public void OnElementDrag(GameObject targetElement)
-    {
-        // prevent dragging while the map isn't active
-        if (!gameObject.activeSelf) return;
-
-        // force object to appear on top
-        targetElement.transform.SetAsLastSibling();
-
-        // follow mouse position with object
-        Vector3 targetPosition = InputManager.Instance.mousePosition;
-        targetElement.transform.position = Vector3.Lerp(targetElement.transform.position, targetPosition, Time.deltaTime * dragSmoothing);
-    }
-
-    public void OnDrawableDrag()
-    {
-        // determine target action based on active tool
-        if (activeTool == pencilIcon)
-        {
-            OnDrawLine();
-        }
     }
 
     public void OnDrawLine()
@@ -234,20 +234,26 @@ public class MapManager : MonoBehaviour
     public void OnMapToggleReady()
     {
         bool isMapready = iconPile.activeSelf;
-        GameManager.Instance.SetPlayerMapStateServerRpc(isMapready);
-        pencilIcon.SetActive(!isMapready);
-        eraserIcon.SetActive(!isMapready);
-        trashIcon.SetActive(!isMapready);
+        toolBar.SetActive(!isMapready);
         iconPile.SetActive(!isMapready);
         saveIcon.transform.GetChild(0).gameObject.SetActive(isMapready);
         SetActiveTool(!isMapready ? pencilIcon : null);
+
+        if (!GameManager.Instance.isOffline)
+        {
+            GameManager.Instance.SetPlayerMapStateServerRpc(isMapready);            
+        }
+        else
+        {
+            OnSendMapData();
+        }
     }
 
     public void OnSendMapData()
     {
-        sharedViewButton.GetComponent<EventTrigger>().enabled = true;
-        sharedViewButton.GetComponent<Image>().color = Color.white;
-        saveIcon.SetActive(false);
+        sharedViewButton.GetComponent<UIElement>().OnElementEnable();
+        InventoryManager.Instance.OnJournalDisable();
+
         List<MapElementData> mapElements = new List<MapElementData>();
         foreach (var icon in activeIcons)
         {
@@ -258,7 +264,18 @@ public class MapManager : MonoBehaviour
             mapElements.Add(new MapElementData{iconPrefab = "DrawDot", iconSprite = "DrawDot", iconPosition = icon.transform.localPosition});
         }
 
-        SharedMapManager.Instance.SpawnMapInstanceServerRpc(mapElements.ToArray());
+        if (!GameManager.Instance.isOffline)
+        {
+            saveIcon.transform.GetChild(0).gameObject.SetActive(true);
+            SetActiveTool(null);
+            saveIcon.SetActive(false);
+            toolBar.SetActive(false);
+            iconPile.SetActive(false);
+
+            // prevent sending empty data
+            if (mapElements.Count == 0) return;
+            SharedMapManager.Instance.SpawnMapInstanceServerRpc(mapElements.ToArray());            
+        }
     }
 
     public void OnClearMap()
@@ -305,16 +322,12 @@ public class MapManager : MonoBehaviour
         SetDrawDotRaycastState(activeTool == eraserIcon);
 
         // reset icon states
-        pencilIcon.GetComponent<Image>().color = Color.white;
-        eraserIcon.GetComponent<Image>().color = Color.white;
-        trashIcon.GetComponent<Image>().color = Color.white;
-        saveIcon.GetComponent<Image>().color = Color.white;
+        pencilIcon.GetComponent<UIElement>().OnElementDeSelect();
+        eraserIcon.GetComponent<UIElement>().OnElementDeSelect();
+        trashIcon.GetComponent<UIElement>().OnElementDeSelect();
 
-        // highlight target tool
-        if (targetTool != null)
-        {
-            targetTool.GetComponent<Image>().color = Color.gray;
-        }
+        if (targetTool == null) return;
+        targetTool.GetComponent<UIElement>().OnElementSelect();
     }
 
     public void SetHoveredDot(GameObject targetDot) 
@@ -326,48 +339,39 @@ public class MapManager : MonoBehaviour
         }
     }
 
-    public void SetMapPage(int pageNumber)
+    public void SetMapPage(GameObject pageObject)
     {
-        if (activeMapPage != 0) UIManager.Instance.inventoryLayout.gameObject.SetActive(false);
-
-        activeMapPage = pageNumber;
-        iconPile.SetActive(false);
-        toolBar.gameObject.SetActive(false);
-        mapObjectP0.SetActive(false);
-        mapObjectP1.SetActive(false);
-        mapObjectP2.SetActive(false);
-
+        activeMapPage = pageObject;
         transform.parent.GetComponent<Image>().enabled = true;
-        mapComponenets.SetActive(false);
         GameManager.Instance.mapCamera.gameObject.SetActive(false);
-        PlayerController.Instance.cameraObject.gameObject.SetActive(true);
 
-        ownViewButton.GetComponent<Image>().color = ownViewButton.GetComponent<EventTrigger>().enabled ? Color.white : ownViewButton.GetComponent<Image>().color;
-        individualViewButton.GetComponent<Image>().color = individualViewButton.GetComponent<EventTrigger>().enabled ? Color.white : individualViewButton.GetComponent<Image>().color;
-        sharedViewButton.GetComponent<Image>().color = sharedViewButton.GetComponent<EventTrigger>().enabled ? Color.white : sharedViewButton.GetComponent<Image>().color;
-        if (pageNumber == 1)
+        ownViewPage.SetActive(false);
+        individualViewPage.SetActive(false);
+        sharedViewPage.SetActive(false);
+        pageObject.SetActive(true);
+
+        ownViewButton.GetComponent<UIElement>().OnElementDeSelect();
+        individualViewButton.GetComponent<UIElement>().OnElementDeSelect();
+        sharedViewButton.GetComponent<UIElement>().OnElementDeSelect();
+        if (pageObject == ownViewPage)
         {
-            if (pencilIcon.activeSelf)
-            {
-                iconPile.SetActive(true);                
-            }
-            mapComponenets.SetActive(true);
-            toolBar.gameObject.SetActive(true);
-            ownViewButton.GetComponent<Image>().color = Color.gray;
+            ownViewButton.GetComponent<UIElement>().OnElementSelect();
+            bool isEditable = !saveIcon.transform.GetChild(0).gameObject.activeSelf;
+            iconPile.SetActive(isEditable);
+            toolBar.gameObject.SetActive(isEditable);
         }
-        else if (pageNumber == 2)
+        else if (pageObject == individualViewPage)
         {
+            individualViewButton.GetComponent<UIElement>().OnElementSelect();
             mapObjectP0.SetActive(true);
             mapObjectP1.SetActive(true);
             mapObjectP2.SetActive(true);
-            individualViewButton.GetComponent<Image>().color = Color.gray;
         }
-        else
+        else if (pageObject == sharedViewPage)
         {
-            PlayerController.Instance.cameraObject.gameObject.SetActive(false);
-            GameManager.Instance.mapCamera.gameObject.SetActive(true);
+            sharedViewButton.GetComponent<UIElement>().OnElementSelect();
             transform.parent.GetComponent<Image>().enabled = false;
-            sharedViewButton.GetComponent<Image>().color = Color.gray;
+            GameManager.Instance.mapCamera.gameObject.SetActive(true);
         }
     }
 
@@ -375,6 +379,7 @@ public class MapManager : MonoBehaviour
     public void OnDisablePlacement() => enablePlacement = false;
     public void OnEnableDiscard() => enableDiscard = true;
     public void OnDisableDiscard() => enableDiscard = false;
+    public bool FetchSharedViewState() => sharedViewButton.GetComponent<UIElement>().isEnabled;
 }
 
 public struct MapElementData : INetworkSerializable

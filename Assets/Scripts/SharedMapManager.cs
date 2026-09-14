@@ -19,7 +19,6 @@ public class SharedMapManager : NetworkBehaviour
     [SerializeField] private bool enableDiscard;
 
     [Header("Draw Data")]
-    [SerializeField] private GameObject drawDot;
     //[SerializeField] private float maxAllowedDots = 500f;
     public GameObject activeHoveredDot;
     [SerializeField] private GameObject activeTool;
@@ -27,8 +26,10 @@ public class SharedMapManager : NetworkBehaviour
     [SerializeField] private GameObject eraserIcon;
     [SerializeField] private GameObject trashIcon;
     [SerializeField] private GameObject saveIcon;
+
     void Start()
     {
+        Debug.Log("SMM: Setting up");
         Instance = this;
 
         // set active map tool
@@ -46,14 +47,19 @@ public class SharedMapManager : NetworkBehaviour
         // setup icons
         foreach (var icon in mapIcons)
         {
-            GameObject newIcon = Instantiate(Resources.Load<GameObject>("MapIconOld"), iconPile.transform);
+            // we load the regual map icon here since the icon pile is not synced
+            GameObject newIcon = Instantiate(Resources.Load<GameObject>("MapIcon"));
+            newIcon.transform.SetParent(iconPile.transform);
             newIcon.name = icon.name;
+            newIcon.GetComponent<Image>().sprite = icon;
             newIcon.transform.localPosition = Vector3.zero;
             newIcon.transform.localEulerAngles = Vector3.zero;
-            newIcon.GetComponent<RectTransform>().sizeDelta = new Vector2(0.1f, 0.1f);
-            newIcon.GetComponent<RectTransform>().localScale = new Vector3(100f, 100f, 100f);
-            newIcon.GetComponent<Image>().sprite = icon;
-            newIcon.transform.GetChild(0).GetComponent<TMP_Text>().text = icon.name.Remove(icon.name.Length - 6, 6);
+            // apply shared prefab size
+            newIcon.transform.localScale = new Vector3(1f, 1f, 1f);
+            GameObject newText = newIcon.transform.GetChild(0).gameObject;
+            newText.transform.localScale = new Vector3(.1f, .1f, .1f);
+            newText.transform.localPosition = new Vector3(0f, -7f, 0f);
+            newText.GetComponent<TMP_Text>().text = icon.name.Remove(icon.name.Length - 6, 6);
 
             // setup event triggers
             SetupElementTriggers(newIcon);
@@ -66,11 +72,6 @@ public class SharedMapManager : NetworkBehaviour
         {
             targetElement.AddComponent<EventTrigger>();
         }
-
-        // pointer down trigger
-        EventTrigger.Entry pointerDownEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerDown};
-        pointerDownEntry.callback.AddListener((eventData) => { OnElementPointerDown(targetElement); });
-        targetElement.GetComponent<EventTrigger>().triggers.Add(pointerDownEntry);
 
         // begin drag trigger
         EventTrigger.Entry beginDragEntry = new EventTrigger.Entry() {eventID = EventTriggerType.BeginDrag};
@@ -102,6 +103,12 @@ public class SharedMapManager : NetworkBehaviour
     {
         if (activeTool == null) return;
 
+        // get ownership
+        if (targetElement.GetComponent<NetworkObject>())
+        {
+            SetElementOwnershipServerRpc(targetElement.GetComponent<NetworkObject>().NetworkObjectId);
+        }
+
         // save element position
         savedElementPosition = targetElement.transform.position;
 
@@ -117,7 +124,6 @@ public class SharedMapManager : NetworkBehaviour
             newElement.transform.SetSiblingIndex(siblingIndex);
             SetupElementTriggers(newElement);
 
-
             // pile position shouldn't be saved, this will be used to destroy instead
             savedElementPosition = Vector3.zero;
         }
@@ -129,19 +135,10 @@ public class SharedMapManager : NetworkBehaviour
         SetDrawDotRaycastState(false);
     }
 
-    public void OnElementPointerDown(GameObject targetElement)
+    public void OnElementDrag(GameObject targetElement)
     {
         if (activeTool == null) return;
 
-        // get ownership
-        if (targetElement.GetComponent<NetworkObject>())
-        {
-            SetElementOwnershipServerRpc(targetElement.GetComponent<NetworkObject>().NetworkObjectId);
-        }
-    }
-
-    public void OnElementDrag(GameObject targetElement)
-    {
         // force object to appear on top
         targetElement.transform.SetAsLastSibling();
 
@@ -154,17 +151,12 @@ public class SharedMapManager : NetworkBehaviour
 
     public void OnStopElementDrag(GameObject targetElement)
     {
+        if (activeTool == null) return;
+
         // destroy element if its dropped over a discard allowed area
         if (enableDiscard)
         {
-            if (!NetworkManager.IsHost && targetElement.GetComponent<NetworkObject>())
-            {
-                DestroyMapElementServerRpc(targetElement.GetComponent<NetworkObject>().NetworkObjectId);        
-            }
-            else
-            {
-                Destroy(targetElement);
-            }
+            DestroyMapElementServerRpc(targetElement.GetComponent<NetworkObject>().NetworkObjectId);
             return;
         }
 
@@ -174,14 +166,7 @@ public class SharedMapManager : NetworkBehaviour
             // this should only be true if the element wasn't place on the map yet, causing a saved position to "not exist"
             if (savedElementPosition == Vector3.zero)
             {
-                if (!NetworkManager.IsHost && targetElement.GetComponent<NetworkObject>())
-                {
-                    DestroyMapElementServerRpc(targetElement.GetComponent<NetworkObject>().NetworkObjectId);        
-                }
-                else
-                {
-                    Destroy(targetElement);
-                }
+                DestroyMapElementServerRpc(targetElement.GetComponent<NetworkObject>().NetworkObjectId);
                 return;
             }
 
@@ -197,13 +182,8 @@ public class SharedMapManager : NetworkBehaviour
         // spawn networkobject if element was pulled from the pile
         if (savedElementPosition == Vector3.zero)
         {
-            SpawnMapElementServerRpc("MapIcon", targetElement.name, targetElement.transform.localPosition);
+            SpawnMapElementServerRpc("SharedMapIcon", targetElement.name, targetElement.transform.localPosition);
             Destroy(targetElement);
-        }
-        else
-        {
-            // reset ownership
-            SetElementOwnershipServerRpc(targetElement.GetComponent<NetworkObject>().NetworkObjectId, true);
         }
     }
 
@@ -224,11 +204,11 @@ public class SharedMapManager : NetworkBehaviour
         Vector3 worldPosition = InputManager.Instance.mousePosition;
         worldPosition.z = GameManager.Instance.mapCamera.nearClipPlane + 1f;
         Vector3 targetPosition = GameManager.Instance.mapCamera.ScreenToWorldPoint(worldPosition);
-        GameObject newDot = Instantiate(drawDot, targetPosition, Quaternion.identity, transform);
+        GameObject newDot = Instantiate(Resources.Load<GameObject>("SharedDrawDot"), targetPosition, Quaternion.identity, transform);
         newDot.GetComponent<RectTransform>().sizeDelta = new Vector3(.02f, 0.02f);
         newDot.SetActive(true);
 
-        SpawnMapElementServerRpc("DrawDot", "DrawDot", newDot.transform.localPosition);
+        SpawnMapElementServerRpc("SharedDrawDot", "DrawDot", newDot.transform.localPosition);
         Destroy(newDot);
     }
 
@@ -282,13 +262,12 @@ public class SharedMapManager : NetworkBehaviour
         SetDrawDotRaycastState(activeTool == eraserIcon);
 
         // reset icon states
-        pencilIcon.GetComponent<Image>().color = Color.white;
-        eraserIcon.GetComponent<Image>().color = Color.white;
-        trashIcon.GetComponent<Image>().color = Color.white;
-        saveIcon.GetComponent<Image>().color = Color.white;
+        pencilIcon.GetComponent<UIElement>().OnElementDeSelect();
+        eraserIcon.GetComponent<UIElement>().OnElementDeSelect();
+        trashIcon.GetComponent<UIElement>().OnElementDeSelect();
 
-        // highlight target tool
-        targetTool.GetComponent<Image>().color = Color.gray;
+        if (targetTool == null) return;
+        targetTool.GetComponent<UIElement>().OnElementSelect();
     }
 
     public void SetHoveredDot(GameObject targetDot) 
@@ -309,7 +288,7 @@ public class SharedMapManager : NetworkBehaviour
     public void SpawnMapElementServerRpc(string iconPrefab, string iconSprite, Vector3 iconPosition)
     {
         Debug.Log("SMM: Spawning new object with type: " + iconPrefab);
-        GameObject newObject = Instantiate(Resources.Load<GameObject>(iconPrefab + "2"));
+        GameObject newObject = Instantiate(Resources.Load<GameObject>(iconPrefab));
         newObject.GetComponent<NetworkObject>().Spawn();
         newObject.transform.SetParent(transform, false);
         newObject.transform.localPosition = new Vector3(iconPosition.x, iconPosition.y, 1f);
@@ -373,7 +352,7 @@ public class SharedMapManager : NetworkBehaviour
     [ClientRpc]
     public void SpawnMapInstanceClientRpc(ulong clientId, MapElementData[] mapElements)
     {
-        // scalability on this is 0
+        // TODO: this doesn't sync correctly on player reconnects
         GameObject targetMap = clientId == 0 ? MapManager.Instance.mapObjectP0 : clientId == 1 ? MapManager.Instance.mapObjectP1 : MapManager.Instance.mapObjectP2;
         string targetName = GameManager.Instance.playerList.FirstOrDefault(p => p.OwnerClientId == clientId).PlayerName.Value.ToString();
         targetMap.transform.Find("Title").GetComponent<TMP_Text>().text = targetName;
@@ -390,7 +369,6 @@ public class SharedMapManager : NetworkBehaviour
             }
             newObject.transform.SetParent(targetMap.transform);
             newObject.transform.localPosition = element.iconPosition;
-            newObject.transform.localEulerAngles = Vector3.zero;
             newObject.transform.localScale = new Vector3(1f, 1f, 1f);
         }
     }

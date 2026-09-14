@@ -57,6 +57,11 @@ public class GameManager : NetworkBehaviour
         PlayerPrefs.DeleteAll();
         PlayerPrefs.Save();
 
+        foreach (var element in FindObjectsByType<UIElement>(FindObjectsInactive.Include))
+        {
+            element.OnSetup();
+        }
+
         NetworkManager.OnClientConnectedCallback += OnClientConnected;
         NetworkManager.OnClientDisconnectCallback += OnClientDisconnected;
     }
@@ -85,7 +90,7 @@ public class GameManager : NetworkBehaviour
     {
         if (isPaused) return;
 
-        UIManager.Instance.OnToggleInventory();
+        InventoryManager.Instance.OnToggleInventory();
     }
 
     public void OnNameChanged(string inputText)
@@ -96,18 +101,30 @@ public class GameManager : NetworkBehaviour
 
     public void OnStartGame()
     {
+        if (isConnected)
+        {
+            OnPauseToggle();
+            return;
+        }
+
         isConnected = true;
         mainCamera.SetActive(false);
+
         OnPauseToggle();
+
+        InventoryManager.Instance.OnSetup();
         OnInventoryToggle();
 
-        if (isOffline) return;
-        if (SharedMapManager.Instance)
+        if (!isOffline)
         {
-            SharedMapManager.Instance.gameObject.GetComponent<Canvas>().worldCamera = mapCamera;
+            if (SharedMapManager.Instance)
+            {
+                SharedMapManager.Instance.gameObject.GetComponent<Canvas>().worldCamera = mapCamera;
+            }
+
+            // notify clients about lobby start
+            OnLobbyStartClientRpc();            
         }
-        // notify clients about lobby start
-        OnLobbyStartClientRpc();
     }
 
     private void OnClientConnected(ulong clientId)
@@ -129,10 +146,10 @@ public class GameManager : NetworkBehaviour
             SpawnSharedMap(clientId);
         }
 
-        // notify new clients about lobby status
+        // notify new clients about game status
         if (!isOffline && isConnected)
         {
-            OnLobbyStartClientRpc();            
+            OnLobbyStartClientRpc();
         }
     }
 
@@ -212,7 +229,7 @@ public class GameManager : NetworkBehaviour
     public void SpawnSharedMap(ulong clientId)
     {
         Debug.Log("GameManager: Spawning SharedMap for: " + clientId);
-        GameObject mapObject = Instantiate(Resources.Load<GameObject>("MapUI2"), Vector3.zero, Quaternion.identity);
+        GameObject mapObject = Instantiate(Resources.Load<GameObject>("SharedMapUI"), Vector3.zero, Quaternion.identity);
         mapObject.GetComponent<Canvas>().worldCamera = mapCamera;
         mapObject.transform.position = new Vector3(0f, -100f, 0f);
         mapCamera.transform.position = new Vector3(0f, -100f, 0f);
@@ -274,7 +291,31 @@ public class GameManager : NetworkBehaviour
         if (playerList.All(p => p.IsMapReady.Value == true))
         {
             Debug.Log("GameManager: All individual maps ready");
-            SharedMapManager.Instance.OnSendMapInsanceClientRpc();            
+            SharedMapManager.Instance.OnSendMapInsanceClientRpc();
         }
+    }
+
+    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+    public void SyncPlayerMapStateServerRpc()
+    {
+        // send a map sync rpc for joined clients, if shared map state is availible
+        if (MapManager.Instance.FetchSharedViewState())
+        {
+            SharedMapManager.Instance.OnSendMapInsanceClientRpc();
+
+            // sync shared map element data
+            foreach (Transform element in SharedMapManager.Instance.transform)
+            {
+                if (element.GetComponent<NetworkObject>())
+                {
+                    SharedMapManager.Instance.SetMapElementDataClientRpc(element.GetComponent<NetworkObject>().NetworkObjectId, element.name);
+                }
+            }
+        }
+    }
+
+    public ulong FetchLocalClientId()
+    {
+        return NetworkManager.LocalClientId;
     }
 }

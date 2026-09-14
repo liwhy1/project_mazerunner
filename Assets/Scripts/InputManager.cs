@@ -51,7 +51,7 @@ public class InputManager : MonoBehaviour
         // webgl doesn't like this, drop it in a try catch
         try
         {
-            if (GameManager.Instance.isPaused || (UIManager.Instance && UIManager.Instance.isInventoryActive))
+            if (GameManager.Instance.isPaused || (InventoryManager.Instance && InventoryManager.Instance.isInventoryActive))
             {
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
