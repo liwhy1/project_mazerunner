@@ -350,14 +350,13 @@ public class SharedMapManager : NetworkBehaviour
     }
 
     [ClientRpc]
-    public void SpawnMapInstanceClientRpc(ulong clientId, MapElementData[] mapElements)
+    public void SpawnMapInstanceClientRpc(int persistentId, string playerName, MapElementData[] mapElements)
     {
-        // TODO: this doesn't sync correctly on player reconnects
-        GameObject targetMap = clientId == 0 ? MapManager.Instance.mapObjectP0 : clientId == 1 ? MapManager.Instance.mapObjectP1 : MapManager.Instance.mapObjectP2;
-        string targetName = GameManager.Instance.playerList.FirstOrDefault(p => p.OwnerClientId == clientId).PlayerName.Value.ToString();
-        targetMap.transform.Find("Title").GetComponent<TMP_Text>().text = targetName;
+        // TODO: this might not sync correctly on player reconnects
+        GameObject targetMap = persistentId == 0 ? MapManager.Instance.mapObjectP0 : persistentId == 1 ? MapManager.Instance.mapObjectP1 : MapManager.Instance.mapObjectP2;
+        targetMap.transform.Find("Title").GetComponent<TMP_Text>().text = playerName;
 
-        Debug.Log("SMM: Spawning map objects for player: " + targetName);
+        Debug.Log("SMM: Spawning map objects for player: " + playerName);
         foreach (var element in mapElements)
         {
             GameObject newObject = Instantiate(Resources.Load<GameObject>(element.iconPrefab));
@@ -377,7 +376,9 @@ public class SharedMapManager : NetworkBehaviour
     public void SpawnMapInstanceServerRpc(MapElementData[] mapElements, RpcParams rpcParams = default)
     {
         ulong clientId = rpcParams.Receive.SenderClientId;
-        SpawnMapInstanceClientRpc(clientId, mapElements);
+        int persistentId = GameManager.Instance.playerList.FirstOrDefault(p => p.OwnerClientId == clientId).persistentPlayerId.Value;
+        string playerName = GameManager.Instance.playerList.FirstOrDefault(p => p.OwnerClientId == clientId).PlayerName.Value.ToString();
+        SpawnMapInstanceClientRpc(persistentId, playerName, mapElements);
     }
 
     [ClientRpc]

@@ -53,8 +53,9 @@ public class InventoryManager : MonoBehaviour
         buttonLayout.gameObject.SetActive(false);
         if (!journalContent1.GetComponent<VerticalLayoutGroup>())
         {
-            journalContent1.transform.GetChild(0).GetComponent<TMP_Text>().text = Resources.Load<TextAsset>("Information/info" + (((int)GameManager.Instance.FetchLocalClientId()) + 1).ToString() + "_1").text;
-            journalContent2.transform.GetChild(0).GetComponent<TMP_Text>().text = Resources.Load<TextAsset>("Information/info" + (((int)GameManager.Instance.FetchLocalClientId()) + 1).ToString() + "_2").text;
+
+            journalContent1.transform.GetChild(0).GetComponent<TMP_Text>().text = Resources.Load<TextAsset>("Information/Prototype1/info" + GameManager.Instance.FetchPersistentPlayerId() + 1.ToString() + "_1").text;
+            journalContent2.transform.GetChild(0).GetComponent<TMP_Text>().text = Resources.Load<TextAsset>("Information/Prototype1/info" + GameManager.Instance.FetchPersistentPlayerId() + 1.ToString() + "_2").text;
 
             journalContent1.AddComponent<VerticalLayoutGroup>();
             journalContent2.AddComponent<VerticalLayoutGroup>();

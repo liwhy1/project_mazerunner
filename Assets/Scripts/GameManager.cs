@@ -139,12 +139,17 @@ public class GameManager : NetworkBehaviour
 
         if (!NetworkManager.IsHost) return;
 
+        // spawn player object
         SpawnPlayer(clientId);
 
+        // spawn shared map if it doesn't exist already
         if (!SharedMapManager.Instance)
         {
             SpawnSharedMap(clientId);
         }
+
+        // assign persistent id
+        AssignPersistentPlayerIdServerRpc(clientId);
 
         // notify new clients about game status
         if (!isOffline && isConnected)
@@ -325,8 +330,34 @@ public class GameManager : NetworkBehaviour
         }
     }
 
+    [ServerRpc]
+    public void AssignPersistentPlayerIdServerRpc(ulong clientId)
+    {
+        // a very very very dirty and stupid way of assigning a persistent player id(0-2) to players, to allow us to not depend on client ids, which will surpass a count of 3
+        int targetId = -1;
+        if (!playerList.FirstOrDefault(p => p.persistentPlayerId.Value == 0))
+        {
+            targetId = 0;
+        }
+        else if (!playerList.FirstOrDefault(p => p.persistentPlayerId.Value == 1))
+        {
+            targetId = 1;
+        }
+        else
+        {
+            targetId = 2;
+        }
+        Debug.Log("GameManager: Assigned persistent id: " + targetId + " to: " + clientId);
+        playerList.FirstOrDefault(p => p.OwnerClientId == clientId).persistentPlayerId.Value = targetId;
+    }
+
     public ulong FetchLocalClientId()
     {
         return NetworkManager.LocalClientId;
+    }
+
+    public int FetchPersistentPlayerId()
+    {
+        return PlayerController.Instance.gameObject.GetComponent<PlayerData>().persistentPlayerId.Value;
     }
 }
