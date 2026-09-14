@@ -46,7 +46,7 @@ public class InputManager : MonoBehaviour
     private void Update()
     {
         // track mouse position
-        mousePosition = Mouse.current.position.ReadValue();
+        mousePosition = Pointer.current.position.ReadValue();
 
         // set cursor state
         Cursor.lockState = CursorLockMode.None;
