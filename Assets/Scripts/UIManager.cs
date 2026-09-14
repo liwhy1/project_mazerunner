@@ -153,6 +153,9 @@ public class UIManager : NetworkBehaviour
         // trigger offline player spawn
         GameManager.Instance.SpawnPlayer(0);
 
+        // trigger offline sharedmap spawn
+        GameManager.Instance.SpawnSharedMap(0);
+
         ResetUIState();
         pauseObject.SetActive(true);
         joinCodeText.gameObject.SetActive(false);
