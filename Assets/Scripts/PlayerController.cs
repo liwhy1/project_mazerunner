@@ -40,16 +40,7 @@ public class PlayerController : NetworkBehaviour
     {
         // only run this in offline mode
         if (!GameManager.Instance.isOffline) return;
-
-        Instance = this;
-        playerRigidbody = GetComponent<Rigidbody>();
-        playerRigidbody.isKinematic = false;
-        playerAgent = GetComponent<NavMeshAgent>();
-        enableInteraction = false;
-        enableMovement = false;
-        enableCamera = false;
-
-        playerCamera = Instantiate(Resources.Load<GameObject>("PlayerCamera"));
+        OnSetup();
     }
 
     public override void OnNetworkSpawn()
@@ -63,13 +54,21 @@ public class PlayerController : NetworkBehaviour
         }
 
         // setup local player
+        OnSetup();
+    }
+
+    private void OnSetup()
+    {
         Instance = this;
         playerRigidbody = GetComponent<Rigidbody>();
-        enableInteraction = false;
-        enableMovement = false;
+        playerRigidbody.isKinematic = false;
+        playerAgent = GetComponent<NavMeshAgent>();
+        enableInteraction = true;
+        enableMovement = true;
         enableCamera = false;
-        accumulatedRotationX = cameraObject.transform.localEulerAngles.x;
-        accumulatedRotationY = transform.localEulerAngles.y;
+
+        // disable name indicator on own player
+        transform.Find("NameCanvas").gameObject.SetActive(false);
 
         playerCamera = Instantiate(Resources.Load<GameObject>("PlayerCamera"));
     }
