@@ -240,6 +240,7 @@ public class MapManager : MonoBehaviour
         toolBar.SetActive(!isMapready);
         iconPile.SetActive(!isMapready);
         saveIcon.transform.GetChild(0).gameObject.SetActive(isMapready);
+        saveIcon.transform.GetChild(1).gameObject.SetActive(!isMapready);
         SetActiveTool(!isMapready ? pencilIcon : null);
 
         if (!GameManager.Instance.isOffline)
@@ -270,6 +271,7 @@ public class MapManager : MonoBehaviour
         if (!GameManager.Instance.isOffline)
         {
             saveIcon.transform.GetChild(0).gameObject.SetActive(true);
+            saveIcon.transform.GetChild(1).gameObject.SetActive(false);
             SetActiveTool(null);
             saveIcon.SetActive(false);
             toolBar.SetActive(false);
