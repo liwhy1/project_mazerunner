@@ -181,7 +181,7 @@ public class PlayerController : NetworkBehaviour
 
     public void OnMove(Vector3 targetPosition)
     {
-        if (GameManager.Instance.isPaused || InventoryManager.Instance.isInventoryActive) return;
+        if (GameManager.Instance.isPaused || InventoryManager.Instance.isInventoryActive || UIManager.Instance.activeDialog) return;
 
         playerAgent.updatePosition = true;
         playerAgent.updateRotation = true;
