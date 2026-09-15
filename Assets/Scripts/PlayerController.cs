@@ -10,7 +10,6 @@ public class PlayerController : NetworkBehaviour
     [Header("Player Data")]
     public Rigidbody playerRigidbody;
     public NavMeshAgent playerAgent;
-    public Camera cameraObject;
     public GameObject playerCamera;
 
     [Header("Movement Data")]
@@ -48,7 +47,7 @@ public class PlayerController : NetworkBehaviour
         // setup client player
         if (!IsOwner)
         {
-            cameraObject.gameObject.SetActive(false);
+            playerCamera.gameObject.SetActive(false);
             Destroy(this);
             return;
         }
@@ -76,9 +75,6 @@ public class PlayerController : NetworkBehaviour
 
     void Update()
     {
-        // handle raycasting
-        RaycastHandler();
-
         // handle camera
         CameraHandler();
     }
@@ -90,26 +86,6 @@ public class PlayerController : NetworkBehaviour
 
         // check for ground
         GroundCheckHandler();
-    }
-
-    private void RaycastHandler()
-    {
-        if (!enableInteraction || GameManager.Instance.isPaused) 
-        {
-            rayHitObject = null;                
-            return;
-        }
-
-        // this is the ray that is created from the cameras center
-        Ray ray = cameraObject.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
-
-        // fire ray
-        RaycastHit rayHit;
-        if (Physics.Raycast(ray, out rayHit, rayLength, Physics.AllLayers, QueryTriggerInteraction.Ignore))
-        {
-            rayHitObject = rayHit.collider ? rayHit.collider.gameObject : null;
-        }
-        Debug.DrawRay(ray.origin, ray.direction * rayLength, Color.cyan);
     }
 
     private void GroundCheckHandler()
@@ -166,7 +142,7 @@ public class PlayerController : NetworkBehaviour
         accumulatedRotationX = Mathf.Clamp(accumulatedRotationX, -verticalLimit, verticalLimit);
 
         // apply transform
-        cameraObject.transform.localRotation = Quaternion.Euler(accumulatedRotationX, 0f, 0f);
+        playerCamera.transform.localRotation = Quaternion.Euler(accumulatedRotationX, 0f, 0f);
         transform.localRotation = Quaternion.Euler(0f, accumulatedRotationY, 0f);
     }
 
@@ -237,11 +213,5 @@ public class PlayerController : NetworkBehaviour
         if (GameManager.Instance.isPaused || !isGrounded || !enableMovement || playerRigidbody.isKinematic || InventoryManager.Instance.isInventoryActive) return;
 
         playerRigidbody.linearVelocity = gameObject.transform.up * jumpStrength;
-    }
-
-    public void OnInteract()
-    {
-        if (GameManager.Instance.isPaused || rayHitObject == null) return;
-        //MapManager.Instance.isMapActive = true;
     }
 }

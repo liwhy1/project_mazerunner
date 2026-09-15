@@ -7,7 +7,7 @@ public class InputManager : MonoBehaviour
 
     [Header("Input Data")]
     private InputSystem inputSystem;
-    public Vector3 mousePosition;
+    public Vector3 pointerPosition;
     private InputAction pauseAction;
     private InputAction mapAction;
     public InputAction moveAction;
@@ -44,8 +44,8 @@ public class InputManager : MonoBehaviour
 
     private void Update()
     {
-        // track mouse position
-        mousePosition = Pointer.current.position.ReadValue();
+        // track pointer position
+        pointerPosition = Pointer.current.position.ReadValue();
 
         // set cursor state
         Cursor.lockState = CursorLockMode.None;

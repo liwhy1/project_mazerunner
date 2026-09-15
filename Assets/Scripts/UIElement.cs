@@ -27,6 +27,10 @@ public class UIElement : MonoBehaviour
         OnElementEnable();
 
         // setup event triggers
+        EventTrigger.Entry pointerClickEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerClick};
+        pointerClickEntry.callback.AddListener((eventData) => { OnElementShrink(); });
+        GetComponent<EventTrigger>().triggers.Add(pointerClickEntry);
+
         EventTrigger.Entry pointerEnterEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerEnter};
         pointerEnterEntry.callback.AddListener((eventData) => { OnElementGrow(); });
         GetComponent<EventTrigger>().triggers.Add(pointerEnterEntry);

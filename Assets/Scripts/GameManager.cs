@@ -262,7 +262,7 @@ public class GameManager : NetworkBehaviour
     {
         if (PlayerController.Instance)
         {
-            Ray ray = PlayerController.Instance.playerCamera.GetComponent<Camera>().ScreenPointToRay(InputManager.Instance.mousePosition);
+            Ray ray = PlayerController.Instance.playerCamera.GetComponent<Camera>().ScreenPointToRay(InputManager.Instance.pointerPosition);
             if (Physics.Raycast(ray, out RaycastHit hit))
             {
                 if (hit.collider.gameObject.CompareTag("Interactable"))

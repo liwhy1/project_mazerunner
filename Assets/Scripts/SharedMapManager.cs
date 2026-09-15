@@ -143,7 +143,7 @@ public class SharedMapManager : NetworkBehaviour
         targetElement.transform.SetAsLastSibling();
 
         // follow mouse position with object
-        Vector3 worldPosition = InputManager.Instance.mousePosition;
+        Vector3 worldPosition = InputManager.Instance.pointerPosition;
         worldPosition.z = GameManager.Instance.mapCamera.nearClipPlane + 1f;
         Vector3 targetPosition = GameManager.Instance.mapCamera.ScreenToWorldPoint(worldPosition);
         targetElement.transform.position = Vector3.Lerp(targetElement.transform.position, targetPosition, Time.deltaTime * 45f);
@@ -206,7 +206,7 @@ public class SharedMapManager : NetworkBehaviour
         if (activeTool != pencilIcon || PlayerController.Instance.playerCamera.activeSelf || !enablePlacement || enableDiscard || InputManager.Instance.lookAction.ReadValue<Vector2>() == Vector2.zero) return;
 
         // instantiate new dots in world space based on mouse position
-        Vector3 worldPosition = InputManager.Instance.mousePosition;
+        Vector3 worldPosition = InputManager.Instance.pointerPosition;
         worldPosition.z = GameManager.Instance.mapCamera.nearClipPlane + 1f;
         Vector3 targetPosition = GameManager.Instance.mapCamera.ScreenToWorldPoint(worldPosition);
         GameObject newDot = Instantiate(Resources.Load<GameObject>("SharedDrawDot"), targetPosition, Quaternion.identity, transform);

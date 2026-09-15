@@ -169,7 +169,7 @@ public class MapManager : MonoBehaviour
         targetElement.transform.SetAsLastSibling();
 
         // follow mouse position with object
-        Vector3 targetPosition = InputManager.Instance.mousePosition;
+        Vector3 targetPosition = InputManager.Instance.pointerPosition;
         targetElement.transform.position = Vector3.Lerp(targetElement.transform.position, targetPosition, Time.deltaTime * dragSmoothing);
     }
 
@@ -210,7 +210,7 @@ public class MapManager : MonoBehaviour
         if (activeTool != pencilIcon || !enablePlacement || enableDiscard || InputManager.Instance.lookAction.ReadValue<Vector2>() == Vector2.zero) return;
 
         // instantiate new dots in world space based on mouse position
-        Vector3 targetPosition = InputManager.Instance.mousePosition;
+        Vector3 targetPosition = InputManager.Instance.pointerPosition;
         GameObject newDot = Instantiate(drawDot, targetPosition, Quaternion.Euler(0f, 0f, 0f), mapComponenets.transform);
         newDot.transform.localEulerAngles = Vector3.zero;
         newDot.SetActive(true);

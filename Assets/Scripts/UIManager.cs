@@ -34,10 +34,13 @@ public class UIManager : NetworkBehaviour
     [SerializeField] private GameObject hostButton;
     [SerializeField] private GameObject joinButton;
     [SerializeField] private GameObject offlineButton;
-    public GameObject loadingIcon;
 
     [Header("HUD Data")]
     [SerializeField] private Image crossHair;
+    [SerializeField] private Image pauseIcon;
+    [SerializeField] private Image inventoryIcon;
+    [SerializeField] private GameObject inventoryObject;
+    public GameObject loadingIcon;
 
     [Header("Dialog Data")]
     public GameObject activeDialog;
@@ -45,12 +48,9 @@ public class UIManager : NetworkBehaviour
     private void Start()
     {
         Debug.Log("UIManager: Setting up");
-        Instance = this;
 
-        if (transform.Find("Inventory"))
-        {
-            transform.Find("Inventory").gameObject.SetActive(true);
-        }
+        // setup vars
+        Instance = this;
 
         // reset ui
         ResetUIState();
@@ -134,6 +134,9 @@ public class UIManager : NetworkBehaviour
         joinObject.SetActive(false);
         menuObject.SetActive(false);
         loadingIcon.SetActive(false);
+        inventoryIcon.gameObject.SetActive(false);
+        pauseIcon.gameObject.SetActive(false);
+        inventoryObject.gameObject.SetActive(true);
     }
 
     private void OnJoinGame()
@@ -169,19 +172,18 @@ public class UIManager : NetworkBehaviour
 
     private void OnBackButton()
     {
-        // reset networking & ui state
-        GameManager.Instance.OnDisconnectClient();
-        ResetUIState();
+        // reset playerprefs
         PlayerPrefs.DeleteAll();
         PlayerPrefs.Save();
-
-        menuObject.SetActive(true);
 
         // destroy spawned player
         if (PlayerController.Instance != null)
         {
             Destroy(PlayerController.Instance.gameObject);
         }
+
+        // reset networking
+        GameManager.Instance.OnDisconnectClient();
     }
 
     public void OnSessionConnect()
@@ -206,7 +208,8 @@ public class UIManager : NetworkBehaviour
     {
         resumeButton.transform.GetChild(0).GetComponent<TMP_Text>().text = "Resume";
         pauseObject.SetActive(!pauseObject.activeSelf);
-
+        pauseIcon.gameObject.SetActive(!pauseObject.activeSelf);
+        inventoryIcon.gameObject.SetActive(!pauseObject.activeSelf);
     }
 
     public void OnRefreshPlayerList()
