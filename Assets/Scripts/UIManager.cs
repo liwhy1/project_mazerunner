@@ -41,6 +41,7 @@ public class UIManager : NetworkBehaviour
     [SerializeField] private Image inventoryIcon;
     [SerializeField] private GameObject inventoryObject;
     public GameObject loadingIcon;
+    public GameObject pageBackground;
 
     [Header("Dialog Data")]
     public GameObject activeDialog;

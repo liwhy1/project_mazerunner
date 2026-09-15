@@ -96,6 +96,7 @@ public class PlayerController : NetworkBehaviour
     {
         // toggle camera based on shared map view activity
         playerCamera.gameObject.SetActive(!(GameManager.Instance.mapCamera.gameObject.activeSelf && InventoryManager.Instance.isInventoryActive));
+        UIManager.Instance.pageBackground.SetActive(playerCamera.activeSelf); // TODO: this shouldn't be here
 
         if (!enableCamera || playerCamera == null) return;
 
