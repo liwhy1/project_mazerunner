@@ -284,7 +284,7 @@ Rigidbody:
   m_ImplicitTensor: 1
   m_UseGravity: 1
   m_IsKinematic: 0
-  m_Interpolate: 0
+  m_Interpolate: 1
   m_Constraints: 112
   m_CollisionDetection: 0
 --- !u!114 &7359496509477739491
@@ -328,11 +328,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
   ShowTopMostFoldoutHeaderGroup: 1
   playerRigidbody: {fileID: 1429384509551890543}
-  playerAgent: {fileID: 0}
-  cameraObject: {fileID: 7388276784310214104}
-  playerCamera: {fileID: 0}
+  playerAgent: {fileID: -3442950278129805438}
+  playerCamera: {fileID: 7879844359141490863, guid: 4c6bb6f539225c04d92773192bd74548, type: 3}
   enableMovement: 0
-  moveDirection: {x: 0, y: 0, z: 0}
+  moveDirection: {x: 0, y: 0}
   jumpStrength: 5
   movementSpeed: 0
   walkSpeed: 20

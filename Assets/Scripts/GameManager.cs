@@ -4,6 +4,7 @@ using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
 public class GameManager : NetworkBehaviour
@@ -262,7 +263,7 @@ public class GameManager : NetworkBehaviour
     {
         if (PlayerController.Instance)
         {
-            Ray ray = PlayerController.Instance.playerCamera.GetComponent<Camera>().ScreenPointToRay(InputManager.Instance.pointerPosition);
+            Ray ray = PlayerController.Instance.playerCamera.GetComponent<Camera>().ScreenPointToRay(Pointer.current.position.ReadValue());
             if (Physics.Raycast(ray, out RaycastHit hit))
             {
                 if (hit.collider.gameObject.CompareTag("Interactable"))
@@ -271,7 +272,7 @@ public class GameManager : NetworkBehaviour
                 }
                 else
                 {
-                    PlayerController.Instance.OnMove(hit.point);                    
+                    PlayerController.Instance.OnMove(hit.point);
                 }
             }
         }
