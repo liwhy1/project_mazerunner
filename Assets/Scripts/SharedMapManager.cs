@@ -229,6 +229,7 @@ public class SharedMapManager : NetworkBehaviour
 
     public void OnClearMap()
     {
+        if (GameManager.Instance.isOffline) return;
         ClearMapServerRpc();
     }
 

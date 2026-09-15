@@ -51,9 +51,8 @@ public class InventoryManager : MonoBehaviour
     public void OnOpenJournal() 
     {
         buttonLayout.gameObject.SetActive(false);
-        if (!journalContent1.GetComponent<VerticalLayoutGroup>())
+        if (!journalContent1.GetComponent<VerticalLayoutGroup>() && !GameManager.Instance.isOffline)
         {
-
             journalContent1.transform.GetChild(0).GetComponent<TMP_Text>().text = Resources.Load<TextAsset>("Information/Prototype1/info" + GameManager.Instance.FetchPersistentPlayerId() + 1.ToString() + "_1").text;
             journalContent2.transform.GetChild(0).GetComponent<TMP_Text>().text = Resources.Load<TextAsset>("Information/Prototype1/info" + GameManager.Instance.FetchPersistentPlayerId() + 1.ToString() + "_2").text;
 

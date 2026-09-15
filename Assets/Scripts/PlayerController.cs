@@ -125,8 +125,26 @@ public class PlayerController : NetworkBehaviour
     {
         if (playerCamera != null)
         {
-            playerCamera.transform.LookAt(transform);
-            playerCamera.transform.position = Vector3.Lerp(playerCamera.transform.position, new Vector3(transform.position.x, transform.position.y + 4f, transform.position.z) - gameObject.transform.forward * 1.5f, Time.deltaTime * 3f);
+            // follow player
+            Vector3 forward = transform.forward;
+            forward.y = 0f;
+
+            if (forward.sqrMagnitude > 0.001f)
+            {
+                forward.Normalize();
+            }
+
+            Vector3 targetPosition = transform.position + Vector3.up * 4f - forward * 1.5f;
+            playerCamera.transform.position = Vector3.Lerp(playerCamera.transform.position, targetPosition, 5f * Time.deltaTime);
+
+
+            // look at player
+            Vector3 direction = transform.position - playerCamera.transform.position;
+            if (direction.sqrMagnitude > 0.001f)
+            {
+                Quaternion targetRotation = Quaternion.LookRotation(direction, Vector3.up);
+                playerCamera.transform.rotation = Quaternion.Slerp(playerCamera.transform.rotation, targetRotation, 3f * Time.deltaTime);
+            }
         }
 
         // toggle camera based on shared map view activity
@@ -154,7 +172,7 @@ public class PlayerController : NetworkBehaviour
 
     private void MovementHandler()
     {
-        if (!enableMovement || GameManager.Instance.isPaused || UIManager.Instance.activeDialog || playerRigidbody.isKinematic || InventoryManager.Instance.isInventoryActive) 
+        if (!enableMovement || GameManager.Instance.isPaused || UIManager.Instance.activeDialog || InventoryManager.Instance.isInventoryActive) 
         {
             if (playerRigidbody.isKinematic) return;
             playerRigidbody.linearVelocity = Vector3.zero;
@@ -165,7 +183,9 @@ public class PlayerController : NetworkBehaviour
         // store move vector
         moveDirection = InputManager.Instance.moveAction.ReadValue<Vector2>();
 
+        // reset agent
         if (moveDirection == Vector3.zero) return;
+        playerRigidbody.isKinematic = false;
         playerAgent.updatePosition = false;
         playerAgent.updateRotation = false;
         playerAgent.isStopped = true;
@@ -174,8 +194,25 @@ public class PlayerController : NetworkBehaviour
         // apply speed based on sprint state
         movementSpeed = InputManager.Instance.sprintAction.ReadValue<float>() == 1 ? sprintSpeed : walkSpeed;
 
-        // apply movement to rigidbody
-        Vector3 targetVelocity = (gameObject.transform.forward * moveDirection.y + gameObject.transform.right * moveDirection.x) * movementSpeed * 10f * Time.deltaTime;
+        // get camera directions
+        Vector3 cameraForward = playerCamera.transform.forward;
+        Vector3 cameraRight = playerCamera.transform.right;
+        cameraForward.y = 0f;
+        cameraRight.y = 0f;
+        cameraForward.Normalize();
+        cameraRight.Normalize();
+
+        // calculate movement direction
+        Vector3 movementDirection = cameraForward * moveDirection.y + cameraRight * moveDirection.x;
+
+        // prevent diagonal movement from being faster
+        if (movementDirection.sqrMagnitude > 1f)
+        {
+            movementDirection.Normalize();            
+        }
+
+        // apply movement
+        Vector3 targetVelocity = movementDirection * movementSpeed / 5f;
         playerRigidbody.linearVelocity = new Vector3(targetVelocity.x, playerRigidbody.linearVelocity.y, targetVelocity.z);
     }
 
@@ -183,11 +220,15 @@ public class PlayerController : NetworkBehaviour
     {
         if (GameManager.Instance.isPaused || InventoryManager.Instance.isInventoryActive || UIManager.Instance.activeDialog) return;
 
-        playerAgent.updatePosition = true;
-        playerAgent.updateRotation = true;
-        playerAgent.isStopped = false;
         GameObject targetMarker = Instantiate(Resources.Load<GameObject>("TargetMarker"));
         targetMarker.transform.position = targetPosition;
+
+        // reset agent conditionally
+        if (!playerRigidbody.isKinematic) playerAgent.Warp(playerRigidbody.position);
+        playerRigidbody.isKinematic = true;
+        playerAgent.updatePosition = true;
+        playerAgent.updateRotation = false;
+        playerAgent.isStopped = false;
         playerAgent.SetDestination(targetPosition);
     }
 
