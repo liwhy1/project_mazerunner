@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine.EventSystems;
+using System.Collections.Generic;
 
 public class UIManager : NetworkBehaviour
 {
@@ -25,6 +26,7 @@ public class UIManager : NetworkBehaviour
     [SerializeField] private GameObject pauseObject;
     [SerializeField] public GameObject resumeButton;
     [SerializeField] private GameObject quitButton;
+    [SerializeField] private GameObject storyDropdown;
     [SerializeField] private TMP_Text joinCodeText;
     [SerializeField] private TMP_Text playerListText;
     [SerializeField] private TMP_Text waitingOnHostText;
@@ -58,6 +60,9 @@ public class UIManager : NetworkBehaviour
 
         // enable menu
         menuObject.SetActive(true);
+
+        // setup story dropdown
+        SetupStoryDropdown();
 
         // subscribe to events(watch vod)
         // menu
@@ -103,6 +108,8 @@ public class UIManager : NetworkBehaviour
         EventTrigger.Entry quitClickEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerClick};
         quitClickEntry.callback.AddListener((eventData) => { OnBackButton(); });
         quitButton.GetComponent<EventTrigger>().triggers.Add(quitClickEntry);
+
+        storyDropdown.GetComponent<TMP_Dropdown>().onValueChanged.AddListener(delegate { GameManager.Instance.activeStory = storyDropdown.GetComponent<TMP_Dropdown>().captionText.text; });
     }
 
     private void Update()
@@ -124,7 +131,22 @@ public class UIManager : NetworkBehaviour
         else
         {
             crossHair.gameObject.GetComponent<RectTransform>().sizeDelta = new Vector3(15f, 15f, 15f);
-        }        
+        }
+    }
+
+    private void SetupStoryDropdown()
+    {
+        storyDropdown.GetComponent<TMP_Dropdown>().ClearOptions();
+        var storyFolders = Resources.LoadAll<Texture2D>("Information");
+        List<string> storyNames = new List<string>();
+        foreach (var item in storyFolders)
+        {
+            storyNames.Add(item.name);
+        }
+        storyDropdown.GetComponent<TMP_Dropdown>().AddOptions(storyNames);
+
+        if (!NetworkManager.IsHost) return;
+        GameManager.Instance.activeStory = storyNames[0];
     }
 
     private void ResetUIState()
@@ -198,6 +220,7 @@ public class UIManager : NetworkBehaviour
         if (!NetworkManager.IsHost)
         {
             waitingOnHostText.gameObject.SetActive(true);
+            storyDropdown.gameObject.SetActive(false);
             resumeButton.gameObject.SetActive(false);
             joinCodeText.gameObject.SetActive(false);
         }
@@ -208,6 +231,7 @@ public class UIManager : NetworkBehaviour
     public void OnPauseToggle()
     {
         resumeButton.transform.GetChild(0).GetComponent<TMP_Text>().text = "Resume";
+        storyDropdown.gameObject.SetActive(!GameManager.Instance.isConnected);
         pauseObject.SetActive(!pauseObject.activeSelf);
         pauseIcon.gameObject.SetActive(!pauseObject.activeSelf);
         inventoryIcon.gameObject.SetActive(!pauseObject.activeSelf);

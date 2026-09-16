@@ -29,6 +29,10 @@ public class InventoryManager : MonoBehaviour
         // setup map
         mapObject.GetComponent<MapManager>().OnSetup();
 
+        // fetch active story from host
+        GameManager.Instance.FetchActiveStoryServerRpc();
+
+        // reset inventory
         ResetInventoryState();
     }
 
@@ -53,8 +57,8 @@ public class InventoryManager : MonoBehaviour
         buttonLayout.gameObject.SetActive(false);
         if (!journalContent1.GetComponent<VerticalLayoutGroup>() && !GameManager.Instance.isOffline)
         {
-            journalContent1.transform.GetChild(0).GetComponent<TMP_Text>().text = Resources.Load<TextAsset>("Information/Prototype1/info" + GameManager.Instance.FetchPersistentPlayerId().ToString() + "_1").text;
-            journalContent2.transform.GetChild(0).GetComponent<TMP_Text>().text = Resources.Load<TextAsset>("Information/Prototype1/info" + GameManager.Instance.FetchPersistentPlayerId().ToString() + "_2").text;
+            journalContent1.transform.GetChild(0).GetComponent<TMP_Text>().text = Resources.Load<TextAsset>("Information/" + GameManager.Instance.activeStory + "/info" + GameManager.Instance.FetchPersistentPlayerId().ToString() + "_1").text;
+            journalContent2.transform.GetChild(0).GetComponent<TMP_Text>().text = Resources.Load<TextAsset>("Information/" + GameManager.Instance.activeStory + "/info" + GameManager.Instance.FetchPersistentPlayerId().ToString() + "_2").text;
 
             journalContent1.AddComponent<VerticalLayoutGroup>();
             journalContent2.AddComponent<VerticalLayoutGroup>();

@@ -16,6 +16,7 @@ public class GameManager : NetworkBehaviour
     [SerializeField] private GameObject mainCamera;
     public Camera mapCamera;
     public List<PlayerData> playerList = new List<PlayerData>();
+    public string activeStory;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void Initialize()
@@ -350,6 +351,22 @@ public class GameManager : NetworkBehaviour
         }
         Debug.Log("GameManager: Assigned persistent id: " + targetId + " to: " + clientId);
         playerList.FirstOrDefault(p => p.OwnerClientId == clientId).persistentPlayerId.Value = targetId;
+    }
+
+    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+    public void FetchActiveStoryServerRpc(RpcParams rpcParams = default)
+    {
+        SetActiveStoryClientRpc(rpcParams.Receive.SenderClientId, activeStory);
+    }
+
+    [ClientRpc]
+    public void SetActiveStoryClientRpc(ulong targetPlayer, string targetStory)
+    {
+        if (NetworkManager.LocalClientId == targetPlayer)
+        {
+            Debug.Log("GameManager: Selecting story: " + targetStory);
+            activeStory = targetStory;
+        }
     }
 
     public ulong FetchLocalClientId()
