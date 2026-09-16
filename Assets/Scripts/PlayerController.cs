@@ -179,8 +179,8 @@ public class PlayerController : NetworkBehaviour
     {
         if (GameManager.Instance.isPaused || InventoryManager.Instance.isInventoryActive || UIManager.Instance.activeDialog) return;
 
-        GameObject targetMarker = Instantiate(Resources.Load<GameObject>("TargetMarker"));
-        targetMarker.transform.position = targetPosition;
+        //GameObject targetMarker = Instantiate(Resources.Load<GameObject>("TargetMarker"));
+        //targetMarker.transform.position = targetPosition;
 
         // reset agent conditionally
         if (!playerRigidbody.isKinematic) playerAgent.Warp(playerRigidbody.position);
