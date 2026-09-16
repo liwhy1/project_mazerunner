@@ -16,7 +16,7 @@ public class MapManager : MonoBehaviour
     public GameObject mapObjectP1;
     public GameObject mapObjectP2;
     [SerializeField] private GameObject ownViewButton;
-    [SerializeField] private GameObject individualViewButton;
+    public GameObject individualViewButton;
     [SerializeField] private GameObject sharedViewButton;
     [SerializeField] private GameObject ownViewPage;
     [SerializeField] private GameObject individualViewPage;
@@ -385,6 +385,7 @@ public class MapManager : MonoBehaviour
     public void OnEnableDiscard() => enableDiscard = true;
     public void OnDisableDiscard() => enableDiscard = false;
     public bool FetchSharedViewState() => sharedViewButton.GetComponent<UIElement>().isEnabled;
+    public bool FetchIndividualViewState() => individualViewButton.GetComponent<UIElement>().isEnabled;
 }
 
 public struct MapElementData : INetworkSerializable

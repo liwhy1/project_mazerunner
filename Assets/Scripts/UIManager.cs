@@ -61,9 +61,6 @@ public class UIManager : NetworkBehaviour
         // enable menu
         menuObject.SetActive(true);
 
-        // setup story dropdown
-        SetupStoryDropdown();
-
         // subscribe to events(watch vod)
         // menu
         EventTrigger.Entry hostClickEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerClick};
@@ -224,6 +221,9 @@ public class UIManager : NetworkBehaviour
             resumeButton.gameObject.SetActive(false);
             joinCodeText.gameObject.SetActive(false);
         }
+
+        // setup story dropdown
+        SetupStoryDropdown();
 
         GameManager.Instance.OnInventoryToggle();
     }

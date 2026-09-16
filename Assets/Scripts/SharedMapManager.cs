@@ -21,6 +21,7 @@ public class SharedMapManager : NetworkBehaviour
     [Header("Draw Data")]
     //[SerializeField] private float maxAllowedDots = 500f;
     public GameObject activeHoveredDot;
+    [SerializeField] private GameObject toolBar;
     [SerializeField] private GameObject activeTool;
     [SerializeField] private GameObject pencilIcon;
     [SerializeField] private GameObject eraserIcon;
@@ -37,6 +38,11 @@ public class SharedMapManager : NetworkBehaviour
 
         // generate icon objects
         GenerateIcons();
+
+        if (!NetworkManager.IsHost && !GameManager.Instance.isOffline)
+        {
+            saveIcon.SetActive(false);
+        }
     }
 
    private void GenerateIcons()
@@ -276,6 +282,32 @@ public class SharedMapManager : NetworkBehaviour
         targetTool.GetComponent<UIElement>().OnElementSelect();
     }
 
+    public void OnMapToggleReady()
+    {
+        toolBar.SetActive(false);
+        iconPile.SetActive(false);
+        saveIcon.SetActive(false);
+        SetActiveTool(null);
+
+        if (!GameManager.Instance.isOffline)
+        {
+            OnSharedMapReadyServerRpc();
+        }
+        else
+        {
+            OnMapFinished();
+        }
+    }
+
+    public void OnMapFinished()
+    {
+        toolBar.SetActive(false);
+        iconPile.SetActive(false);
+        saveIcon.SetActive(false);
+        SetActiveTool(null);
+        MapManager.Instance.individualViewButton.GetComponent<UIElement>().OnElementEnable();
+    }
+
     public void SetHoveredDot(GameObject targetDot) 
     {
         activeHoveredDot = targetDot;
@@ -401,5 +433,17 @@ public class SharedMapManager : NetworkBehaviour
             ulong clientId = resetOwnership ? NetworkManager.ServerClientId : rpcParams.Receive.SenderClientId;
             targetObject.ChangeOwnership(clientId);    
         }
+    }
+
+    [ClientRpc]
+    public void OnSharedMapReadyClientRpc()
+    {
+        OnMapFinished();
+    }
+
+    [ServerRpc]
+    public void OnSharedMapReadyServerRpc()
+    {
+        OnSharedMapReadyClientRpc();
     }
 }

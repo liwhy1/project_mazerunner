@@ -330,6 +330,17 @@ public class GameManager : NetworkBehaviour
                 }
             }
         }
+
+        if (MapManager.Instance.FetchIndividualViewState())
+        {
+            SetMapIndividualButtonStatusClientRpc();
+        }
+    }
+
+    [ClientRpc]
+    public void SetMapIndividualButtonStatusClientRpc()
+    {
+        MapManager.Instance.individualViewButton.GetComponent<UIElement>().OnElementEnable();
     }
 
     [ServerRpc]
