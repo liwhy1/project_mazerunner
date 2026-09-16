@@ -30,7 +30,10 @@ public class InventoryManager : MonoBehaviour
         mapObject.GetComponent<MapManager>().OnSetup();
 
         // fetch active story from host
-        GameManager.Instance.FetchActiveStoryServerRpc();
+        if (!GameManager.Instance.isOffline)
+        {
+            GameManager.Instance.FetchActiveStoryServerRpc();            
+        }
 
         // reset inventory
         ResetInventoryState();

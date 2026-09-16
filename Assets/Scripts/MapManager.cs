@@ -71,20 +71,12 @@ public class MapManager : MonoBehaviour
     private void GenerateIcons()
     {
         // load icons from resources folder
-        var mapIcons = Resources.LoadAll<Sprite>("MapIcons");
+        var mapIcons = Resources.LoadAll<Sprite>("MapIconsNew");
 
         // setup icons
         foreach (var icon in mapIcons)
         {
-            GameObject newIcon = Instantiate(Resources.Load<GameObject>("MapIcon"), iconPile.transform);
-            newIcon.name = icon.name;
-            newIcon.transform.localPosition = Vector3.zero;
-            newIcon.transform.localEulerAngles = Vector3.zero;
-            newIcon.GetComponent<Image>().sprite = icon;
-            newIcon.transform.GetChild(0).GetComponent<TMP_Text>().text = icon.name.Remove(icon.name.Length - 6, 6);
-
-            // setup event triggers
-            SetupElementTriggers(newIcon);
+            InstantiateNewIcon(icon.name, true, -1);
         }
     }
 
@@ -121,6 +113,20 @@ public class MapManager : MonoBehaviour
         targetElement.GetComponent<EventTrigger>().triggers.Add(exitHoverEntry);
     }
 
+    private void InstantiateNewIcon(string targetSprite, bool enableTitle, int siblingIndex)
+    {
+        GameObject newIcon = Instantiate(Resources.Load<GameObject>("MapIcon"), iconPile.transform);
+        newIcon.name = targetSprite;
+        newIcon.transform.localPosition = Vector3.zero;
+        newIcon.transform.localEulerAngles = Vector3.zero;
+        newIcon.transform.Find("Sprite").GetComponent<Image>().sprite = Resources.LoadAll<Sprite>("MapIconsNew").FirstOrDefault(s => s.name.Contains(targetSprite));
+        newIcon.transform.Find("Sprite").GetComponent<Image>().preserveAspect = true;
+        newIcon.transform.Find("Name").gameObject.SetActive(enableTitle);
+        newIcon.transform.Find("Name").GetComponent<TMP_Text>().text = targetSprite.Remove(targetSprite.Length - 2, 2);
+        if (siblingIndex != -1) newIcon.transform.SetSiblingIndex(siblingIndex);
+        SetupElementTriggers(newIcon);
+    }
+
     public void OnStartElementDrag(GameObject targetElement)
     {
         if (activeTool == null) return;
@@ -132,17 +138,16 @@ public class MapManager : MonoBehaviour
         if (targetElement.transform.parent == iconPile.transform)
         {
             // duplicate and replace original element
-            var newElement = Instantiate(targetElement, targetElement.transform.position, targetElement.transform.rotation, iconPile.transform);
-            newElement.name = targetElement.GetComponent<Image>().name;
-            int siblingIndex = targetElement.transform.GetSiblingIndex();
-            targetElement.transform.GetChild(0).gameObject.SetActive(false);
-            newElement.transform.SetSiblingIndex(siblingIndex);
-            SetupElementTriggers(newElement);
+            InstantiateNewIcon(targetElement.name, true, targetElement.transform.GetSiblingIndex());
 
+            // disable target element text
+            targetElement.transform.Find("Name").gameObject.SetActive(false);
 
             // pile position shouldn't be saved, this will be used to destroy instead
             savedElementPosition = Vector3.zero;
         }
+
+        // set target element parent to the map
         targetElement.transform.SetParent(transform);
 
         // store active icons

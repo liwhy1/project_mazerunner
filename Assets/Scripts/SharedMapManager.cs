@@ -48,27 +48,13 @@ public class SharedMapManager : NetworkBehaviour
    private void GenerateIcons()
     {
         // load icons from resources folder
-        var mapIcons = Resources.LoadAll<Sprite>("MapIcons");
+        var mapIcons = Resources.LoadAll<Sprite>("MapIconsNew");
 
         // setup icons
         foreach (var icon in mapIcons)
         {
             // we load the regual map icon here since the icon pile is not synced
-            GameObject newIcon = Instantiate(Resources.Load<GameObject>("MapIcon"));
-            newIcon.transform.SetParent(iconPile.transform);
-            newIcon.name = icon.name;
-            newIcon.GetComponent<Image>().sprite = icon;
-            newIcon.transform.localPosition = Vector3.zero;
-            newIcon.transform.localEulerAngles = Vector3.zero;
-            // apply shared prefab size
-            newIcon.transform.localScale = new Vector3(1f, 1f, 1f);
-            GameObject newText = newIcon.transform.GetChild(0).gameObject;
-            newText.transform.localScale = new Vector3(.1f, .1f, .1f);
-            newText.transform.localPosition = new Vector3(0f, -7f, 0f);
-            newText.GetComponent<TMP_Text>().text = icon.name.Remove(icon.name.Length - 6, 6);
-
-            // setup event triggers
-            SetupElementTriggers(newIcon);
+            InstantiateNewIcon("MapIcon", icon.name, true, -1);
         }
     }
 
@@ -105,6 +91,31 @@ public class SharedMapManager : NetworkBehaviour
         targetElement.GetComponent<EventTrigger>().triggers.Add(exitHoverEntry);
     }
 
+    private void InstantiateNewIcon(string targetPrefab, string targetSprite, bool enableTitle, int siblingIndex)
+    {
+        GameObject newIcon = Instantiate(Resources.Load<GameObject>(targetPrefab), iconPile.transform);
+        newIcon.name = targetSprite;
+        newIcon.transform.localPosition = Vector3.zero;
+        newIcon.transform.localEulerAngles = Vector3.zero;
+        newIcon.transform.Find("Sprite").GetComponent<Image>().sprite = Resources.LoadAll<Sprite>("MapIconsNew").FirstOrDefault(s => s.name.Contains(targetSprite));
+        newIcon.transform.Find("Sprite").GetComponent<Image>().preserveAspect = true;
+        newIcon.transform.Find("Name").gameObject.SetActive(enableTitle);
+        newIcon.transform.Find("Name").GetComponent<TMP_Text>().text = targetSprite.Remove(targetSprite.Length - 2, 2);
+        if (siblingIndex != -1) newIcon.transform.SetSiblingIndex(siblingIndex);
+        SetupElementTriggers(newIcon);
+
+        // apply shared prefab size, if needed
+        if (targetPrefab == "MapIcon")
+        {
+            newIcon.transform.localScale = new Vector3(1f, 1f, 1f);
+            Transform newText = newIcon.transform.Find("Name");
+            newIcon.transform.Find("Sprite").localScale = new Vector3(0.1f, 0.1f, 0.1f);
+            newText.localScale = new Vector3(.1f, .1f, .1f);
+            newText.localPosition = new Vector3(0f, -6.25f, 0f);
+            newText.GetComponent<RectTransform>().sizeDelta = new Vector3(170f, 40f);
+        }
+    }
+
     public void OnStartElementDrag(GameObject targetElement)
     {
         if (activeTool == null || PlayerController.Instance.playerCamera.activeSelf) return;
@@ -122,17 +133,17 @@ public class SharedMapManager : NetworkBehaviour
         if (targetElement.transform.parent == iconPile.transform)
         {
             // duplicate and replace original element
-            var newElement = Instantiate(targetElement, targetElement.transform.position, targetElement.transform.rotation, iconPile.transform);
-            newElement.name = targetElement.GetComponent<Image>().name;
-            int siblingIndex = targetElement.transform.GetSiblingIndex();
-            targetElement.transform.SetParent(transform);
-            targetElement.transform.GetChild(0).gameObject.SetActive(false);
-            newElement.transform.SetSiblingIndex(siblingIndex);
-            SetupElementTriggers(newElement);
+            InstantiateNewIcon("MapIcon", targetElement.name, true, targetElement.transform.GetSiblingIndex());
+
+            // disable target element text
+            targetElement.transform.Find("Name").gameObject.SetActive(false);
 
             // pile position shouldn't be saved, this will be used to destroy instead
             savedElementPosition = Vector3.zero;
         }
+
+        // set target element parent to the map
+        targetElement.transform.SetParent(transform);
 
         // disable raycast target to allow detecting hover states under the element
         targetElement.GetComponent<Image>().raycastTarget = false;
@@ -351,14 +362,12 @@ public class SharedMapManager : NetworkBehaviour
         {
             Debug.Log("SMM: Updating element data for: " + targetObject);
             targetObject.name = targetSprite;
-            if (targetSprite == "DrawDot")
-            {
-                SetupDotEventTriggers(targetObject.gameObject);
-            }
+            if (targetSprite == "DrawDot") SetupDotEventTriggers(targetObject.gameObject);
             else
             {
-                targetObject.GetComponent<Image>().sprite = Resources.LoadAll<Sprite>("MapIcons").FirstOrDefault(i => i.name.Contains(targetSprite));
-                targetObject.transform.GetChild(0).GetComponent<TMP_Text>().text = "";
+                targetObject.transform.Find("Sprite").GetComponent<Image>().sprite = Resources.LoadAll<Sprite>("MapIconsNew").FirstOrDefault(s => s.name.Contains(targetSprite));
+                targetObject.transform.Find("Sprite").GetComponent<Image>().preserveAspect = true;
+                targetObject.transform.Find("Name").gameObject.SetActive(false);
                 SetupElementTriggers(targetObject.gameObject);
             }
         }
@@ -401,8 +410,9 @@ public class SharedMapManager : NetworkBehaviour
             newObject.name = element.iconSprite;
             if (element.iconPrefab == "MapIcon")
             {
-                newObject.GetComponent<Image>().sprite = Resources.LoadAll<Sprite>("MapIcons").FirstOrDefault(i => i.name.Contains(element.iconSprite));                
-                newObject.transform.GetChild(0).GetComponent<TMP_Text>().text = "";
+                newObject.transform.Find("Sprite").GetComponent<Image>().sprite = Resources.LoadAll<Sprite>("MapIconsNew").FirstOrDefault(i => i.name.Contains(element.iconSprite));
+                newObject.transform.Find("Sprite").GetComponent<Image>().preserveAspect = true;
+                newObject.transform.Find("Name").gameObject.SetActive(false);
             }
             newObject.transform.SetParent(targetMap.transform);
             newObject.transform.localPosition = element.iconPosition;
