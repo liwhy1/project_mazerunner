@@ -44,6 +44,7 @@ public class PlayerController : NetworkBehaviour
         if (!IsOwner)
         {
             playerCamera.gameObject.SetActive(false);
+            GetComponent<NavMeshAgent>().enabled = false;
             Destroy(this);
             return;
         }
@@ -56,7 +57,7 @@ public class PlayerController : NetworkBehaviour
     {
         Instance = this;
         playerRigidbody = GetComponent<Rigidbody>();
-        playerRigidbody.isKinematic = false;
+        playerRigidbody.isKinematic = true;
         playerAgent = GetComponent<NavMeshAgent>();
         enableInteraction = true;
         enableMovement = true;

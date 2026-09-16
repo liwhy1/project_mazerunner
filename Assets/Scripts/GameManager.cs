@@ -18,6 +18,10 @@ public class GameManager : NetworkBehaviour
     public List<PlayerData> playerList = new List<PlayerData>();
     public string activeStory;
 
+    public Material blueMat;
+    public Material greenMat;
+    public Material redMat;
+
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void Initialize()
     {
@@ -125,7 +129,9 @@ public class GameManager : NetworkBehaviour
             }
 
             // notify clients about lobby start
-            OnLobbyStartClientRpc();            
+            OnLobbyStartClientRpc();
+
+            SetPlayerPropertiesServerRpc();
         }
     }
 
@@ -224,7 +230,7 @@ public class GameManager : NetworkBehaviour
     public void SpawnPlayer(ulong clientId)
     {
         Debug.Log("GameManager: Spawning player for: " + clientId);
-        GameObject playerObject = Instantiate(Resources.Load<GameObject>("Player"), Vector3.zero, Quaternion.identity);
+        GameObject playerObject = Instantiate(Resources.Load<GameObject>("Player"), Vector3.one, Quaternion.identity);
         if (clientId == NetworkManager.LocalClientId) playerObject.name = "Player";
 
         if (!isOffline)
@@ -362,6 +368,27 @@ public class GameManager : NetworkBehaviour
         }
         Debug.Log("GameManager: Assigned persistent id: " + targetId + " to: " + clientId);
         playerList.FirstOrDefault(p => p.OwnerClientId == clientId).persistentPlayerId.Value = targetId;
+    }
+
+    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+    public void SetPlayerPropertiesServerRpc()
+    {
+        foreach (var player in playerList)
+        {
+            SetPlayerPropertiesClientRpc(player.persistentPlayerId.Value);
+        }
+    }
+
+    [ClientRpc]
+    public void SetPlayerPropertiesClientRpc(int targetId)
+    {
+        Material targetMaterial = targetId == 0 ? blueMat : targetId == 1 ? greenMat : redMat;
+        PlayerData targetPlayer = playerList.FirstOrDefault(p => p.persistentPlayerId.Value == targetId);
+        if (!targetPlayer) return;
+
+        targetPlayer.gameObject.GetComponent<Renderer>().material = targetMaterial;
+        PlayerController.Instance.gameObject.transform.position = Vector3.one + Vector3.forward * 3 * playerList.FirstOrDefault(p => p.OwnerClientId == NetworkManager.LocalClientId).persistentPlayerId.Value;
+        PlayerController.Instance.GetComponent<Rigidbody>().isKinematic = false;
     }
 
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
