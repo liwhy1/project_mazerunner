@@ -138,6 +138,7 @@ public class UIManager : NetworkBehaviour
         List<string> storyNames = new List<string>();
         foreach (var item in storyFolders)
         {
+            if (item.name.Contains("image")) continue;
             storyNames.Add(item.name);
         }
         storyDropdown.GetComponent<TMP_Dropdown>().AddOptions(storyNames);

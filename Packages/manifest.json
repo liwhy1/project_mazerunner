@@ -1,4 +1,21 @@
 {
+	  "scopedRegistries": [
+    {
+      "name": "OpenUPM",
+      "url": "https://package.openupm.com/",
+      "scopes": [
+        "com.dbrizov"
+      ]
+    },
+    {
+      "name": "Mediaheads Registry",
+      "url": "https://registry.mediaheads.nl/",
+      "scopes": [
+        "nl.mediaheads"
+      ]
+    }
+  ],
+
   "dependencies": {
     "com.nobi.roundedcorners": "https://github.com/kirevdokimov/Unity-UI-Rounded-Corners.git",
     "com.unity.2d.sprite": "1.0.0",
@@ -51,6 +68,7 @@
     "com.unity.modules.vehicles": "1.0.0",
     "com.unity.modules.video": "1.0.0",
     "com.unity.modules.wind": "1.0.0",
-    "com.unity.modules.xr": "1.0.0"
+    "com.unity.modules.xr": "1.0.0",
+	"nl.mediaheads.unity-utils": "1.11.12"
   }
 }
