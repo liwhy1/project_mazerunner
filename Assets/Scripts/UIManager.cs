@@ -175,7 +175,7 @@ public class UIManager : NetworkBehaviour
     private void OnOfflineGame()
     {
         // set gamestate to offline
-        GameManager.Instance.isOffline = true;
+        GameManager.Instance.networkState = NetworkState.Offline;
 
         // trigger offline player spawn
         GameManager.Instance.SpawnPlayer(0);
@@ -232,7 +232,7 @@ public class UIManager : NetworkBehaviour
     public void OnPauseToggle()
     {
         resumeButton.transform.GetChild(0).GetComponent<TMP_Text>().text = "Resume";
-        storyDropdown.gameObject.SetActive(!GameManager.Instance.isConnected);
+        storyDropdown.gameObject.SetActive(!GameManager.Instance.isGameStarted);
         pauseObject.SetActive(!pauseObject.activeSelf);
         pauseIcon.gameObject.SetActive(!pauseObject.activeSelf);
         inventoryIcon.gameObject.SetActive(!pauseObject.activeSelf);

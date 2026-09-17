@@ -7,12 +7,14 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
+public enum NetworkState {None, Offline, Online};
 public class GameManager : NetworkBehaviour
 {
     public static GameManager Instance;
     public bool isPaused;
-    public bool isOffline;
-    public bool isConnected;
+    public NetworkState networkState;
+    public bool isGameStarted;
+
     [SerializeField] private GameObject mainCamera;
     public Camera mapCamera;
     public List<PlayerData> playerList = new List<PlayerData>();
@@ -57,12 +59,13 @@ public class GameManager : NetworkBehaviour
     {
         Instance = this;
         isPaused = true;
-        isOffline = false;
-        isConnected = false;
+        networkState = NetworkState.None;
+        isGameStarted = false;
         mainCamera = Camera.main.gameObject;
         PlayerPrefs.DeleteAll();
         PlayerPrefs.Save();
 
+        // call setup on uielemenets
         foreach (var element in FindObjectsByType<UIElement>(FindObjectsInactive.Include))
         {
             element.OnSetup();
@@ -85,10 +88,9 @@ public class GameManager : NetworkBehaviour
 
     public void OnPauseToggle()
     {
-        if (!isConnected) return;
+        if (!isGameStarted) return;
 
         isPaused = !isPaused;
-
         UIManager.Instance.OnPauseToggle();
     }
 
@@ -107,41 +109,45 @@ public class GameManager : NetworkBehaviour
 
     public void OnStartGame()
     {
-        if (isConnected)
+        if (isGameStarted)
         {
             OnPauseToggle();
             return;
         }
 
-        isConnected = true;
-        mainCamera.SetActive(false);
+        // set gamestate
+        isGameStarted = true;
 
+        // disable menu
         OnPauseToggle();
 
+        // setup inventory
         InventoryManager.Instance.OnSetup();
         OnInventoryToggle();
 
-        if (!isOffline)
+        mainCamera.SetActive(false);
+
+        if (networkState == NetworkState.Online)
         {
-            if (SharedMapManager.Instance)
-            {
-                SharedMapManager.Instance.gameObject.GetComponent<Canvas>().worldCamera = mapCamera;
-            }
-
-            // notify clients about lobby start
-            OnLobbyStartClientRpc();
-
+            // request player properties
             SetPlayerPropertiesServerRpc();
+            SharedMapManager.Instance.gameObject.GetComponent<Canvas>().worldCamera = mapCamera;
         }
+
+        if (!NetworkManager.IsHost) return;
+
+        // notify clients about lobby start
+        OnLobbyStartServerRpc();
     }
 
     private void OnClientConnected(ulong clientId)
     {
         Debug.Log("GameManager: Client connected: " + clientId);
 
-        // move to lobby ui
+        // move to lobby
         if (clientId == NetworkManager.LocalClientId)
         {
+            networkState = NetworkState.Online;
             UIManager.Instance.OnSessionConnect();
         }
 
@@ -160,16 +166,16 @@ public class GameManager : NetworkBehaviour
         AssignPersistentPlayerIdServerRpc(clientId);
 
         // notify new clients about game status
-        if (!isOffline && isConnected)
+        if (isGameStarted == true)
         {
-            OnLobbyStartClientRpc();
+            OnLobbyStartServerRpc();
         }
     }
 
     private void OnClientDisconnected(ulong clientId)
     {
         if (!IsSpawned || !NetworkManager.IsListening || !NetworkManager.IsConnectedClient) return;
-        PlayerLeftClientRpc(clientId);            
+        PlayerLeftClientRpc(clientId);
     }
 
     public async void OnStartHost()
@@ -205,9 +211,6 @@ public class GameManager : NetworkBehaviour
 
     public void OnDisconnectClient()
     {
-        isOffline = false;
-        isConnected = false;
-
         // notify clients on the disconnect intent of the host
         if (NetworkManager.IsHost)
         {
@@ -233,7 +236,7 @@ public class GameManager : NetworkBehaviour
         GameObject playerObject = Instantiate(Resources.Load<GameObject>("Player"), Vector3.one, Quaternion.identity);
         if (clientId == NetworkManager.LocalClientId) playerObject.name = "Player";
 
-        if (!isOffline)
+        if (networkState == NetworkState.Online)
         {
             playerObject.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientId);
         }
@@ -246,7 +249,7 @@ public class GameManager : NetworkBehaviour
         mapObject.GetComponent<Canvas>().worldCamera = mapCamera;
         mapObject.transform.position = new Vector3(0f, -100f, 0f);
         mapCamera.transform.position = new Vector3(0f, -100f, 0f);
-        if (!isOffline)
+        if (networkState == NetworkState.Online)
         {
             mapObject.GetComponent<NetworkObject>().Spawn();
         }
@@ -301,10 +304,15 @@ public class GameManager : NetworkBehaviour
         UIManager.Instance.OnRefreshPlayerList();
     }
 
+    [ServerRpc]
+    public void OnLobbyStartServerRpc()
+    {
+        OnLobbyStartClientRpc();
+    }
+
     [ClientRpc]
     public void OnLobbyStartClientRpc()
     {
-        if (NetworkManager.IsHost) return;
         UIManager.Instance.OnLobbyStart();
     }
 
@@ -352,20 +360,8 @@ public class GameManager : NetworkBehaviour
     [ServerRpc]
     public void AssignPersistentPlayerIdServerRpc(ulong clientId)
     {
-        // a very very very dirty and stupid way of assigning a persistent player id(0-2) to players, to allow us to not depend on client ids, which will surpass a count of 3
-        int targetId = -1;
-        if (!playerList.FirstOrDefault(p => p.persistentPlayerId.Value == 0))
-        {
-            targetId = 0;
-        }
-        else if (!playerList.FirstOrDefault(p => p.persistentPlayerId.Value == 1))
-        {
-            targetId = 1;
-        }
-        else
-        {
-            targetId = 2;
-        }
+        int targetId = 0;
+        while (playerList.Any(p => p.persistentPlayerId.Value == targetId)) targetId++;
         Debug.Log("GameManager: Assigned persistent id: " + targetId + " to: " + clientId);
         playerList.FirstOrDefault(p => p.OwnerClientId == clientId).persistentPlayerId.Value = targetId;
     }

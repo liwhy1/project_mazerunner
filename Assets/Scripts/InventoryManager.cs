@@ -1,6 +1,4 @@
-using System.Collections;
 using System.Text.RegularExpressions;
-using MHUtils;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -20,6 +18,7 @@ public class InventoryManager : MonoBehaviour
     [Header("Journal Data")]
     private bool isJournalGenerated;
     [SerializeField] private ScrollRect journalPageView;
+    [SerializeField] private TMP_Text journalPageNumber;
     [SerializeField] private GameObject journalText;
     [SerializeField] private GameObject journalImage;
     [SerializeField] private GameObject journalPage1Layout;
@@ -39,7 +38,7 @@ public class InventoryManager : MonoBehaviour
         mapObject.GetComponent<MapManager>().OnSetup();
 
         // fetch active story from host
-        if (!GameManager.Instance.isOffline)
+        if (GameManager.Instance.networkState == NetworkState.Online)
         {
             GameManager.Instance.FetchActiveStoryServerRpc();            
         }
@@ -72,6 +71,7 @@ public class InventoryManager : MonoBehaviour
             journalPage1Layout.SetActive(true);
             journalPage2Layout.SetActive(false);
             journalPageView.content = journalPage1Layout.GetComponent<RectTransform>();
+            journalPageNumber.text = "Page 1";
 
             // generate pages
             GenerateJournalPage(journalPage1Layout, 1);
@@ -84,8 +84,8 @@ public class InventoryManager : MonoBehaviour
 
     private void GenerateJournalPage(GameObject targetView, int targetPage)
     {
-        string activeStory = !GameManager.Instance.isOffline ? GameManager.Instance.activeStory : "Prototype2";
-        int persistentId = !GameManager.Instance.isOffline ? GameManager.Instance.FetchPersistentPlayerId() : 0;
+        string activeStory = GameManager.Instance.networkState == NetworkState.Online ? GameManager.Instance.activeStory : "Prototype2";
+        int persistentId = GameManager.Instance.networkState == NetworkState.Online ? GameManager.Instance.FetchPersistentPlayerId() : 0;
         string textTargetPath = "Information/" + activeStory + "/info" + persistentId.ToString();
         string imageTargetPath = "Information/" + activeStory + "/image" + persistentId.ToString();
         string loadedText = Resources.Load<TextAsset>(textTargetPath + "_" + targetPage).text;
@@ -120,6 +120,7 @@ public class InventoryManager : MonoBehaviour
         journalPage1Layout.SetActive(!journalPage1Layout.activeSelf);
         journalPage2Layout.SetActive(!journalPage2Layout.activeSelf);
         journalPageView.content = journalPage1Layout.activeSelf ? journalPage1Layout.GetComponent<RectTransform>() : journalPage2Layout.GetComponent<RectTransform>();
+        journalPageNumber.text = "Page " + (journalPage1Layout.activeSelf ? "1" : "2");
     }
 
     public void OnOpenMap() 

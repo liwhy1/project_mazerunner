@@ -62,7 +62,7 @@ public class MapManager : MonoBehaviour
         individualViewButton.GetComponent<UIElement>().OnElementDisable();
 
         // sync map state
-        if (!GameManager.Instance.isOffline)
+        if (GameManager.Instance.networkState == NetworkState.Online)
         {
             GameManager.Instance.SyncPlayerMapStateServerRpc();            
         }
@@ -248,7 +248,7 @@ public class MapManager : MonoBehaviour
         saveIcon.transform.GetChild(1).gameObject.SetActive(!isMapready);
         SetActiveTool(!isMapready ? pencilIcon : null);
 
-        if (!GameManager.Instance.isOffline)
+        if (GameManager.Instance.networkState == NetworkState.Online)
         {
             GameManager.Instance.SetPlayerMapStateServerRpc(isMapready);            
         }
@@ -273,7 +273,7 @@ public class MapManager : MonoBehaviour
             mapElements.Add(new MapElementData{iconPrefab = "DrawDot", iconSprite = "DrawDot", iconPosition = icon.transform.localPosition});
         }
 
-        if (!GameManager.Instance.isOffline)
+        if (GameManager.Instance.networkState == NetworkState.Online)
         {
             saveIcon.transform.GetChild(0).gameObject.SetActive(true);
             saveIcon.transform.GetChild(1).gameObject.SetActive(false);

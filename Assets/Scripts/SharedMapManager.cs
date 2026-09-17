@@ -39,7 +39,7 @@ public class SharedMapManager : NetworkBehaviour
         // generate icon objects
         GenerateIcons();
 
-        if (!NetworkManager.IsHost && !GameManager.Instance.isOffline)
+        if (!NetworkManager.IsHost && GameManager.Instance.networkState == NetworkState.Online)
         {
             saveIcon.SetActive(false);
         }
@@ -246,7 +246,7 @@ public class SharedMapManager : NetworkBehaviour
 
     public void OnClearMap()
     {
-        if (GameManager.Instance.isOffline) return;
+        if (GameManager.Instance.networkState != NetworkState.Online) return;
         ClearMapServerRpc();
     }
 
@@ -300,7 +300,7 @@ public class SharedMapManager : NetworkBehaviour
         saveIcon.SetActive(false);
         SetActiveTool(null);
 
-        if (!GameManager.Instance.isOffline)
+        if (GameManager.Instance.networkState == NetworkState.Online)
         {
             OnSharedMapReadyServerRpc();
         }

@@ -34,7 +34,7 @@ public class PlayerController : NetworkBehaviour
     private void Start()
     {
         // only run this in offline mode
-        if (!GameManager.Instance.isOffline) return;
+        if (GameManager.Instance.networkState == NetworkState.Online) return;
         OnSetup();
     }
 
