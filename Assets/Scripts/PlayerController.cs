@@ -44,6 +44,7 @@ public class PlayerController : NetworkBehaviour
         if (!IsOwner)
         {
             playerCamera.gameObject.SetActive(false);
+            transform.Find("NameCanvas").gameObject.SetActive(false);
             GetComponent<NavMeshAgent>().enabled = false;
             Destroy(this);
             return;
@@ -67,6 +68,9 @@ public class PlayerController : NetworkBehaviour
         transform.Find("NameCanvas").gameObject.SetActive(false);
 
         playerCamera = Instantiate(Resources.Load<GameObject>("PlayerCamera"));
+        GameManager.Instance.playerViewCamera.transform.SetParent(transform);
+        GameManager.Instance.playerViewCamera.transform.localPosition = Vector3.zero + -Vector3.forward;
+        GameManager.Instance.playerViewCamera.transform.LookAt(transform);
     }
 
     private void FixedUpdate()

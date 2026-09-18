@@ -22,20 +22,27 @@ public class UIManager : NetworkBehaviour
     [SerializeField] private TMP_InputField joinCodeInput;
     [SerializeField] private TMP_InputField joinPlayerNameInput;
 
-    [Header("Pause Data")]
-    [SerializeField] private GameObject pauseObject;
-    [SerializeField] public GameObject resumeButton;
-    [SerializeField] private GameObject quitButton;
-    [SerializeField] private GameObject storyDropdown;
-    [SerializeField] private TMP_Text joinCodeText;
-    [SerializeField] private TMP_Text playerListText;
-    [SerializeField] private TMP_Text waitingOnHostText;
-
     [Header("Menu Data")]
     [SerializeField] private GameObject menuObject;
     [SerializeField] private GameObject hostButton;
     [SerializeField] private GameObject joinButton;
     [SerializeField] private GameObject offlineButton;
+
+    [Header("Pause Data")]
+    [SerializeField] private GameObject pauseObject;
+    [SerializeField] public GameObject resumeButton;
+    [SerializeField] private GameObject pauseQuitButton;
+    [SerializeField] private TMP_Text pauseJoinCodeText;
+    [SerializeField] private TMP_Text pausePlayerListText;
+
+    [Header("Lobby Data")]
+    [SerializeField] private GameObject lobbyObject;
+    [SerializeField] public GameObject startButton;
+    [SerializeField] private GameObject lobbyQuitButton;
+    [SerializeField] private GameObject storyDropdown;
+    [SerializeField] private TMP_Text lobbyJoinCodeText;
+    [SerializeField] private TMP_Text lobbyPlayerListText;
+    [SerializeField] private TMP_Text waitingOnHostText;
 
     [Header("HUD Data")]
     [SerializeField] private Image crossHair;
@@ -81,7 +88,7 @@ public class UIManager : NetworkBehaviour
         startHostButton.GetComponent<EventTrigger>().triggers.Add(hostStartClickEntry);
 
         EventTrigger.Entry hostBackClickEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerClick};
-        hostBackClickEntry.callback.AddListener((eventData) => { OnBackButton(); });
+        hostBackClickEntry.callback.AddListener((eventData) => { OnQuitButton(); });
         hostBackButton.GetComponent<EventTrigger>().triggers.Add(hostBackClickEntry);
 
         hostPlayerNameInput.onValueChanged.AddListener(delegate { GameManager.Instance.OnNameChanged(hostPlayerNameInput.text); });
@@ -92,19 +99,28 @@ public class UIManager : NetworkBehaviour
         startClientButton.GetComponent<EventTrigger>().triggers.Add(clientStartClickEntry);
 
         EventTrigger.Entry clientBackClickEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerClick};
-        clientBackClickEntry.callback.AddListener((eventData) => { OnBackButton(); });
+        clientBackClickEntry.callback.AddListener((eventData) => { OnQuitButton(); });
         joinBackButton.GetComponent<EventTrigger>().triggers.Add(clientBackClickEntry);
 
         joinPlayerNameInput.onValueChanged.AddListener(delegate { GameManager.Instance.OnNameChanged(joinPlayerNameInput.text); });
 
+        // lobby
+        EventTrigger.Entry startClickEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerClick};
+        startClickEntry.callback.AddListener((eventData) => { GameManager.Instance.OnLobbyStart(); });
+        startButton.GetComponent<EventTrigger>().triggers.Add(startClickEntry);
+
+        EventTrigger.Entry lobbyQuitClickEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerClick};
+        lobbyQuitClickEntry.callback.AddListener((eventData) => { OnQuitButton(); });
+        lobbyQuitButton.GetComponent<EventTrigger>().triggers.Add(lobbyQuitClickEntry);
+
         // pause
         EventTrigger.Entry resumeClickEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerClick};
-        resumeClickEntry.callback.AddListener((eventData) => { GameManager.Instance.OnStartGame(); });
+        resumeClickEntry.callback.AddListener((eventData) => { GameManager.Instance.OnPauseToggle(); });
         resumeButton.GetComponent<EventTrigger>().triggers.Add(resumeClickEntry);
 
         EventTrigger.Entry quitClickEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerClick};
-        quitClickEntry.callback.AddListener((eventData) => { OnBackButton(); });
-        quitButton.GetComponent<EventTrigger>().triggers.Add(quitClickEntry);
+        quitClickEntry.callback.AddListener((eventData) => { OnQuitButton(); });
+        pauseQuitButton.GetComponent<EventTrigger>().triggers.Add(quitClickEntry);
 
         storyDropdown.GetComponent<TMP_Dropdown>().onValueChanged.AddListener(delegate { GameManager.Instance.activeStory = storyDropdown.GetComponent<TMP_Dropdown>().captionText.text; });
     }
@@ -147,13 +163,14 @@ public class UIManager : NetworkBehaviour
         GameManager.Instance.activeStory = storyNames[0];
     }
 
-    private void ResetUIState()
+    public void ResetUIState()
     {
         waitingOnHostText.gameObject.SetActive(false);
         pauseObject.SetActive(false);
         hostObject.SetActive(false);
         joinObject.SetActive(false);
         menuObject.SetActive(false);
+        lobbyObject.SetActive(false);
         loadingIcon.SetActive(false);
         inventoryIcon.gameObject.SetActive(false);
         pauseIcon.gameObject.SetActive(false);
@@ -184,14 +201,14 @@ public class UIManager : NetworkBehaviour
         GameManager.Instance.SpawnSharedMap(0);
 
         ResetUIState();
-        pauseObject.SetActive(true);
-        joinCodeText.gameObject.SetActive(false);
-
-        // start game
-        GameManager.Instance.OnStartGame();
+        lobbyObject.SetActive(true);
+        lobbyJoinCodeText.gameObject.SetActive(false);
+        pauseJoinCodeText.gameObject.SetActive(false);
+        lobbyPlayerListText.gameObject.SetActive(false);
+        pausePlayerListText.gameObject.SetActive(false);
     }
 
-    private void OnBackButton()
+    private void OnQuitButton()
     {
         // reset playerprefs
         PlayerPrefs.DeleteAll();
@@ -207,11 +224,10 @@ public class UIManager : NetworkBehaviour
         GameManager.Instance.OnDisconnectClient();
     }
 
-    public void OnSessionConnect()
+    public void OnLobbyConnect()
     {
         ResetUIState();
-        pauseObject.SetActive(true);
-        resumeButton.transform.GetChild(0).GetComponent<TMP_Text>().text = "Start";
+        lobbyObject.SetActive(true);
 
         loadingIcon.SetActive(false);
 
@@ -219,20 +235,17 @@ public class UIManager : NetworkBehaviour
         {
             waitingOnHostText.gameObject.SetActive(true);
             storyDropdown.gameObject.SetActive(false);
-            resumeButton.gameObject.SetActive(false);
-            joinCodeText.gameObject.SetActive(false);
+            startButton.gameObject.SetActive(false);
         }
-
-        // setup story dropdown
-        SetupStoryDropdown();
-
-        GameManager.Instance.OnInventoryToggle();
+        else
+        {
+            // setup story dropdown
+            SetupStoryDropdown();
+        }
     }
 
     public void OnPauseToggle()
     {
-        resumeButton.transform.GetChild(0).GetComponent<TMP_Text>().text = "Resume";
-        storyDropdown.gameObject.SetActive(!GameManager.Instance.isGameStarted);
         pauseObject.SetActive(!pauseObject.activeSelf);
         pauseIcon.gameObject.SetActive(!pauseObject.activeSelf);
         inventoryIcon.gameObject.SetActive(!pauseObject.activeSelf);
@@ -240,19 +253,22 @@ public class UIManager : NetworkBehaviour
 
     public void OnRefreshPlayerList()
     {
-        playerListText.text = "";
+        lobbyPlayerListText.text = "Players:\n";
+        pausePlayerListText.text = "Players:\n";
         foreach (var player in GameManager.Instance.playerList)
         {
             string targetText = player.PlayerName.Value.ToString();
             targetText += player.OwnerClientId == NetworkManager.LocalClientId ? " (you)" : "";
             targetText += player.OwnerClientId == NetworkManager.ServerClientId ? " (host)" : "";
-            playerListText.text += targetText + "\n";
+            lobbyPlayerListText.text += targetText + "\n";
+            pausePlayerListText.text += targetText + "\n";
         }
     }
 
     public void SetJoinCodeText(string targetText)
     {
-        joinCodeText.text = targetText;
+        lobbyJoinCodeText.text = "Join Code: " + targetText;
+        pauseJoinCodeText.text = "Join Code: " + targetText;
     }
 
     public string GetJoinCodeInput()
@@ -262,7 +278,7 @@ public class UIManager : NetworkBehaviour
 
     public void OnLobbyStart()
     {
-        resumeButton.gameObject.SetActive(true);
+        startButton.gameObject.SetActive(true);
         waitingOnHostText.gameObject.SetActive(false);
     }
 

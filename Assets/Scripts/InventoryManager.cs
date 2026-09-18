@@ -37,12 +37,6 @@ public class InventoryManager : MonoBehaviour
         // setup map
         mapObject.GetComponent<MapManager>().OnSetup();
 
-        // fetch active story from host
-        if (GameManager.Instance.networkState == NetworkState.Online)
-        {
-            GameManager.Instance.FetchActiveStoryServerRpc();            
-        }
-
         // reset inventory
         ResetInventoryState();
     }
