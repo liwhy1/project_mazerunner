@@ -145,7 +145,7 @@ public class PlayerController : NetworkBehaviour
             playerAgent.updatePosition = false;
             playerAgent.updateRotation = false;
             playerAgent.isStopped = true;
-            playerAgent.ResetPath();            
+            playerAgent.ResetPath();
         }
 
         // apply speed based on sprint state
@@ -197,6 +197,17 @@ public class PlayerController : NetworkBehaviour
 
         // move agent
         playerAgent.SetDestination(targetPosition);
+    }
+
+    public void SetPlayerPosition(Vector3 targetPosition)
+    {
+        playerRigidbody.interpolation = RigidbodyInterpolation.None;
+        playerRigidbody.isKinematic = false;
+        playerAgent.updatePosition = false;
+        playerAgent.updateRotation = false;
+        playerAgent.isStopped = true;
+        playerAgent.ResetPath();
+        gameObject.transform.position = targetPosition;
     }
 
     public void OnJump()

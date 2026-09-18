@@ -200,6 +200,9 @@ public class UIManager : NetworkBehaviour
         // trigger offline sharedmap spawn
         GameManager.Instance.SpawnSharedMap(0);
 
+        // setup story dropdown
+        SetupStoryDropdown();
+
         ResetUIState();
         lobbyObject.SetActive(true);
         lobbyJoinCodeText.gameObject.SetActive(false);

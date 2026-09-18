@@ -13,14 +13,14 @@ public class GameManager : NetworkBehaviour
     public static GameManager Instance;
     public bool isPaused;
     public NetworkState networkState;
-    public bool isGameStarted;
     public string joinCode;
+    public List<PlayerData> playerList = new List<PlayerData>();
+    public string activeStory;
 
     [SerializeField] private GameObject mainCamera;
     public Camera mapCamera;
     public Camera playerViewCamera;
-    public List<PlayerData> playerList = new List<PlayerData>();
-    public string activeStory;
+    public GameObject playerSpawnPosition;
 
     public Material blueMat;
     public Material greenMat;
@@ -62,7 +62,6 @@ public class GameManager : NetworkBehaviour
         Instance = this;
         isPaused = true;
         networkState = NetworkState.None;
-        isGameStarted = false;
         mainCamera = Camera.main.gameObject;
         PlayerPrefs.DeleteAll();
         PlayerPrefs.Save();
@@ -90,7 +89,7 @@ public class GameManager : NetworkBehaviour
 
     public void OnPauseToggle()
     {
-        if (!isGameStarted) return;
+        if (!FetchGameStartState()) return;
 
         isPaused = !isPaused;
         UIManager.Instance.OnPauseToggle();
@@ -112,18 +111,45 @@ public class GameManager : NetworkBehaviour
     public void OnLobbyStart()
     {
         // set gamestate
-        isGameStarted = true;
+        // TODO: this shouldnt be client accessible but server response is a little late and breaks further checks
+        PlayerController.Instance.GetComponent<PlayerData>().IsGameStarted.Value = true;
         isPaused = false;
         mainCamera.SetActive(false);
+        playerViewCamera.gameObject.SetActive(false);
         SharedMapManager.Instance.gameObject.GetComponent<Canvas>().worldCamera = mapCamera;
 
+        // reset ui
         UIManager.Instance.ResetUIState();
-        FetchActiveStoryServerRpc();
+        if (networkState == NetworkState.Online) FetchActiveStoryServerRpc();
+
+        // move player to map
+        PlayerController.Instance.SetPlayerPosition(playerSpawnPosition.transform.position + Vector3.forward * FetchPersistentPlayerId());
+
+        // fetch player visibility
+        FetchPlayerRenderStateServerRpc();
 
         if (!NetworkManager.IsHost) return;
 
         // notify clients about lobby start
         OnLobbyStartServerRpc();
+    }
+
+    [Rpc(SendTo.Everyone, InvokePermission = RpcInvokePermission.Everyone)]
+    private void FetchPlayerRenderStateServerRpc()
+    {
+        foreach (var player in playerList)
+        {
+            if (player.persistentPlayerId.Value == FetchPersistentPlayerId()) continue;
+
+            if (!FetchGameStartState())
+            {
+                player.GetComponent<Renderer>().enabled = false;
+            }
+            else if (player.IsGameStarted.Value)
+            {
+                player.GetComponent<Renderer>().enabled = true;
+            }
+        }
     }
 
     [ClientRpc]
@@ -153,7 +179,7 @@ public class GameManager : NetworkBehaviour
             }
 
             // notify new clients about game status
-            if (isGameStarted == true)
+            if (FetchGameStartState())
             {
                 OnLobbyStartServerRpc();
             }            
@@ -216,7 +242,7 @@ public class GameManager : NetworkBehaviour
             return;
         }
 
-        SceneManager.LoadScene(0);
+        SceneManager.LoadScene(1);
     }
 
     public void SpawnPlayer(ulong clientId)
@@ -377,11 +403,14 @@ public class GameManager : NetworkBehaviour
         if (!targetPlayer) return;
 
         Debug.Log("GameManager: Updating player properties for: " + targetId);
-
         targetPlayer.gameObject.GetComponent<Renderer>().material = targetMaterial;
-        PlayerController.Instance.gameObject.transform.position = Vector3.one + Vector3.forward * 3 * playerList.FirstOrDefault(p => p.OwnerClientId == NetworkManager.LocalClientId).persistentPlayerId.Value;
-        PlayerController.Instance.GetComponent<Rigidbody>().isKinematic = true;
-        if (targetId != (int)NetworkManager.LocalClientId) targetPlayer.GetComponent<Renderer>().enabled = false;
+
+        FetchPlayerRenderStateServerRpc();
+
+        if (!FetchGameStartState())
+        {
+            PlayerController.Instance.SetPlayerPosition(Vector3.one + Vector3.forward * 3 * FetchPersistentPlayerId());            
+        }
     }
 
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
@@ -422,6 +451,11 @@ public class GameManager : NetworkBehaviour
 
     public int FetchPersistentPlayerId()
     {
-        return PlayerController.Instance.gameObject.GetComponent<PlayerData>().persistentPlayerId.Value;
+        return PlayerController.Instance.GetComponent<PlayerData>().persistentPlayerId.Value;
+    }
+
+    public bool FetchGameStartState()
+    {
+        return PlayerController.Instance.GetComponent<PlayerData>().IsGameStarted.Value;
     }
 }
