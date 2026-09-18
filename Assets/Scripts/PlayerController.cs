@@ -23,6 +23,7 @@ public class PlayerController : NetworkBehaviour
 
     [Header("Camera Data")]
     public bool enableCamera;
+    public bool rotateCamera;
     public float mouseSensitivity = 2f;
     public float verticalLimit = 90f;
 
@@ -110,16 +111,23 @@ public class PlayerController : NetworkBehaviour
         forward.y = 0f;
         forward.Normalize();
 
-        Vector3 targetPosition = transform.position + Vector3.up * 4f - forward * 1.5f;
+        Vector3 targetPosition = transform.position + Vector3.up * 8f - forward * .5f;
         float t = 1f - Mathf.Exp(-5f * Time.deltaTime);
         playerCamera.transform.position = Vector3.Lerp(playerCamera.transform.position, targetPosition, t);
 
-        // look at player
-        Vector3 direction = transform.position - playerCamera.transform.position;
-        if (direction.sqrMagnitude > 0.001f)
+        if (rotateCamera)
         {
-            Quaternion targetRotation = Quaternion.LookRotation(direction, Vector3.up);
-            playerCamera.transform.rotation = Quaternion.Slerp(playerCamera.transform.rotation, targetRotation, t);
+            // look at player
+            Vector3 direction = transform.position - playerCamera.transform.position;
+            if (direction.sqrMagnitude > 0.001f)
+            {
+                Quaternion targetRotation = Quaternion.LookRotation(direction, Vector3.up);
+                playerCamera.transform.rotation = Quaternion.Slerp(playerCamera.transform.rotation, targetRotation, t);
+            }   
+        }
+        else
+        {
+            playerCamera.transform.localEulerAngles = new Vector3(80f, 0f, 0f);
         }
     }
 
