@@ -39,7 +39,7 @@ public class SharedMapManager : NetworkBehaviour
         // generate icon objects
         GenerateIcons();
 
-        if (!NetworkManager.IsHost && GameManager.Instance.networkState == NetworkState.Online)
+        if (!NetworkManager.IsHost && GameManager.Instance.networkState != NetworkState.Offline)
         {
             saveIcon.SetActive(false);
         }
