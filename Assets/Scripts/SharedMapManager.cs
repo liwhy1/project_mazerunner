@@ -390,7 +390,7 @@ public class SharedMapManager : NetworkBehaviour
         Debug.Log("SMM: Clearing map");
         foreach (Transform element in transform)
         {
-            if (element.name.Contains("DrawDot") || element.name.Contains("Icon"))
+            if (element.gameObject.GetComponent<NetworkObject>())
             {
                 element.gameObject.GetComponent<NetworkObject>().Despawn();
             }
