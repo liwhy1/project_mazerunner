@@ -51,6 +51,10 @@ public class UIManager : NetworkBehaviour
     public Image cameraZoomOutIcon;
     public GameObject loadingIcon;
     public GameObject pageBackground;
+    public Image minimapIcon;
+    [SerializeField] private Image minimapPlayerIcon;
+    [SerializeField] private Image minimapPlayer2Icon;
+    [SerializeField] private Image minimapPlayer3Icon;
 
     [Header("Dialog Data")]
     public GameObject activeDialog;
@@ -125,6 +129,42 @@ public class UIManager : NetworkBehaviour
         storyDropdown.GetComponent<TMP_Dropdown>().onValueChanged.AddListener(delegate { GameManager.Instance.activeStory = storyDropdown.GetComponent<TMP_Dropdown>().captionText.text; });
     }
 
+    private void Update()
+    {
+        if (PlayerController.Instance)
+        {
+            UpdateMinimapPosition();            
+        }
+    }
+
+    private void UpdateMinimapPosition()
+    {
+        // TODO: don't read any of this :)
+        // setup vars
+        GameObject terrainObject = GameManager.Instance.terrainObject;
+        MeshRenderer renderer = terrainObject.GetComponent<MeshRenderer>();
+        Bounds bounds = renderer.bounds;
+        RectTransform minimapRect = minimapIcon.GetComponent<RectTransform>();
+
+        minimapPlayerIcon.gameObject.SetActive(false);
+        minimapPlayer2Icon.gameObject.SetActive(false);
+        minimapPlayer3Icon.gameObject.SetActive(false);
+        foreach (var player in GameManager.Instance.playerList)
+        {
+            int playerId = player.PersistentPlayerId.Value;
+            if (playerId > -1)
+            {
+                Vector3 playerPosition = player.gameObject.transform.position;
+                float normalizedX = Mathf.InverseLerp(bounds.min.x, bounds.max.x, playerPosition.x);
+                float normalizedY = Mathf.InverseLerp(bounds.min.z, bounds.max.z, playerPosition.z);
+                RectTransform playerIconRect = playerId == 0 ? minimapPlayerIcon.GetComponent<RectTransform>() : playerId == 1 ?minimapPlayer2Icon.GetComponent<RectTransform>() : minimapPlayer3Icon.GetComponent<RectTransform>();
+                playerIconRect.gameObject.GetComponent<Image>().color = player.gameObject.GetComponent<Renderer>().material.color;
+                playerIconRect.gameObject.SetActive(true);
+                playerIconRect.anchoredPosition = new Vector2(Mathf.Lerp(minimapRect.rect.xMin, minimapRect.rect.xMax, normalizedX), Mathf.Lerp(minimapRect.rect.yMin, minimapRect.rect.yMax, normalizedY));                
+            }
+        }
+    }
+
     private void SetupStoryDropdown()
     {
         storyDropdown.GetComponent<TMP_Dropdown>().ClearOptions();
@@ -153,6 +193,7 @@ public class UIManager : NetworkBehaviour
         inventoryIcon.gameObject.SetActive(true);
         cameraZoomInIcon.gameObject.SetActive(true);
         cameraZoomOutIcon.gameObject.SetActive(true);
+        minimapIcon.transform.parent.gameObject.SetActive(true);
         pauseIcon.gameObject.SetActive(true);
     }
 

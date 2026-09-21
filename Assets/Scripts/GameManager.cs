@@ -22,6 +22,7 @@ public class GameManager : NetworkBehaviour
     public Camera mapCamera;
     public Camera playerViewCamera;
     public GameObject playerSpawnPosition;
+    public GameObject terrainObject;
     private Coroutine scrollRoutine;
 
     public Material blueMat;
