@@ -45,7 +45,6 @@ public class UIManager : NetworkBehaviour
     [SerializeField] private TMP_Text waitingOnHostText;
 
     [Header("HUD Data")]
-    [SerializeField] private Image crossHair;
     [SerializeField] private Image pauseIcon;
     [SerializeField] private Image inventoryIcon;
     public GameObject loadingIcon;
@@ -122,28 +121,6 @@ public class UIManager : NetworkBehaviour
         pauseQuitButton.GetComponent<EventTrigger>().triggers.Add(quitClickEntry);
 
         storyDropdown.GetComponent<TMP_Dropdown>().onValueChanged.AddListener(delegate { GameManager.Instance.activeStory = storyDropdown.GetComponent<TMP_Dropdown>().captionText.text; });
-    }
-
-    private void Update()
-    {
-        if (PlayerController.Instance)
-        {
-            CrosshairHandler();            
-        }
-    }
-
-    private void CrosshairHandler()
-    {
-        crossHair.gameObject.SetActive(!Cursor.visible);
-
-        if (PlayerController.Instance.rayHitObject != null && PlayerController.Instance.rayHitObject.CompareTag("Interactable"))
-        {
-            crossHair.gameObject.GetComponent<RectTransform>().sizeDelta = new Vector3(22f, 22f, 22f);
-        }
-        else
-        {
-            crossHair.gameObject.GetComponent<RectTransform>().sizeDelta = new Vector3(15f, 15f, 15f);
-        }
     }
 
     private void SetupStoryDropdown()

@@ -24,13 +24,6 @@ public class PlayerController : NetworkBehaviour
     [Header("Camera Data")]
     public bool enableCamera;
     public bool rotateCamera;
-    public float mouseSensitivity = 2f;
-    public float verticalLimit = 90f;
-
-    [Header("Interaction Data")]
-    public bool enableInteraction;
-    public GameObject rayHitObject;
-    public float rayLength = 3f;
 
     private void Start()
     {
@@ -62,7 +55,6 @@ public class PlayerController : NetworkBehaviour
         playerRigidbody = GetComponent<Rigidbody>();
         playerRigidbody.isKinematic = true;
         playerAgent = GetComponent<NavMeshAgent>();
-        enableInteraction = true;
         enableMovement = true;
         enableCamera = true;
         gameObject.name = "Player";
@@ -193,9 +185,6 @@ public class PlayerController : NetworkBehaviour
     public void OnMove(Vector3 targetPosition)
     {
         if (GameManager.Instance.isPaused || InventoryManager.Instance.isInventoryActive || UIManager.Instance.activeDialog) return;
-
-        //GameObject targetMarker = Instantiate(Resources.Load<GameObject>("TargetMarker"));
-        //targetMarker.transform.position = targetPosition;
 
         // reset agent conditionally
         if (!playerRigidbody.isKinematic) playerAgent.Warp(playerRigidbody.position);
