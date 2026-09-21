@@ -262,6 +262,9 @@ public class GameManager : NetworkBehaviour
 
         if (PlayerController.Instance)
         {
+            // prevent clicking through ui elements
+            if (InventoryManager.Instance.isInventoryActive || InputManager.Instance.IsPointerOverUI()) return;
+
             Ray ray = PlayerController.Instance.playerCamera.GetComponent<Camera>().ScreenPointToRay(Pointer.current.position.ReadValue());
             if (Physics.Raycast(ray, out RaycastHit hit))
             {

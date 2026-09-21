@@ -1,5 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.EventSystems;
+using System.Collections.Generic;
 
 public class InputManager : MonoBehaviour
 {
@@ -20,6 +22,10 @@ public class InputManager : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+
+        // set cursor state
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
 
         //setup input
         inputSystem = new InputSystem();
@@ -46,24 +52,22 @@ public class InputManager : MonoBehaviour
     {
         // track pointer position
         pointerPosition = Pointer.current.position.ReadValue();
+    }
 
-        // set cursor state
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
-        // webgl doesn't like this, drop it in a try catch
-        /*try
+    public bool IsPointerOverUI()
+    {
+        PointerEventData pointerData = new PointerEventData(EventSystem.current) { position = pointerPosition };
+
+        List<RaycastResult> castResults = new List<RaycastResult>();
+        EventSystem.current.RaycastAll(pointerData, castResults);
+
+        // ignore shared map objects
+        foreach (RaycastResult result in castResults)
         {
-            if (GameManager.Instance.isPaused || (InventoryManager.Instance && InventoryManager.Instance.isInventoryActive))
-            {
-                Cursor.lockState = CursorLockMode.None;
-                Cursor.visible = true;
-            }
-            else
-            {
-                Cursor.lockState = CursorLockMode.Locked;
-                Cursor.visible = false;
-            }
+            if (result.module.eventCamera == GameManager.Instance.mapCamera) continue;
+            return true;
         }
-        catch {}*/
+
+        return false;
     }
 }
