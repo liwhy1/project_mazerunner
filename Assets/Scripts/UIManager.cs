@@ -55,6 +55,7 @@ public class UIManager : NetworkBehaviour
     [SerializeField] private Image minimapPlayerIcon;
     [SerializeField] private Image minimapPlayer2Icon;
     [SerializeField] private Image minimapPlayer3Icon;
+    [SerializeField] private GameObject tutorialObject;
 
     [Header("Dialog Data")]
     public GameObject activeDialog;
@@ -194,6 +195,7 @@ public class UIManager : NetworkBehaviour
         cameraZoomInIcon.gameObject.SetActive(true);
         cameraZoomOutIcon.gameObject.SetActive(true);
         minimapIcon.transform.parent.gameObject.SetActive(true);
+        tutorialObject.SetActive(true);
         pauseIcon.gameObject.SetActive(true);
     }
 
@@ -330,5 +332,10 @@ public class UIManager : NetworkBehaviour
             Destroy(activeDialog);
             activeDialog = null;
         }
+    }
+
+    public void OnCloseTutorial()
+    {
+        tutorialObject.SetActive(false);
     }
 }
