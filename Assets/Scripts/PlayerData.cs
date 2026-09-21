@@ -1,3 +1,4 @@
+using System.Linq;
 using TMPro;
 using Unity.Collections;
 using Unity.Netcode;
@@ -7,51 +8,66 @@ public class PlayerData : NetworkBehaviour
 {
     public NetworkVariable<FixedString64Bytes> PlayerName = new NetworkVariable<FixedString64Bytes>("Player", NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     public NetworkVariable<bool> IsMapReady = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-    public NetworkVariable<bool> IsGameStarted = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
-    public NetworkVariable<int> persistentPlayerId = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    public NetworkVariable<bool> IsGameStarted = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    public NetworkVariable<int> PersistentPlayerId = new NetworkVariable<int>(-1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     private TMP_Text nameText;
 
     public override void OnNetworkSpawn()
     {
         nameText = transform.Find("NameCanvas").Find("Name").GetComponent<TMP_Text>();
-
-        // update ui with the current value
-        UpdateNameUI(PlayerName.Value);
-
-        // subscribe to name updates from the server
+        nameText.text = PlayerName.Value.ToString();
+Debug.Log(OwnerClientId);
+        // subscribe to value updates from the server
         PlayerName.OnValueChanged += OnPlayerNameChanged;
+        IsGameStarted.OnValueChanged += OnReadyStateChanged;
+        PersistentPlayerId.OnValueChanged += OnPersistentIdChanged;
 
         if (IsOwner)
         {
-            string name = PlayerPrefs.GetString("PlayerName", "Player");
-            SetPlayerNameServerRpc(name);
+            SetPlayerNameServerRpc(PlayerPrefs.GetString("PlayerName", "Player"));
+            GameManager.Instance.SetPlayerPersistentIdServerRpc(NetworkManager.LocalClientId);
         }
+    }
+
+    private void OnPersistentIdChanged(int oldValue, int newValue)
+    {
+        if (!IsOwner) return;
+        if (oldValue != -1) return;
+        GameManager.Instance.OnLobbyConnect();
+    }
+
+    private void OnReadyStateChanged(bool oldValue, bool newValue)
+    {
+        if (!IsOwner) return;
+        GameManager.Instance.FetchPlayerRenderStateServerRpc();
     }
 
     private void OnPlayerNameChanged(FixedString64Bytes oldName, FixedString64Bytes newName)
     {
-        UpdateNameUI(newName);
+        nameText.text = newName.ToString();
+
+        if (!IsOwner) return;
+        // refresh player list for each client
+        GameManager.Instance.RefreshPlayerListClientRpc();
     }
 
-    private void UpdateNameUI(FixedString64Bytes name)
+    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+    private void SetPlayerNameServerRpc(string name, RpcParams rpcParams = default)
     {
-        nameText.text = name.ToString();
-        GameManager.Instance.RefreshPlayerList();
-    }
+        if (string.IsNullOrEmpty(name)) return;
 
-    [ServerRpc]
-    private void SetPlayerNameServerRpc(string name)
-    {
-        if (string.IsNullOrWhiteSpace(name))
-        {
-            name = "Player";
-        }
-
-        PlayerName.Value = name;
+        ulong targetId = rpcParams.Receive.SenderClientId;
+        Debug.Log("PlayerData: Setting playername: " + name + " to: " + targetId);
+        FindObjectsByType<PlayerData>(FindObjectsInactive.Include).FirstOrDefault(p => p.OwnerClientId == targetId).PlayerName.Value = name;
     }
 
     public override void OnNetworkDespawn()
     {
-        PlayerName.OnValueChanged -= OnPlayerNameChanged;
+        if (IsOwner)
+        {
+            PlayerName.OnValueChanged -= OnPlayerNameChanged;
+            IsGameStarted.OnValueChanged -= OnReadyStateChanged;
+            PersistentPlayerId.OnValueChanged -= OnPersistentIdChanged;
+        }
     }
 }

@@ -108,11 +108,19 @@ public class GameManager : NetworkBehaviour
         PlayerPrefs.Save();
     }
 
+    public void OnLobbyConnect()
+    {
+        networkState = NetworkState.Online;
+        UIManager.Instance.OnLobbyConnect();
+        InventoryManager.Instance.OnSetup();
+        FetchLobbyCodeServerRpc();
+        SetPlayerPropertiesServerRpc();
+    }
+
     public void OnLobbyStart()
     {
         // set gamestate
-        // TODO: this shouldnt be client accessible but server response is a little late and breaks further checks
-        PlayerController.Instance.GetComponent<PlayerData>().IsGameStarted.Value = true;
+        SetPlayerGameStateServerRpc(true);
         isPaused = false;
         mainCamera.SetActive(false);
         playerViewCamera.gameObject.SetActive(false);
@@ -120,47 +128,17 @@ public class GameManager : NetworkBehaviour
 
         // reset ui
         UIManager.Instance.ResetUIState();
-        if (networkState == NetworkState.Online) FetchActiveStoryServerRpc();
+
+        // fetch active story
+        FetchActiveStoryServerRpc();
 
         // move player to map
         PlayerController.Instance.SetPlayerPosition(playerSpawnPosition.transform.position + Vector3.forward * FetchPersistentPlayerId());
 
-        // fetch player visibility
-        FetchPlayerRenderStateServerRpc();
-
         if (!NetworkManager.IsHost) return;
 
         // notify clients about lobby start
-        OnLobbyStartServerRpc();
-    }
-
-    [Rpc(SendTo.Everyone, InvokePermission = RpcInvokePermission.Everyone)]
-    private void FetchPlayerRenderStateServerRpc()
-    {
-        foreach (var player in playerList)
-        {
-            if (player.persistentPlayerId.Value == FetchPersistentPlayerId()) continue;
-
-            if (!FetchGameStartState())
-            {
-                player.GetComponent<Renderer>().enabled = false;
-            }
-            else if (player.IsGameStarted.Value)
-            {
-                player.GetComponent<Renderer>().enabled = true;
-            }
-        }
-    }
-
-    [ClientRpc]
-    private void OnLobbyConnectClientRpc(ulong clientId)
-    {
-        if (NetworkManager.LocalClientId != clientId) return;
-        networkState = NetworkState.Online;
-        UIManager.Instance.OnLobbyConnect();
-        InventoryManager.Instance.OnSetup();
-        FetchLobbyCodeServerRpc();
-        SetPlayerPropertiesServerRpc();
+        OnLobbyStartClientRpc();
     }
 
     private void OnClientConnected(ulong clientId)
@@ -181,7 +159,7 @@ public class GameManager : NetworkBehaviour
             // notify new clients about game status
             if (FetchGameStartState())
             {
-                OnLobbyStartServerRpc();
+                OnLobbyStartClientRpc();
             }            
         }
     }
@@ -249,12 +227,10 @@ public class GameManager : NetworkBehaviour
     {
         Debug.Log("GameManager: Spawning player for: " + clientId);
         GameObject playerObject = Instantiate(Resources.Load<GameObject>("Player"), Vector3.one, Quaternion.identity);
-        if (clientId == NetworkManager.LocalClientId) playerObject.name = "Player";
 
         if (networkState != NetworkState.Offline)
         {
             playerObject.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientId);
-            AssignPersistentPlayerIdServerRpc(clientId);
         }
     }
 
@@ -271,8 +247,10 @@ public class GameManager : NetworkBehaviour
         }
     }
 
-    public void RefreshPlayerList()
+    [Rpc(SendTo.Everyone, InvokePermission = RpcInvokePermission.Everyone)]
+    public void RefreshPlayerListClientRpc()
     {
+        Debug.Log("GameManager: Player list refreshed");
         playerList.Clear();
         PlayerData[] players = FindObjectsByType<PlayerData>();
         foreach (PlayerData player in players)
@@ -321,22 +299,37 @@ public class GameManager : NetworkBehaviour
         UIManager.Instance.OnRefreshPlayerList();
     }
 
-    [ServerRpc]
-    public void OnLobbyStartServerRpc()
-    {
-        OnLobbyStartClientRpc();
-    }
-
     [ClientRpc]
     public void OnLobbyStartClientRpc()
     {
         UIManager.Instance.OnLobbyStart();
     }
 
+    [Rpc(SendTo.Everyone, InvokePermission = RpcInvokePermission.Everyone)]
+    public void FetchPlayerRenderStateServerRpc()
+    {
+        Debug.Log("GameManager: Fetching player render state");
+        foreach (var player in playerList)
+        {
+            if (player.PersistentPlayerId.Value == FetchPersistentPlayerId()) continue;
+
+            if (!FetchGameStartState())
+            {
+                player.GetComponent<Renderer>().enabled = false;
+                player.transform.Find("NameCanvas").gameObject.SetActive(false);
+            }
+            else if (player.IsGameStarted.Value)
+            {
+                player.GetComponent<Renderer>().enabled = true;
+                player.transform.Find("NameCanvas").gameObject.SetActive(true);
+            }
+        }
+    }
+
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
     public void SetPlayerMapStateServerRpc(bool targetState, RpcParams rpcParams = default)
     {
-        playerList.FirstOrDefault(p => p.OwnerClientId == rpcParams.Receive.SenderClientId).IsMapReady.Value = targetState;
+        FetchPlayerDataById(rpcParams.Receive.SenderClientId).IsMapReady.Value = targetState;
         if (playerList.All(p => p.IsMapReady.Value == true))
         {
             Debug.Log("GameManager: All individual maps ready");
@@ -375,23 +368,22 @@ public class GameManager : NetworkBehaviour
     }
 
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
-    public void AssignPersistentPlayerIdServerRpc(ulong clientId)
+    public void SetPlayerPersistentIdServerRpc(ulong playerId)
     {
         int targetId = 0;
-        while (playerList.Any(p => p.persistentPlayerId.Value == targetId)) targetId++;
-        Debug.Log("GameManager: Assigned persistent id: " + targetId + " to: " + clientId);
-        playerList.FirstOrDefault(p => p.OwnerClientId == clientId).persistentPlayerId.Value = targetId;
-
-        //TODO: this should be here
-        OnLobbyConnectClientRpc(clientId);
+        while (playerList.Any(p => p.PersistentPlayerId.Value == targetId)) targetId++;
+        FetchPlayerDataById(playerId).PersistentPlayerId.Value = targetId;
+        Debug.Log("GameManager: Assigned persistent id: " + targetId + " to: " + playerId);
+        RefreshPlayerListClientRpc();
     }
 
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
     public void SetPlayerPropertiesServerRpc()
     {
+        Debug.Log("GameManager: Updating player properties for " + playerList.Count + " players");
         foreach (var player in playerList)
         {
-            SetPlayerPropertiesClientRpc(player.persistentPlayerId.Value);
+            SetPlayerPropertiesClientRpc(player.PersistentPlayerId.Value);
         }
     }
 
@@ -399,13 +391,10 @@ public class GameManager : NetworkBehaviour
     public void SetPlayerPropertiesClientRpc(int targetId)
     {
         Material targetMaterial = targetId == 0 ? blueMat : targetId == 1 ? greenMat : redMat;
-        PlayerData targetPlayer = playerList.FirstOrDefault(p => p.persistentPlayerId.Value == targetId);
+        PlayerData targetPlayer = playerList.FirstOrDefault(p => p.PersistentPlayerId.Value == targetId);
         if (!targetPlayer) return;
 
-        Debug.Log("GameManager: Updating player properties for: " + targetId);
         targetPlayer.gameObject.GetComponent<Renderer>().material = targetMaterial;
-
-        FetchPlayerRenderStateServerRpc();
 
         if (!FetchGameStartState())
         {
@@ -432,16 +421,22 @@ public class GameManager : NetworkBehaviour
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
     public void FetchLobbyCodeServerRpc()
     {
-        FetchLobbyCodeClientRpc(joinCode);
+        SetLobbyCodeClientRpc(joinCode);
     }
 
     [ClientRpc]
-    public void FetchLobbyCodeClientRpc(string lobbyCode)
+    public void SetLobbyCodeClientRpc(string lobbyCode)
     {
         if (!NetworkManager.IsHost)
         {
             UIManager.Instance.SetJoinCodeText(lobbyCode);
         }
+    }
+
+    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+    public void SetPlayerGameStateServerRpc(bool targetState, RpcParams rpcParams = default)
+    {
+        FetchPlayerDataById(rpcParams.Receive.SenderClientId).IsGameStarted.Value = targetState;
     }
 
     public ulong FetchLocalClientId()
@@ -451,11 +446,16 @@ public class GameManager : NetworkBehaviour
 
     public int FetchPersistentPlayerId()
     {
-        return PlayerController.Instance.GetComponent<PlayerData>().persistentPlayerId.Value;
+        return PlayerController.Instance.GetComponent<PlayerData>().PersistentPlayerId.Value;
     }
 
     public bool FetchGameStartState()
     {
         return PlayerController.Instance.GetComponent<PlayerData>().IsGameStarted.Value;
+    }
+
+    public PlayerData FetchPlayerDataById(ulong playerId)
+    {
+        return FindObjectsByType<PlayerData>(FindObjectsInactive.Include).FirstOrDefault(p => p.OwnerClientId == playerId);
     }
 }

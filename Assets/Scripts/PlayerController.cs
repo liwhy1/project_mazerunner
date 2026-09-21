@@ -45,6 +45,7 @@ public class PlayerController : NetworkBehaviour
         if (!IsOwner)
         {
             playerCamera.gameObject.SetActive(false);
+            GetComponent<Renderer>().enabled = false;
             transform.Find("NameCanvas").gameObject.SetActive(false);
             GetComponent<NavMeshAgent>().enabled = false;
             Destroy(this);
@@ -64,6 +65,7 @@ public class PlayerController : NetworkBehaviour
         enableInteraction = true;
         enableMovement = true;
         enableCamera = true;
+        gameObject.name = "Player";
 
         // disable name indicator on own player
         transform.Find("NameCanvas").gameObject.SetActive(false);

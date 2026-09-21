@@ -423,9 +423,8 @@ public class SharedMapManager : NetworkBehaviour
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
     public void SpawnMapInstanceServerRpc(MapElementData[] mapElements, RpcParams rpcParams = default)
     {
-        ulong clientId = rpcParams.Receive.SenderClientId;
-        int persistentId = GameManager.Instance.playerList.FirstOrDefault(p => p.OwnerClientId == clientId).persistentPlayerId.Value;
-        string playerName = GameManager.Instance.playerList.FirstOrDefault(p => p.OwnerClientId == clientId).PlayerName.Value.ToString();
+        int persistentId = GameManager.Instance.FetchPlayerDataById(rpcParams.Receive.SenderClientId).PersistentPlayerId.Value;
+        string playerName = GameManager.Instance.FetchPlayerDataById(rpcParams.Receive.SenderClientId).PlayerName.Value.ToString();
         SpawnMapInstanceClientRpc(persistentId, playerName, mapElements);
     }
 
