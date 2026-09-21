@@ -113,7 +113,7 @@ public class GameManager : NetworkBehaviour
         networkState = NetworkState.Online;
         UIManager.Instance.OnLobbyConnect();
         InventoryManager.Instance.OnSetup();
-        FetchLobbyCodeServerRpc();
+        FetchLobbyDataServerRpc();
         SetPlayerPropertiesServerRpc();
     }
 
@@ -154,13 +154,7 @@ public class GameManager : NetworkBehaviour
             if (!SharedMapManager.Instance)
             {
                 SpawnSharedMap(clientId);
-            }
-
-            // notify new clients about game status
-            if (FetchGameStartState())
-            {
-                OnLobbyStartClientRpc();
-            }            
+            }          
         }
     }
 
@@ -419,17 +413,18 @@ public class GameManager : NetworkBehaviour
     }
 
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
-    public void FetchLobbyCodeServerRpc()
+    public void FetchLobbyDataServerRpc()
     {
-        SetLobbyCodeClientRpc(joinCode);
+        SetLobbyDataClientRpc(joinCode, FetchGameStartState());
     }
 
     [ClientRpc]
-    public void SetLobbyCodeClientRpc(string lobbyCode)
+    public void SetLobbyDataClientRpc(string lobbyCode, bool isLobbyStarted)
     {
         if (!NetworkManager.IsHost)
         {
             UIManager.Instance.SetJoinCodeText(lobbyCode);
+            if (isLobbyStarted) UIManager.Instance.OnLobbyStart();
         }
     }
 
