@@ -120,7 +120,7 @@ public class GameManager : NetworkBehaviour
     public void OnLobbyStart()
     {
         // set gamestate
-        SetPlayerGameStateServerRpc(true);
+        if (networkState == NetworkState.Online) SetPlayerGameStateServerRpc(true);
         isPaused = false;
         mainCamera.SetActive(false);
         playerViewCamera.gameObject.SetActive(false);
@@ -130,7 +130,7 @@ public class GameManager : NetworkBehaviour
         UIManager.Instance.ResetUIState();
 
         // fetch active story
-        FetchActiveStoryServerRpc();
+        if (networkState == NetworkState.Online) FetchActiveStoryServerRpc();
 
         // move player to map
         PlayerController.Instance.SetPlayerPosition(playerSpawnPosition.transform.position + Vector3.forward * FetchPersistentPlayerId());
@@ -451,7 +451,16 @@ public class GameManager : NetworkBehaviour
 
     public bool FetchGameStartState()
     {
-        return PlayerController.Instance.GetComponent<PlayerData>().IsGameStarted.Value;
+        if (!PlayerController.Instance) return false;
+        
+        if (networkState == NetworkState.Offline)
+        {
+            return true;
+        }
+        else
+        {
+            return PlayerController.Instance.GetComponent<PlayerData>().IsGameStarted.Value;
+        }
     }
 
     public PlayerData FetchPlayerDataById(ulong playerId)

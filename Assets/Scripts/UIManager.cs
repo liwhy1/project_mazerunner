@@ -48,7 +48,6 @@ public class UIManager : NetworkBehaviour
     [SerializeField] private Image crossHair;
     [SerializeField] private Image pauseIcon;
     [SerializeField] private Image inventoryIcon;
-    [SerializeField] private GameObject inventoryObject;
     public GameObject loadingIcon;
     public GameObject pageBackground;
 
@@ -172,9 +171,8 @@ public class UIManager : NetworkBehaviour
         menuObject.SetActive(false);
         lobbyObject.SetActive(false);
         loadingIcon.SetActive(false);
-        inventoryIcon.gameObject.SetActive(false);
-        pauseIcon.gameObject.SetActive(false);
-        inventoryObject.gameObject.SetActive(true);
+        inventoryIcon.gameObject.SetActive(true);
+        pauseIcon.gameObject.SetActive(true);
     }
 
     private void OnJoinGame()
@@ -203,7 +201,9 @@ public class UIManager : NetworkBehaviour
         // setup story dropdown
         SetupStoryDropdown();
 
-        ResetUIState();
+        // setup inventory
+        InventoryManager.Instance.OnSetup();
+
         lobbyObject.SetActive(true);
         lobbyJoinCodeText.gameObject.SetActive(false);
         pauseJoinCodeText.gameObject.SetActive(false);

@@ -16,7 +16,7 @@ public class PlayerData : NetworkBehaviour
     {
         nameText = transform.Find("NameCanvas").Find("Name").GetComponent<TMP_Text>();
         nameText.text = PlayerName.Value.ToString();
-Debug.Log(OwnerClientId);
+
         // subscribe to value updates from the server
         PlayerName.OnValueChanged += OnPlayerNameChanged;
         IsGameStarted.OnValueChanged += OnReadyStateChanged;
