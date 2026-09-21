@@ -351,6 +351,7 @@ public class SharedMapManager : NetworkBehaviour
     {
         if (NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(targetElement, out NetworkObject targetObject))
         {
+            SetElementOwnershipServerRpc(targetElement, true);
             targetObject.transform.position = new Vector3(targetPosition.x, targetPosition.y, 1f);
         }
     }
