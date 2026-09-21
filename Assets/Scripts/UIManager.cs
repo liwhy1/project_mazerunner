@@ -47,6 +47,8 @@ public class UIManager : NetworkBehaviour
     [Header("HUD Data")]
     [SerializeField] private Image pauseIcon;
     [SerializeField] private Image inventoryIcon;
+    public Image cameraZoomInIcon;
+    public Image cameraZoomOutIcon;
     public GameObject loadingIcon;
     public GameObject pageBackground;
 
@@ -149,6 +151,8 @@ public class UIManager : NetworkBehaviour
         lobbyObject.SetActive(false);
         loadingIcon.SetActive(false);
         inventoryIcon.gameObject.SetActive(true);
+        cameraZoomInIcon.gameObject.SetActive(true);
+        cameraZoomOutIcon.gameObject.SetActive(true);
         pauseIcon.gameObject.SetActive(true);
     }
 

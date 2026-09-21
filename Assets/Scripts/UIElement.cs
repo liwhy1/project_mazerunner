@@ -12,6 +12,7 @@ public class UIElement : MonoBehaviour
     public bool enableGrow = true;
     public bool isSelected = false;
     public bool isEnabled = true;
+    public bool resetOnClick = true;
 
     public void OnSetup()
     {
@@ -28,7 +29,7 @@ public class UIElement : MonoBehaviour
 
         // setup event triggers
         EventTrigger.Entry pointerClickEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerClick};
-        pointerClickEntry.callback.AddListener((eventData) => { OnElementShrink(); });
+        pointerClickEntry.callback.AddListener((eventData) => { OnElementClick(); });
         GetComponent<EventTrigger>().triggers.Add(pointerClickEntry);
 
         EventTrigger.Entry pointerEnterEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerEnter};
@@ -82,7 +83,7 @@ public class UIElement : MonoBehaviour
     
     public void OnElementUnHighlight() 
     {
-        if (isSelected || !isEnabled || isSelected) return;
+        if (isSelected || !isEnabled) return;
 
         GetComponent<Image>().color = normalColor;
     }
@@ -100,5 +101,11 @@ public class UIElement : MonoBehaviour
         if (!isEnabled) return;
         transform.localScale = new Vector3(1f, 1f, 1f);
         OnElementUnHighlight();
+    }
+
+    public void OnElementClick()
+    {
+        if (!isEnabled) return;
+        if (resetOnClick) OnElementShrink();
     }
 }
