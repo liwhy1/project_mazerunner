@@ -11,7 +11,7 @@ public class InputManager : MonoBehaviour
     private InputSystem inputSystem;
     public Vector3 pointerPosition;
     private InputAction pauseAction;
-    private InputAction mapAction;
+    private InputAction inventoryAction;
     public InputAction moveAction;
     public InputAction lookAction;
     public InputAction sprintAction;
@@ -30,7 +30,7 @@ public class InputManager : MonoBehaviour
         //setup input
         inputSystem = new InputSystem();
         pauseAction = inputSystem.Player.Pause;
-        mapAction = inputSystem.Player.Map;
+        inventoryAction = inputSystem.Player.Inventory;
         moveAction = inputSystem.Player.Move;
         lookAction = inputSystem.Player.Look;
         sprintAction = inputSystem.Player.Sprint;
@@ -40,7 +40,7 @@ public class InputManager : MonoBehaviour
 
         // subscribe to input events
         pauseAction.performed += context => GameManager.Instance.OnPauseToggle();
-        mapAction.performed += context => GameManager.Instance.OnInventoryToggle();
+        inventoryAction.performed += context => GameManager.Instance.OnInventoryToggle();
         jumpAction.performed += context => PlayerController.Instance.OnJump();
         primaryAction.performed += context => GameManager.Instance.OnPrimaryAction();
     }
