@@ -280,6 +280,17 @@ public class GameManager : NetworkBehaviour
         }
     }
 
+    public void OnScrollAction(float inputValue)
+    {
+        if (isPaused) return;
+
+        if (PlayerController.Instance)
+        {
+            float targetValue = inputValue > 0 ? .25f : inputValue < 0 ? -.25f : 0;
+            PlayerController.Instance.OnUpdateCameraHeight(targetValue);
+        }
+    }
+
     [ClientRpc]
     private void PlayerLeftClientRpc(ulong clientId)
     {

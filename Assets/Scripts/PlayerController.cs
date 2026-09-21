@@ -24,6 +24,7 @@ public class PlayerController : NetworkBehaviour
     [Header("Camera Data")]
     public bool enableCamera;
     public bool rotateCamera;
+    public float heightMultiplier = 8f;
 
     private void Start()
     {
@@ -105,7 +106,7 @@ public class PlayerController : NetworkBehaviour
         forward.y = 0f;
         forward.Normalize();
 
-        Vector3 targetPosition = transform.position + Vector3.up * 8f - forward * .5f;
+        Vector3 targetPosition = transform.position + Vector3.up * heightMultiplier - forward * .5f;
         float t = 1f - Mathf.Exp(-5f * Time.deltaTime);
         playerCamera.transform.position = Vector3.Lerp(playerCamera.transform.position, targetPosition, t);
 
@@ -181,6 +182,8 @@ public class PlayerController : NetworkBehaviour
             playerRigidbody.MoveRotation(Quaternion.RotateTowards(playerRigidbody.rotation,targetRotation, 720f * Time.fixedDeltaTime));
         }
     }
+
+    public void OnUpdateCameraHeight(float targetValue) => heightMultiplier = Mathf.Clamp(heightMultiplier + targetValue, 2, 12);
 
     public void OnMove(Vector3 targetPosition)
     {

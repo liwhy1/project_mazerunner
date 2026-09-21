@@ -18,6 +18,7 @@ public class InputManager : MonoBehaviour
     public InputAction jumpAction;
     public InputAction primaryAction;
     public InputAction interactAction;
+    public InputAction scrollAction;
 
     private void Awake()
     {
@@ -37,12 +38,14 @@ public class InputManager : MonoBehaviour
         jumpAction = inputSystem.Player.Jump;
         primaryAction = inputSystem.Player.Primary;
         interactAction = inputSystem.Player.Interact;
+        scrollAction = inputSystem.Player.Scroll;
 
         // subscribe to input events
         pauseAction.performed += context => GameManager.Instance.OnPauseToggle();
         inventoryAction.performed += context => GameManager.Instance.OnInventoryToggle();
         jumpAction.performed += context => PlayerController.Instance.OnJump();
         primaryAction.performed += context => GameManager.Instance.OnPrimaryAction();
+        scrollAction.performed += context => GameManager.Instance.OnScrollAction(scrollAction.ReadValue<float>());
     }
 
     private void OnEnable() => inputSystem.Enable();
