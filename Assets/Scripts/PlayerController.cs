@@ -42,7 +42,6 @@ public class PlayerController : NetworkBehaviour
             GetComponent<Renderer>().enabled = false;
             transform.Find("NameCanvas").gameObject.SetActive(false);
             GetComponent<NavMeshAgent>().enabled = false;
-            Destroy(this);
             return;
         }
 
@@ -71,6 +70,7 @@ public class PlayerController : NetworkBehaviour
 
     private void FixedUpdate()
     {
+        if (!IsOwner) return;
         // handle movement
         MovementHandler();
 
@@ -80,6 +80,10 @@ public class PlayerController : NetworkBehaviour
 
     private void LateUpdate()
     {
+        // make the nameplate face the camera
+        transform.Find("NameCanvas").rotation = Quaternion.Euler(90f, 0f, 0f);
+
+        if (!IsOwner) return;
         // handle camera
         CameraHandler();
     }
@@ -187,6 +191,7 @@ public class PlayerController : NetworkBehaviour
 
     public void OnMove(Vector3 targetPosition)
     {
+        if (!IsOwner) return;
         if (GameManager.Instance.isPaused || InventoryManager.Instance.isInventoryActive || UIManager.Instance.activeDialog) return;
 
         // reset agent conditionally
@@ -203,6 +208,7 @@ public class PlayerController : NetworkBehaviour
 
     public void SetPlayerPosition(Vector3 targetPosition)
     {
+        if (!IsOwner) return;
         playerRigidbody.interpolation = RigidbodyInterpolation.None;
         playerRigidbody.isKinematic = false;
         playerAgent.updatePosition = false;
@@ -214,6 +220,7 @@ public class PlayerController : NetworkBehaviour
 
     public void OnJump()
     {
+        if (!IsOwner) return;
         if (GameManager.Instance.isPaused || !isGrounded || !enableMovement || playerRigidbody.isKinematic || InventoryManager.Instance.isInventoryActive) return;
 
         playerRigidbody.linearVelocity = gameObject.transform.up * jumpStrength;
