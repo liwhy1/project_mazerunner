@@ -11,6 +11,8 @@ public class PlayerController : NetworkBehaviour
     public Rigidbody playerRigidbody;
     public NavMeshAgent playerAgent;
     public GameObject playerCamera;
+    public GameObject playerModel;
+    public Animator playerAnimator;
 
     [Header("Movement Data")]
     public bool enableMovement;
@@ -64,7 +66,7 @@ public class PlayerController : NetworkBehaviour
 
         playerCamera = Instantiate(Resources.Load<GameObject>("PlayerCamera"));
         GameManager.Instance.playerViewCamera.transform.SetParent(transform);
-        GameManager.Instance.playerViewCamera.transform.localPosition = Vector3.zero + -Vector3.forward;
+        GameManager.Instance.playerViewCamera.transform.localPosition = Vector3.zero + Vector3.forward;
         GameManager.Instance.playerViewCamera.transform.LookAt(transform);
     }
 
@@ -76,6 +78,10 @@ public class PlayerController : NetworkBehaviour
 
         // check for ground
         GroundCheckHandler();
+
+        // set player animation state
+        bool isAgentNavigating = !(!playerAgent.pathPending && (!playerAgent.hasPath || playerAgent.velocity.sqrMagnitude == 0f));
+        playerAnimator.SetBool("isRunning", InputManager.Instance.moveAction.ReadValue<Vector2>() != Vector2.zero || isAgentNavigating);
     }
 
     private void LateUpdate()
@@ -158,32 +164,21 @@ public class PlayerController : NetworkBehaviour
         // apply speed based on sprint state
         movementSpeed = InputManager.Instance.sprintAction.ReadValue<float>() == 1 ? sprintSpeed : walkSpeed;
 
-        // get camera directions
-        Vector3 cameraForward = playerCamera.transform.forward;
-        Vector3 cameraRight = playerCamera.transform.right;
-        cameraForward.y = 0f;
-        cameraRight.y = 0f;
-        cameraForward.Normalize();
-        cameraRight.Normalize();
-
         // calculate movement direction
-        Vector3 movementDirection = cameraForward * moveDirection.y + cameraRight * moveDirection.x;
+        Vector3 movementDirection = transform.forward * moveDirection.y + transform.right * moveDirection.x;
 
         // prevent diagonal movement from being faster
-        if (movementDirection.sqrMagnitude > 1f)
-        {
-            movementDirection.Normalize();            
-        }
+        if (movementDirection.sqrMagnitude > 1f) movementDirection.Normalize();
 
         // apply movement
         Vector3 targetVelocity = movementDirection * movementSpeed * 0.2f;
         playerRigidbody.linearVelocity = new Vector3(targetVelocity.x, playerRigidbody.linearVelocity.y, targetVelocity.z);
 
-        Vector3 lookDirection = cameraForward;
-        if (lookDirection.sqrMagnitude > 0.001f)
+        // rotate model
+        if (movementDirection.sqrMagnitude > 0.001f)
         {
-            Quaternion targetRotation = Quaternion.LookRotation(lookDirection);
-            playerRigidbody.MoveRotation(Quaternion.RotateTowards(playerRigidbody.rotation,targetRotation, 720f * Time.fixedDeltaTime));
+            Quaternion targetRotation = Quaternion.LookRotation(movementDirection);
+            playerModel.transform.rotation = Quaternion.RotateTowards(playerModel.transform.rotation, targetRotation, 720f * Time.fixedDeltaTime);
         }
     }
 
@@ -199,8 +194,14 @@ public class PlayerController : NetworkBehaviour
         playerRigidbody.interpolation = RigidbodyInterpolation.None;
         playerRigidbody.isKinematic = true;
         playerAgent.updatePosition = true;
-        playerAgent.updateRotation = true;
+        playerAgent.updateRotation = false;
         playerAgent.isStopped = false;
+
+        // rotate player model
+        Vector3 targetDirection = targetPosition - transform.position;
+        targetDirection.y = 0f;
+        Quaternion targetRotation = Quaternion.LookRotation(targetDirection);
+        playerModel.transform.rotation = targetRotation;
 
         // move agent
         playerAgent.SetDestination(targetPosition);
