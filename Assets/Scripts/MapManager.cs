@@ -288,6 +288,11 @@ public class MapManager : MonoBehaviour
         }
     }
 
+    public void OnMapClearRequest()
+    {
+        UIManager.Instance.OnOpenDialog("Notice", "Are you sure you want to clear the map?", "Continue", "mapclear");
+    }
+
     public void OnClearMap()
     {
         // cleanup dots

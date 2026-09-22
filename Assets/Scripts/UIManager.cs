@@ -55,7 +55,6 @@ public class UIManager : NetworkBehaviour
     [SerializeField] private Image minimapPlayerIcon;
     [SerializeField] private Image minimapPlayer2Icon;
     [SerializeField] private Image minimapPlayer3Icon;
-    [SerializeField] private GameObject tutorialObject;
 
     [Header("Dialog Data")]
     public GameObject activeDialog;
@@ -195,7 +194,6 @@ public class UIManager : NetworkBehaviour
         cameraZoomInIcon.gameObject.SetActive(true);
         cameraZoomOutIcon.gameObject.SetActive(true);
         minimapIcon.transform.parent.gameObject.SetActive(true);
-        tutorialObject.SetActive(true);
         pauseIcon.gameObject.SetActive(true);
     }
 
@@ -227,6 +225,10 @@ public class UIManager : NetworkBehaviour
 
         // setup inventory
         InventoryManager.Instance.OnSetup();
+
+        // tutorial dialog
+        string targetContent = "<b>Player movement:</b>\n(WASD) / (Point & Click)\n<b>Camera height control:</b>\n(Mouse Wheel) / (UI Plus & Minus icon)";
+        OnOpenDialog("Tutorial", targetContent, "");
 
         lobbyObject.SetActive(true);
         lobbyJoinCodeText.gameObject.SetActive(false);
@@ -309,20 +311,51 @@ public class UIManager : NetworkBehaviour
         waitingOnHostText.gameObject.SetActive(false);
     }
 
-    public void OnOpenDialog()
+    public void OnOpenDialog(string titleText, string contentText, string buttonText, string targetAction = "")
     {
         // close any active dialogs
         OnCloseDialog();
 
         // create new dialog
-        GameObject newDialog = Instantiate(Resources.Load<GameObject>("TextDialog"), transform);
+        GameObject newDialog = Instantiate(Resources.Load<GameObject>("Elements/TextDialog"), transform);
         newDialog.transform.localPosition = Vector3.zero;
         activeDialog = newDialog;
 
+        // setup vars
+        GameObject dialogTitle = activeDialog.transform.Find("DialogTitle").gameObject;
+        GameObject dialogText = activeDialog.transform.Find("DialogText").gameObject;
+        GameObject buttonLayout = activeDialog.transform.Find("ButtonLayout").gameObject;
+        GameObject closeButton = buttonLayout.transform.Find("CloseButton").gameObject;
+        GameObject mainButton = buttonLayout.transform.Find("MainButton").gameObject;
+
+        // setup text
+        dialogTitle.GetComponent<TMP_Text>().text = titleText;
+        dialogText.GetComponent<TMP_Text>().text = contentText;
+        mainButton.SetActive(!string.IsNullOrEmpty(buttonText));
+        mainButton.transform.GetChild(0).GetComponent<TMP_Text>().text = buttonText;
+
         // setup triggers
-        EventTrigger.Entry pointerClickEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerClick};
-        pointerClickEntry.callback.AddListener((eventData) => { OnCloseDialog(); });
-        activeDialog.transform.Find("CloseButton").GetComponent<EventTrigger>().triggers.Add(pointerClickEntry);
+        EventTrigger.Entry closeClickEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerClick};
+        closeClickEntry.callback.AddListener((eventData) => { OnCloseDialog(); });
+        closeButton.GetComponent<EventTrigger>().triggers.Add(closeClickEntry);
+
+        EventTrigger.Entry mainClickEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerClick};
+        mainClickEntry.callback.AddListener((eventData) => { DialogActionHandler(targetAction); });
+        mainButton.GetComponent<EventTrigger>().triggers.Add(mainClickEntry);
+    }
+
+    private void DialogActionHandler(string targetAction)
+    {
+        switch (targetAction)
+        {
+            case "mapclear":
+                MapManager.Instance.OnClearMap();
+                break;
+            case "sharedmapclear":
+                SharedMapManager.Instance.OnClearMap();
+                break;
+        }
+        OnCloseDialog();
     }
 
     public void OnCloseDialog()
@@ -332,10 +365,5 @@ public class UIManager : NetworkBehaviour
             Destroy(activeDialog);
             activeDialog = null;
         }
-    }
-
-    public void OnCloseTutorial()
-    {
-        tutorialObject.SetActive(false);
     }
 }

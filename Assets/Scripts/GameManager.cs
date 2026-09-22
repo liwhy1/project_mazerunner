@@ -132,6 +132,10 @@ public class GameManager : NetworkBehaviour
         // reset ui
         UIManager.Instance.ResetUIState();
 
+        // tutorial dialog
+        string targetContent = "<b>Player movement:</b>\n(WASD) / (Point & Click)\n<b>Camera height control:</b>\n(Mouse Wheel) / (UI Plus & Minus icon)";
+        UIManager.Instance.OnOpenDialog("Tutorial", targetContent, "");
+
         // fetch active story
         if (networkState == NetworkState.Online) FetchActiveStoryServerRpc();
 
@@ -273,7 +277,7 @@ public class GameManager : NetworkBehaviour
             {
                 if (hit.collider.gameObject.CompareTag("Interactable"))
                 {
-                    UIManager.Instance.OnOpenDialog();
+                    UIManager.Instance.OnOpenDialog("Test", "This is a test dialog", "Continue", "");
                 }
                 else
                 {

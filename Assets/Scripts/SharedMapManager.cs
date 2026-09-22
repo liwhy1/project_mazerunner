@@ -244,6 +244,11 @@ public class SharedMapManager : NetworkBehaviour
         targetDot.GetComponent<Image>().raycastTarget = false;
     }
 
+    public void OnMapClearRequest()
+    {
+        UIManager.Instance.OnOpenDialog("Notice", "Are you sure you want to clear the map?", "Continue", "sharedmapclear");
+    }
+
     public void OnClearMap()
     {
         if (GameManager.Instance.networkState != NetworkState.Online) return;

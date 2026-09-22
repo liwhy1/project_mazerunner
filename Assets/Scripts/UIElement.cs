@@ -8,20 +8,27 @@ public class UIElement : MonoBehaviour
     public Color highlightColor = Color.gray;
     public Color selectColor = Color.darkGray;
     public Color disabledColor = Color.white;
+    private bool isElementSetup = false;
+    private bool isWorldSpace = false;
     public bool enableHighlight = true;
     public bool enableGrow = true;
     public bool isSelected = false;
     public bool isEnabled = true;
     public bool resetOnClick = true;
 
+    public void Start() => OnSetup();
+
     public void OnSetup()
     {
+        if (isElementSetup) return;
+
         // setup vars
         normalColor = Color.white;
         highlightColor = Color.lightGray;
         selectColor = Color.darkGray;
         disabledColor = Color.white;
         disabledColor.a = .3f;
+        isWorldSpace = transform.localScale.x < 1;
         if (GetComponent<EventTrigger>() == null) gameObject.AddComponent<EventTrigger>();
 
         // enable element
@@ -39,7 +46,8 @@ public class UIElement : MonoBehaviour
         EventTrigger.Entry pointerExitEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerExit};
         pointerExitEntry.callback.AddListener((eventData) => { OnElementShrink(); });
         GetComponent<EventTrigger>().triggers.Add(pointerExitEntry);
-        
+
+        isElementSetup = true;
     }
 
     public void OnElementSelect()
@@ -92,14 +100,17 @@ public class UIElement : MonoBehaviour
     {
         if (isSelected || !isEnabled) return;
 
-        if (enableGrow) transform.localScale = new Vector3(1.05f, 1.05f, 1.05f);
+        if (enableGrow) 
+        {
+            transform.localScale = new Vector3(isWorldSpace ? 0.00105f : 1.05f, isWorldSpace ? 0.00105f : 1.05f, isWorldSpace ? 0.00105f : 1.05f);
+        }
         if (enableHighlight) OnElementHighlight();
     }
 
     public void OnElementShrink()
     {
         if (!isEnabled) return;
-        transform.localScale = new Vector3(1f, 1f, 1f);
+        transform.localScale = new Vector3(isWorldSpace ? 0.001f : 1f, isWorldSpace ? 0.001f : 1f, isWorldSpace ? 0.001f : 1f);
         OnElementUnHighlight();
     }
 
