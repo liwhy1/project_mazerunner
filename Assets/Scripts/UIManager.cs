@@ -258,10 +258,6 @@ public class UIManager : NetworkBehaviour
         // setup inventory
         InventoryManager.Instance.OnSetup();
 
-        // tutorial dialog
-        string targetContent = "<b>Player movement:</b>\n(WASD) / (Point & Click)\n<b>Camera height control:</b>\n(Mouse Wheel) / (UI Plus & Minus icon)";
-        OnOpenDialog("Tutorial", targetContent, "");
-
         lobbyObject.SetActive(true);
         lobbyJoinCodeText.gameObject.SetActive(false);
         pauseJoinCodeText.gameObject.SetActive(false);

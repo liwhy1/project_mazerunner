@@ -73,7 +73,7 @@ public class PlayerController : NetworkBehaviour
 
     private void FixedUpdate()
     {
-        if (!IsOwner) return;
+        if (!IsOwner && GameManager.Instance.networkState != NetworkState.Offline) return;
         // handle movement
         MovementHandler();
 
@@ -90,7 +90,7 @@ public class PlayerController : NetworkBehaviour
         // make the nameplate face the camera
         transform.Find("NameCanvas").rotation = Quaternion.Euler(90f, 0f, 0f);
 
-        if (!IsOwner) return;
+        if (!IsOwner && GameManager.Instance.networkState != NetworkState.Offline) return;
         // handle camera
         CameraHandler();
     }
@@ -187,7 +187,7 @@ public class PlayerController : NetworkBehaviour
 
     public void OnMove(Vector3 targetPosition)
     {
-        if (!IsOwner) return;
+        if (!IsOwner && GameManager.Instance.networkState != NetworkState.Offline) return;
         if (GameManager.Instance.isPaused || InventoryManager.Instance.isInventoryActive || UIManager.Instance.activeDialog) return;
 
         // reset agent conditionally
@@ -210,7 +210,7 @@ public class PlayerController : NetworkBehaviour
 
     public void SetPlayerPosition(Vector3 targetPosition)
     {
-        if (!IsOwner) return;
+        if (!IsOwner && GameManager.Instance.networkState != NetworkState.Offline) return;
         playerRigidbody.interpolation = RigidbodyInterpolation.None;
         playerRigidbody.isKinematic = false;
         playerAgent.updatePosition = false;
