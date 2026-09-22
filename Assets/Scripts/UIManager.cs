@@ -4,6 +4,7 @@ using TMPro;
 using Unity.Netcode;
 using UnityEngine.EventSystems;
 using System.Collections.Generic;
+using System.Linq;
 
 public class UIManager : NetworkBehaviour
 {
@@ -163,6 +164,37 @@ public class UIManager : NetworkBehaviour
                 playerIconRect.anchoredPosition = new Vector2(Mathf.Lerp(minimapRect.rect.xMin, minimapRect.rect.xMax, normalizedX), Mathf.Lerp(minimapRect.rect.yMin, minimapRect.rect.yMax, normalizedY));                
             }
         }
+    }
+
+    public void MirrorSharedmaptoMinimap()
+    {
+        // TODO: this is hardcoded, has hacks and is unnecessarily complex (but it works)
+        minimapIcon.transform.localScale = new Vector3(.7f, .7f, .7f);
+        foreach (Transform icon in SharedMapManager.Instance.transform)
+        {
+            // prevent mirroring drawdots
+            if (!icon.GetComponent<NetworkObject>() || icon.name.Contains("Dot")) continue;
+            GameObject newIcon = Instantiate(Resources.Load<GameObject>("MapIcon"), minimapIcon.transform.parent);
+
+            // calculate world canvas pos to screen canvas
+            Vector2 screenPosition = GameManager.Instance.mapCamera.WorldToScreenPoint(icon.position);
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(transform.GetComponent<RectTransform>(), screenPosition, null, out Vector2 localPosition);
+
+            // apply position with slightly made up offset
+            newIcon.GetComponent<RectTransform>().anchoredPosition = localPosition;
+            newIcon.GetComponent<RectTransform>().anchoredPosition -= new Vector2(300f, 0f);
+
+            // anchor hack pt1
+            newIcon.transform.SetParent(minimapIcon.transform);
+
+            // apply icon values
+            newIcon.transform.localEulerAngles = Vector3.zero;
+            newIcon.transform.Find("Sprite").GetComponent<Image>().sprite = Resources.LoadAll<Sprite>("MapIconsNew").FirstOrDefault(s => s.name.Contains(icon.name));
+            newIcon.transform.Find("Sprite").GetComponent<Image>().preserveAspect = true;
+            newIcon.transform.Find("Name").gameObject.SetActive(false);
+        }
+        // resize minimap sprite aka anchor hack pt2
+        minimapIcon.transform.localScale = Vector3.one;
     }
 
     private void SetupStoryDropdown()

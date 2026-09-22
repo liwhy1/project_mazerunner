@@ -138,4 +138,5 @@ public class InventoryManager : MonoBehaviour
     }
 
     public void OnJournalDisable() => buttonLayout.transform.Find("JournalIcon").GetComponent<UIElement>().OnElementDisable();
+    public void OnJournalEnable() => buttonLayout.transform.Find("JournalIcon").GetComponent<UIElement>().OnElementEnable();
 }

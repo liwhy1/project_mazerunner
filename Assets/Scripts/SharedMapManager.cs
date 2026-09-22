@@ -321,6 +321,8 @@ public class SharedMapManager : NetworkBehaviour
         iconPile.SetActive(false);
         saveIcon.SetActive(false);
         SetActiveTool(null);
+        UIManager.Instance.MirrorSharedmaptoMinimap();
+        InventoryManager.Instance.OnJournalEnable();
         MapManager.Instance.individualViewButton.GetComponent<UIElement>().OnElementEnable();
     }
 
