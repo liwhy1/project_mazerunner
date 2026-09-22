@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Netcode;
@@ -21,6 +22,8 @@ public class GameManager : NetworkBehaviour
     public Camera mapCamera;
     public Camera playerViewCamera;
     public GameObject playerSpawnPosition;
+    public GameObject terrainObject;
+    private Coroutine scrollRoutine;
 
     public Material blueMat;
     public Material greenMat;
@@ -278,6 +281,28 @@ public class GameManager : NetworkBehaviour
                 }
             }
         }
+    }
+
+    public void OnScrollStart(float inputValue)
+    {
+        if (scrollRoutine != null) return;
+        scrollRoutine = StartCoroutine(OnAutoScroll(inputValue));
+    }
+
+    private IEnumerator OnAutoScroll(float inputValue)
+    {
+        // TODO: this looks bad :(
+        while(true)
+        {
+            OnScrollAction(inputValue);
+            yield return new WaitForSeconds(0.1f);            
+        }
+    } 
+
+    public void OnScrollStop()
+    {
+        StopCoroutine(scrollRoutine);
+        scrollRoutine = null;
     }
 
     public void OnScrollAction(float inputValue)

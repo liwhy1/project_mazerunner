@@ -55,6 +55,9 @@ public class InventoryManager : MonoBehaviour
     {
         isInventoryActive = !isInventoryActive;
         inventoryObject.SetActive(isInventoryActive);
+        UIManager.Instance.cameraZoomInIcon.gameObject.SetActive(!isInventoryActive);
+        UIManager.Instance.cameraZoomOutIcon.gameObject.SetActive(!isInventoryActive);
+        UIManager.Instance.minimapIcon.transform.parent.gameObject.SetActive(!isInventoryActive);
     }
 
     public void OnOpenJournal()

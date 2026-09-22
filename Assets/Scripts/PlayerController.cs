@@ -187,7 +187,7 @@ public class PlayerController : NetworkBehaviour
         }
     }
 
-    public void OnUpdateCameraHeight(float targetValue) => heightMultiplier = Mathf.Clamp(heightMultiplier + targetValue, 2, 12);
+    public void OnUpdateCameraHeight(float targetValue) => heightMultiplier = Mathf.Clamp(heightMultiplier + targetValue, 4, 14);
 
     public void OnMove(Vector3 targetPosition)
     {
