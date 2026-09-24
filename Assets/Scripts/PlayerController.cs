@@ -22,6 +22,8 @@ public class PlayerController : NetworkBehaviour
     public float walkSpeed = 20f;
     public float sprintSpeed = 30f;
     public bool isGrounded;
+    private Vector3 lastPlayerPosition;
+    private bool isPlayerMoving;
 
     [Header("Camera Data")]
     public bool enableCamera;
@@ -42,9 +44,13 @@ public class PlayerController : NetworkBehaviour
         if (!IsOwner)
         {
             playerCamera.gameObject.SetActive(false);
-            GetComponent<Renderer>().enabled = false;
             transform.Find("NameCanvas").gameObject.SetActive(false);
             GetComponent<NavMeshAgent>().enabled = false;
+
+            foreach (Transform child in playerModel.transform)
+            {
+                if (child.GetComponent<Renderer>()) child.GetComponent<Renderer>().enabled = false;
+            }
             return;
         }
 
@@ -82,7 +88,7 @@ public class PlayerController : NetworkBehaviour
 
         // set player animation state
         bool isAgentNavigating = !(!playerAgent.pathPending && (!playerAgent.hasPath || playerAgent.velocity.sqrMagnitude == 0f));
-        playerAnimator.SetBool("isRunning", InputManager.Instance.moveAction.ReadValue<Vector2>() != Vector2.zero || isAgentNavigating);
+        playerAnimator.SetBool("isRunning", isPlayerMoving || isAgentNavigating);
     }
 
     private void LateUpdate()
@@ -148,7 +154,11 @@ public class PlayerController : NetworkBehaviour
 
         // store move vector
         moveDirection = InputManager.Instance.moveAction.ReadValue<Vector2>();
-        if (moveDirection.sqrMagnitude < 0.001f) return;
+        if (moveDirection.sqrMagnitude < 0.001f) 
+        {
+            isPlayerMoving = false;
+            return;
+        }
 
         // reset agent
         if (playerRigidbody.isKinematic)
@@ -173,6 +183,11 @@ public class PlayerController : NetworkBehaviour
         // apply movement
         Vector3 targetVelocity = movementDirection * movementSpeed * 0.2f;
         playerRigidbody.linearVelocity = new Vector3(targetVelocity.x, playerRigidbody.linearVelocity.y, targetVelocity.z);
+
+        // check if player actually moved
+        Vector3 currentMovement = transform.position - lastPlayerPosition;
+        isPlayerMoving = new Vector3(currentMovement.x, 0f, currentMovement.z).sqrMagnitude > 0.0001f;
+        lastPlayerPosition = transform.position;
 
         // rotate model
         if (movementDirection.sqrMagnitude > 0.001f)

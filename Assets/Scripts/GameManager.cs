@@ -359,12 +359,18 @@ public class GameManager : NetworkBehaviour
 
             if (!FetchGameStartState())
             {
-                player.GetComponent<Renderer>().enabled = false;
+                foreach (Transform child in player.transform.Find("Model").transform)
+                {
+                    if (child.GetComponent<Renderer>()) child.GetComponent<Renderer>().enabled = false;
+                }
                 player.transform.Find("NameCanvas").gameObject.SetActive(false);
             }
             else if (player.IsGameStarted.Value)
             {
-                player.GetComponent<Renderer>().enabled = true;
+                foreach (Transform child in player.transform.Find("Model").transform)
+                {
+                    if (child.GetComponent<Renderer>()) child.GetComponent<Renderer>().enabled = true;
+                }
                 player.transform.Find("NameCanvas").gameObject.SetActive(true);
             }
         }
