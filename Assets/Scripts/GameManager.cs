@@ -25,9 +25,10 @@ public class GameManager : NetworkBehaviour
     public GameObject terrainObject;
     private Coroutine scrollRoutine;
 
-    public Material blueMat;
-    public Material greenMat;
-    public Material redMat;
+    public Material playerMat1;
+    public Material playerMat2;
+    public Material playerMat3;
+    public Material playerMat4;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void Initialize()
@@ -434,22 +435,35 @@ public class GameManager : NetworkBehaviour
         foreach (var player in playerList)
         {
             SetPlayerPropertiesClientRpc(player.PersistentPlayerId.Value);
+            SetPlayerSkinIdClientRpc(player.OwnerClientId);
         }
     }
 
     [ClientRpc]
     public void SetPlayerPropertiesClientRpc(int targetId)
     {
-        Material targetMaterial = targetId == 0 ? blueMat : targetId == 1 ? greenMat : redMat;
         PlayerData targetPlayer = playerList.FirstOrDefault(p => p.PersistentPlayerId.Value == targetId);
         if (!targetPlayer) return;
-
-        targetPlayer.gameObject.GetComponent<Renderer>().material = targetMaterial;
 
         if (!FetchGameStartState())
         {
             PlayerController.Instance.SetPlayerPosition(Vector3.one + Vector3.forward * 3 * FetchPersistentPlayerId());            
         }
+    }
+
+    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+    public void SetPlayerSkinIdServerRpc(int skinId = -1, RpcParams rpcParams = default)
+    {
+        if (skinId != -1) FetchPlayerDataById(rpcParams.Receive.SenderClientId).SkinId.Value = skinId;
+        SetPlayerSkinIdClientRpc(rpcParams.Receive.SenderClientId);
+    }
+
+    [ClientRpc]
+    public void SetPlayerSkinIdClientRpc(ulong playerId)
+    {
+        int skinId = FetchPlayerDataById(playerId).SkinId.Value;
+        Material targetMaterial = skinId == 0 ? playerMat1 : skinId == 1 ? playerMat2 : skinId == 2 ? playerMat3 : playerMat4;
+        FetchPlayerDataById(playerId).transform.Find("Model").Find("Character_Body").GetComponent<Renderer>().material = targetMaterial;
     }
 
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]

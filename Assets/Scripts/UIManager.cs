@@ -44,6 +44,8 @@ public class UIManager : NetworkBehaviour
     [SerializeField] private TMP_Text lobbyJoinCodeText;
     [SerializeField] private TMP_Text lobbyPlayerListText;
     [SerializeField] private TMP_Text waitingOnHostText;
+    [SerializeField] private GameObject LegArrowRight;
+    [SerializeField] private GameObject LegArrowLeft;
 
     [Header("HUD Data")]
     [SerializeField] private Image pauseIcon;
@@ -117,6 +119,14 @@ public class UIManager : NetworkBehaviour
         lobbyQuitClickEntry.callback.AddListener((eventData) => { OnQuitButton(); });
         lobbyQuitButton.GetComponent<EventTrigger>().triggers.Add(lobbyQuitClickEntry);
 
+        EventTrigger.Entry leftArrowClickEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerClick};
+        leftArrowClickEntry.callback.AddListener((eventData) => { GameManager.Instance.SetPlayerSkinIdServerRpc(Mathf.Clamp(GameManager.Instance.FetchPlayerDataById(NetworkManager.LocalClientId).SkinId.Value - 1, 0, 3)); });
+        LegArrowLeft.GetComponent<EventTrigger>().triggers.Add(leftArrowClickEntry);        
+
+        EventTrigger.Entry rightArrowClickEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerClick};
+        rightArrowClickEntry.callback.AddListener((eventData) => { GameManager.Instance.SetPlayerSkinIdServerRpc(Mathf.Clamp(GameManager.Instance.FetchPlayerDataById(NetworkManager.LocalClientId).SkinId.Value + 1, 0, 3)); });
+        LegArrowRight.GetComponent<EventTrigger>().triggers.Add(rightArrowClickEntry);
+
         // pause
         EventTrigger.Entry resumeClickEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerClick};
         resumeClickEntry.callback.AddListener((eventData) => { GameManager.Instance.OnPauseToggle(); });
@@ -158,7 +168,7 @@ public class UIManager : NetworkBehaviour
                 float normalizedX = Mathf.InverseLerp(bounds.min.x, bounds.max.x, playerPosition.x);
                 float normalizedY = Mathf.InverseLerp(bounds.min.z, bounds.max.z, playerPosition.z);
                 RectTransform playerIconRect = playerId == 0 ? minimapPlayerIcon.GetComponent<RectTransform>() : playerId == 1 ?minimapPlayer2Icon.GetComponent<RectTransform>() : minimapPlayer3Icon.GetComponent<RectTransform>();
-                playerIconRect.gameObject.GetComponent<Image>().color = player.gameObject.GetComponent<Renderer>().material.color;
+                playerIconRect.gameObject.GetComponent<Image>().color = player.transform.Find("Model").Find("Character_Body").GetComponent<Renderer>().material.color;
                 playerIconRect.gameObject.SetActive(true);
                 playerIconRect.anchoredPosition = new Vector2(Mathf.Lerp(minimapRect.rect.xMin, minimapRect.rect.xMax, normalizedX), Mathf.Lerp(minimapRect.rect.yMin, minimapRect.rect.yMax, normalizedY));                
             }
