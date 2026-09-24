@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -8,8 +9,8 @@ public class UIElement : MonoBehaviour
     public Color highlightColor = Color.gray;
     public Color selectColor = Color.darkGray;
     public Color disabledColor = Color.white;
-    private bool isElementSetup = false;
-    private bool isWorldSpace = false;
+    public bool isElementSetup = false;
+    public bool isWorldSpace = false;
     public bool enableHighlight = true;
     public bool enableGrow = true;
     public bool isSelected = false;
@@ -30,9 +31,6 @@ public class UIElement : MonoBehaviour
         disabledColor.a = .3f;
         isWorldSpace = transform.localScale.x < 1;
         if (GetComponent<EventTrigger>() == null) gameObject.AddComponent<EventTrigger>();
-
-        // enable element
-        OnElementEnable();
 
         // setup event triggers
         EventTrigger.Entry pointerClickEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerClick};
@@ -70,6 +68,7 @@ public class UIElement : MonoBehaviour
         GetComponent<EventTrigger>().enabled = true;
         GetComponent<Image>().color = normalColor;
         if (transform.Find("Sprite")) transform.Find("Sprite").GetComponent<Image>().color = normalColor;
+        if (transform.Find("Text")) transform.Find("Text").GetComponent<TMP_Text>().color = normalColor;
     }
 
     public void OnElementDisable()
@@ -80,6 +79,7 @@ public class UIElement : MonoBehaviour
         transform.localScale = new Vector3(1f, 1f, 1f);
         GetComponent<Image>().color = disabledColor;
         if (transform.Find("Sprite")) transform.Find("Sprite").GetComponent<Image>().color = disabledColor;
+        if (transform.Find("Text")) transform.Find("Text").GetComponent<TMP_Text>().color = normalColor;
     }
 
     public void OnElementHighlight() 

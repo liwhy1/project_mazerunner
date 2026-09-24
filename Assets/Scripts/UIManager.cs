@@ -51,7 +51,6 @@ public class UIManager : NetworkBehaviour
     public Image cameraZoomInIcon;
     public Image cameraZoomOutIcon;
     public GameObject loadingIcon;
-    public GameObject pageBackground;
     public Image minimapIcon;
     [SerializeField] private Image minimapPlayerIcon;
     [SerializeField] private Image minimapPlayer2Icon;

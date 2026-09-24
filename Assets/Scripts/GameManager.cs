@@ -266,12 +266,11 @@ public class GameManager : NetworkBehaviour
     public void OnPrimaryAction()
     {
         if (isPaused) return;
+        // prevent clicking through ui elements
+        if (InputManager.Instance.IsPointerOverUI()) return;
 
-        if (PlayerController.Instance)
+        if (PlayerController.Instance && !InventoryManager.Instance.isInventoryActive)
         {
-            // prevent clicking through ui elements
-            if (InventoryManager.Instance.isInventoryActive || InputManager.Instance.IsPointerOverUI()) return;
-
             Ray ray = PlayerController.Instance.playerCamera.GetComponent<Camera>().ScreenPointToRay(Pointer.current.position.ReadValue());
             if (Physics.Raycast(ray, out RaycastHit hit))
             {
@@ -284,6 +283,10 @@ public class GameManager : NetworkBehaviour
                     PlayerController.Instance.OnMove(hit.point);
                 }
             }
+        }
+        else if (EditorManager.Instance && InventoryManager.Instance.isInventoryActive)
+        {
+            EditorManager.Instance.OnPrimaryAction();
         }
     }
 
@@ -312,11 +315,15 @@ public class GameManager : NetworkBehaviour
     public void OnScrollAction(float inputValue)
     {
         if (isPaused) return;
+        float targetValue = inputValue > 0 ? .25f : inputValue < 0 ? -.25f : 0;
 
-        if (PlayerController.Instance)
+        if (PlayerController.Instance && !InventoryManager.Instance.isInventoryActive)
         {
-            float targetValue = inputValue > 0 ? .25f : inputValue < 0 ? -.25f : 0;
             PlayerController.Instance.OnUpdateCameraHeight(targetValue);
+        }
+        else if (EditorManager.Instance && InventoryManager.Instance.isInventoryActive)
+        {
+            EditorManager.Instance.OnScrollAction(targetValue);
         }
     }
 

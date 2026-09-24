@@ -10,10 +10,13 @@ public class InventoryManager : MonoBehaviour
     [Header("Inventory Data")]
     public bool isInventoryActive;
     [SerializeField] private GameObject inventoryObject;
+    public GameObject pageBackground;
     public GameObject buttonLayout;
     [SerializeField] private GameObject journalObject;
     [SerializeField] private GameObject mapObject;
     [SerializeField] private GameObject noteObject;
+    [SerializeField] private GameObject editorObject;
+    [SerializeField] private GameObject editorIconObject;
 
     [Header("Journal Data")]
     private bool isJournalGenerated;
@@ -27,6 +30,11 @@ public class InventoryManager : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+    }
+
+    private void Update()
+    {
+        pageBackground.SetActive(PlayerController.Instance && PlayerController.Instance.playerCamera.activeSelf);
     }
 
     public void OnSetup()
@@ -49,6 +57,8 @@ public class InventoryManager : MonoBehaviour
         mapObject.SetActive(false);
         noteObject.transform.parent.gameObject.SetActive(true);
         noteObject.SetActive(false);
+        editorObject.SetActive(false);
+        editorIconObject.SetActive(false);
     }
 
     public void OnToggleInventory()
@@ -58,6 +68,7 @@ public class InventoryManager : MonoBehaviour
         UIManager.Instance.cameraZoomInIcon.gameObject.SetActive(!isInventoryActive);
         UIManager.Instance.cameraZoomOutIcon.gameObject.SetActive(!isInventoryActive);
         UIManager.Instance.minimapIcon.transform.parent.gameObject.SetActive(!isInventoryActive);
+        editorIconObject.SetActive(GameManager.Instance.networkState == NetworkState.Offline);
     }
 
     public void OnOpenJournal()
@@ -135,6 +146,16 @@ public class InventoryManager : MonoBehaviour
         buttonLayout.SetActive(true);
         journalObject.SetActive(false);
         mapObject.SetActive(false);
+        editorObject.SetActive(false);
+        if (EditorManager.Instance) EditorManager.Instance.OnDisableEditor();
+    }
+
+    public void OnOpenEditor()
+    {
+        editorObject.SetActive(true);
+        buttonLayout.gameObject.SetActive(false);
+        noteObject.transform.parent.gameObject.SetActive(false);
+        if (EditorManager.Instance) EditorManager.Instance.OnEnableEditor();
     }
 
     public void OnJournalDisable() => buttonLayout.transform.Find("JournalIcon").GetComponent<UIElement>().OnElementDisable();

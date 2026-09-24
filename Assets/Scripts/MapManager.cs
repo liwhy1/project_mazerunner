@@ -357,7 +357,6 @@ public class MapManager : MonoBehaviour
     public void SetMapPage(GameObject pageObject)
     {
         activeMapPage = pageObject;
-        transform.parent.GetComponent<Image>().enabled = true;
         GameManager.Instance.mapCamera.gameObject.SetActive(false);
 
         ownViewPage.SetActive(false);
@@ -385,7 +384,6 @@ public class MapManager : MonoBehaviour
         else if (pageObject == sharedViewPage)
         {
             sharedViewButton.GetComponent<UIElement>().OnElementSelect();
-            transform.parent.GetComponent<Image>().enabled = false;
             GameManager.Instance.mapCamera.gameObject.SetActive(true);
         }
     }
