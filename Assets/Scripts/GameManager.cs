@@ -264,6 +264,11 @@ public class GameManager : NetworkBehaviour
         UIManager.Instance.OnRefreshPlayerList();
     }
 
+    public void OnJump()
+    {
+        if (PlayerController.Instance) PlayerController.Instance.OnJump();
+    }
+
     public void OnPrimaryAction()
     {
         if (isPaused) return;

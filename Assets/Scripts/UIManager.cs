@@ -9,6 +9,7 @@ using System.Linq;
 public class UIManager : NetworkBehaviour
 {
     public static UIManager Instance;
+    private EventSystem eventSystem;
 
     [Header("Host Data")]
     [SerializeField] private GameObject hostObject;
@@ -57,6 +58,7 @@ public class UIManager : NetworkBehaviour
     [SerializeField] private Image minimapPlayerIcon;
     [SerializeField] private Image minimapPlayer2Icon;
     [SerializeField] private Image minimapPlayer3Icon;
+    private GameObject lastSelectedObject;
 
     [Header("Dialog Data")]
     public GameObject activeDialog;
@@ -67,12 +69,15 @@ public class UIManager : NetworkBehaviour
 
         // setup vars
         Instance = this;
+        eventSystem = FindAnyObjectByType<EventSystem>(FindObjectsInactive.Include);
 
         // reset ui
         ResetUIState();
 
         // enable menu
         menuObject.SetActive(true);
+        eventSystem.firstSelectedGameObject = hostButton;
+        eventSystem.SetSelectedGameObject(hostButton);
 
         // subscribe to events(watch vod)
         // menu
@@ -80,45 +85,83 @@ public class UIManager : NetworkBehaviour
         hostClickEntry.callback.AddListener((eventData) => { OnHostGame(); });
         hostButton.GetComponent<EventTrigger>().triggers.Add(hostClickEntry);
 
+        EventTrigger.Entry hostSubmitEntry = new EventTrigger.Entry() {eventID = EventTriggerType.Submit};
+        hostSubmitEntry.callback.AddListener((eventData) => { OnHostGame(); });
+        hostButton.GetComponent<EventTrigger>().triggers.Add(hostSubmitEntry);
+
         EventTrigger.Entry joinClickEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerClick};
         joinClickEntry.callback.AddListener((eventData) => { OnJoinGame(); });
         joinButton.GetComponent<EventTrigger>().triggers.Add(joinClickEntry);
 
+        EventTrigger.Entry joinSubmitEntry = new EventTrigger.Entry() {eventID = EventTriggerType.Submit};
+        joinSubmitEntry.callback.AddListener((eventData) => { OnJoinGame(); });
+        joinButton.GetComponent<EventTrigger>().triggers.Add(joinSubmitEntry);
+
         EventTrigger.Entry offlineClickEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerClick};
         offlineClickEntry.callback.AddListener((eventData) => { OnOfflineGame(); });
         offlineButton.GetComponent<EventTrigger>().triggers.Add(offlineClickEntry);
+
+        EventTrigger.Entry offlineSubmitEntry = new EventTrigger.Entry() {eventID = EventTriggerType.Submit};
+        offlineSubmitEntry.callback.AddListener((eventData) => { OnOfflineGame(); });
+        offlineButton.GetComponent<EventTrigger>().triggers.Add(offlineSubmitEntry);
 
         // host
         EventTrigger.Entry hostStartClickEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerClick};
         hostStartClickEntry.callback.AddListener((eventData) => { GameManager.Instance.OnStartHost(); });
         startHostButton.GetComponent<EventTrigger>().triggers.Add(hostStartClickEntry);
 
+        EventTrigger.Entry hostStartSubmitEntry = new EventTrigger.Entry() {eventID = EventTriggerType.Submit};
+        hostStartSubmitEntry.callback.AddListener((eventData) => { GameManager.Instance.OnStartHost(); });
+        startHostButton.GetComponent<EventTrigger>().triggers.Add(hostStartSubmitEntry);
+
         EventTrigger.Entry hostBackClickEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerClick};
         hostBackClickEntry.callback.AddListener((eventData) => { OnQuitButton(); });
         hostBackButton.GetComponent<EventTrigger>().triggers.Add(hostBackClickEntry);
 
+        EventTrigger.Entry hostBackSubmitEntry = new EventTrigger.Entry() {eventID = EventTriggerType.Submit};
+        hostBackSubmitEntry.callback.AddListener((eventData) => { OnQuitButton(); });
+        hostBackButton.GetComponent<EventTrigger>().triggers.Add(hostBackSubmitEntry);
+
         hostPlayerNameInput.onValueChanged.AddListener(delegate { GameManager.Instance.OnNameChanged(hostPlayerNameInput.text); });
+        hostPlayerNameInput.onSubmit.AddListener(delegate { GameManager.Instance.OnStartHost(); });
 
         // join
         EventTrigger.Entry clientStartClickEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerClick};
         clientStartClickEntry.callback.AddListener((eventData) => { GameManager.Instance.OnStartClient(); });
         startClientButton.GetComponent<EventTrigger>().triggers.Add(clientStartClickEntry);
 
+        EventTrigger.Entry clientStartSubmitEntry = new EventTrigger.Entry() {eventID = EventTriggerType.Submit};
+        clientStartSubmitEntry.callback.AddListener((eventData) => { GameManager.Instance.OnStartClient(); });
+        startClientButton.GetComponent<EventTrigger>().triggers.Add(clientStartSubmitEntry);
+
         EventTrigger.Entry clientBackClickEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerClick};
         clientBackClickEntry.callback.AddListener((eventData) => { OnQuitButton(); });
         joinBackButton.GetComponent<EventTrigger>().triggers.Add(clientBackClickEntry);
 
+        EventTrigger.Entry clientBackSubmitEntry = new EventTrigger.Entry() {eventID = EventTriggerType.Submit};
+        clientBackSubmitEntry.callback.AddListener((eventData) => { OnQuitButton(); });
+        joinBackButton.GetComponent<EventTrigger>().triggers.Add(clientBackSubmitEntry);
+
         joinPlayerNameInput.onValueChanged.AddListener(delegate { GameManager.Instance.OnNameChanged(joinPlayerNameInput.text); });
+        joinCodeInput.onSubmit.AddListener(delegate { GameManager.Instance.OnStartClient(); });
 
         // lobby
         EventTrigger.Entry startClickEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerClick};
         startClickEntry.callback.AddListener((eventData) => { GameManager.Instance.OnLobbyStart(); });
         startButton.GetComponent<EventTrigger>().triggers.Add(startClickEntry);
 
+        EventTrigger.Entry startSubmitEntry = new EventTrigger.Entry() {eventID = EventTriggerType.Submit};
+        startSubmitEntry.callback.AddListener((eventData) => { GameManager.Instance.OnLobbyStart(); });
+        startButton.GetComponent<EventTrigger>().triggers.Add(startSubmitEntry);
+
         EventTrigger.Entry lobbyQuitClickEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerClick};
         lobbyQuitClickEntry.callback.AddListener((eventData) => { OnQuitButton(); });
         lobbyQuitButton.GetComponent<EventTrigger>().triggers.Add(lobbyQuitClickEntry);
-
+    
+        EventTrigger.Entry lobbyQuitSubmitEntry = new EventTrigger.Entry() {eventID = EventTriggerType.Submit};
+        lobbyQuitSubmitEntry.callback.AddListener((eventData) => { OnQuitButton(); });
+        lobbyQuitButton.GetComponent<EventTrigger>().triggers.Add(lobbyQuitSubmitEntry);
+    
         EventTrigger.Entry leftArrowClickEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerClick};
         leftArrowClickEntry.callback.AddListener((eventData) => { SetPlayerSkinId(-1); });
         LegArrowLeft.GetComponent<EventTrigger>().triggers.Add(leftArrowClickEntry);        
@@ -132,9 +175,17 @@ public class UIManager : NetworkBehaviour
         resumeClickEntry.callback.AddListener((eventData) => { GameManager.Instance.OnPauseToggle(); });
         resumeButton.GetComponent<EventTrigger>().triggers.Add(resumeClickEntry);
 
+        EventTrigger.Entry resumeSubmitEntry = new EventTrigger.Entry() {eventID = EventTriggerType.Submit};
+        resumeSubmitEntry.callback.AddListener((eventData) => { GameManager.Instance.OnPauseToggle(); });
+        resumeButton.GetComponent<EventTrigger>().triggers.Add(resumeSubmitEntry);
+
         EventTrigger.Entry quitClickEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerClick};
         quitClickEntry.callback.AddListener((eventData) => { OnQuitButton(); });
         pauseQuitButton.GetComponent<EventTrigger>().triggers.Add(quitClickEntry);
+
+        EventTrigger.Entry quitSubmitEntry = new EventTrigger.Entry() {eventID = EventTriggerType.Submit};
+        quitSubmitEntry.callback.AddListener((eventData) => { OnQuitButton(); });
+        pauseQuitButton.GetComponent<EventTrigger>().triggers.Add(quitSubmitEntry);
 
         storyDropdown.GetComponent<TMP_Dropdown>().onValueChanged.AddListener(delegate { GameManager.Instance.activeStory = storyDropdown.GetComponent<TMP_Dropdown>().captionText.text; });
     }
@@ -144,6 +195,45 @@ public class UIManager : NetworkBehaviour
         if (PlayerController.Instance)
         {
             UpdateMinimapPosition();            
+        }
+
+        HandleActiveNavigationElement();
+    }
+
+    public void HandleActiveNavigationElement()
+    {
+        GameObject currentSelectedObject = eventSystem.currentSelectedGameObject;
+        if (currentSelectedObject != lastSelectedObject)
+        {
+            // prevent deselecting on click in the menu
+            if (currentSelectedObject == null && GameManager.Instance.networkState == NetworkState.None) 
+            {
+                currentSelectedObject = lastSelectedObject;
+                eventSystem.SetSelectedGameObject(currentSelectedObject);
+            }
+
+            // unhighlight previous element
+            if (lastSelectedObject && lastSelectedObject.GetComponent<UIElement>()) lastSelectedObject.GetComponent<UIElement>().OnElementShrink();
+
+            // highlight selected element
+            if (currentSelectedObject.GetComponent<UIElement>()) currentSelectedObject.GetComponent<UIElement>().OnElementGrow();
+
+            // activate input filed on current selection, if exits
+            if (currentSelectedObject.GetComponent<TMP_InputField>()) currentSelectedObject.GetComponent<TMP_InputField>().ActivateInputField();
+
+            lastSelectedObject = currentSelectedObject;
+        }
+    }
+
+    public void OnNavigationDown()
+    {
+        if (!eventSystem.currentSelectedGameObject) return;
+        Selectable currentSelectable = eventSystem.currentSelectedGameObject.GetComponent<Selectable>();
+        Selectable nextSelectable = currentSelectable.navigation.selectOnDown;
+        if (nextSelectable != null)
+        {
+            EventSystem.current.SetSelectedGameObject(nextSelectable.gameObject);
+            if (nextSelectable.GetComponent<TMP_InputField>()) nextSelectable.GetComponent<TMP_InputField>().ActivateInputField();
         }
     }
 
@@ -251,12 +341,14 @@ public class UIManager : NetworkBehaviour
     private void OnJoinGame()
     {
         ResetUIState();
+        eventSystem.SetSelectedGameObject(joinPlayerNameInput.gameObject);
         joinObject.SetActive(true);
     }
 
     private void OnHostGame()
     {
         ResetUIState();
+        eventSystem.SetSelectedGameObject(hostPlayerNameInput.gameObject);
         hostObject.SetActive(true);
     }
 
@@ -273,6 +365,9 @@ public class UIManager : NetworkBehaviour
 
         // setup story dropdown
         SetupStoryDropdown();
+
+        // set active ui element
+        eventSystem.SetSelectedGameObject(storyDropdown);
 
         // setup inventory
         InventoryManager.Instance.OnSetup();
@@ -309,6 +404,7 @@ public class UIManager : NetworkBehaviour
 
         if (!NetworkManager.IsHost)
         {
+            eventSystem.SetSelectedGameObject(lobbyQuitButton);
             waitingOnHostText.gameObject.SetActive(true);
             storyDropdown.gameObject.SetActive(false);
             startButton.gameObject.SetActive(false);
@@ -316,12 +412,14 @@ public class UIManager : NetworkBehaviour
         else
         {
             // setup story dropdown
+            eventSystem.SetSelectedGameObject(storyDropdown);
             SetupStoryDropdown();
         }
     }
 
     public void OnPauseToggle()
     {
+        eventSystem.SetSelectedGameObject(resumeButton);
         pauseObject.SetActive(!pauseObject.activeSelf);
         pauseIcon.gameObject.SetActive(!pauseObject.activeSelf);
         inventoryIcon.gameObject.SetActive(!pauseObject.activeSelf);
@@ -381,14 +479,25 @@ public class UIManager : NetworkBehaviour
         mainButton.SetActive(!string.IsNullOrEmpty(buttonText));
         mainButton.transform.GetChild(0).GetComponent<TMP_Text>().text = buttonText;
 
+        // set ui selected button
+        eventSystem.SetSelectedGameObject(mainButton.activeSelf ? mainButton : closeButton);
+
         // setup triggers
         EventTrigger.Entry closeClickEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerClick};
         closeClickEntry.callback.AddListener((eventData) => { OnCloseDialog(); });
         closeButton.GetComponent<EventTrigger>().triggers.Add(closeClickEntry);
 
+        EventTrigger.Entry closeSubmitEntry = new EventTrigger.Entry() {eventID = EventTriggerType.Submit};
+        closeSubmitEntry.callback.AddListener((eventData) => { OnCloseDialog(); });
+        closeButton.GetComponent<EventTrigger>().triggers.Add(closeSubmitEntry);
+
         EventTrigger.Entry mainClickEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerClick};
         mainClickEntry.callback.AddListener((eventData) => { DialogActionHandler(targetAction); });
         mainButton.GetComponent<EventTrigger>().triggers.Add(mainClickEntry);
+
+        EventTrigger.Entry mainSubmitEntry = new EventTrigger.Entry() {eventID = EventTriggerType.Submit};
+        mainSubmitEntry.callback.AddListener((eventData) => { DialogActionHandler(targetAction); });
+        mainButton.GetComponent<EventTrigger>().triggers.Add(mainSubmitEntry);
     }
 
     private void DialogActionHandler(string targetAction)
