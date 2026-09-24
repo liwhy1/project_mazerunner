@@ -22,12 +22,19 @@ public class PlayerData : NetworkBehaviour
         PlayerName.OnValueChanged += OnPlayerNameChanged;
         IsGameStarted.OnValueChanged += OnReadyStateChanged;
         PersistentPlayerId.OnValueChanged += OnPersistentIdChanged;
+        SkinId.OnValueChanged += OnSkindIdChanged;
 
         if (IsOwner)
         {
             SetPlayerNameServerRpc(PlayerPrefs.GetString("PlayerName", "Player"));
             GameManager.Instance.SetPlayerPersistentIdServerRpc(NetworkManager.LocalClientId);
         }
+    }
+
+    private void OnSkindIdChanged(int oldValue, int newValue)
+    {
+        if (!IsOwner) return;
+        GameManager.Instance.SetPlayerPropertiesServerRpc();
     }
 
     private void OnPersistentIdChanged(int oldValue, int newValue)
@@ -69,6 +76,7 @@ public class PlayerData : NetworkBehaviour
             PlayerName.OnValueChanged -= OnPlayerNameChanged;
             IsGameStarted.OnValueChanged -= OnReadyStateChanged;
             PersistentPlayerId.OnValueChanged -= OnPersistentIdChanged;
+            SkinId.OnValueChanged -= OnSkindIdChanged;
         }
     }
 }

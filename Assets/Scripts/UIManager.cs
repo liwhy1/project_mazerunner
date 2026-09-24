@@ -120,11 +120,11 @@ public class UIManager : NetworkBehaviour
         lobbyQuitButton.GetComponent<EventTrigger>().triggers.Add(lobbyQuitClickEntry);
 
         EventTrigger.Entry leftArrowClickEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerClick};
-        leftArrowClickEntry.callback.AddListener((eventData) => { GameManager.Instance.SetPlayerSkinIdServerRpc(Mathf.Clamp(GameManager.Instance.FetchPlayerDataById(NetworkManager.LocalClientId).SkinId.Value - 1, 0, 3)); });
+        leftArrowClickEntry.callback.AddListener((eventData) => { SetPlayerSkinId(-1); });
         LegArrowLeft.GetComponent<EventTrigger>().triggers.Add(leftArrowClickEntry);        
 
         EventTrigger.Entry rightArrowClickEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerClick};
-        rightArrowClickEntry.callback.AddListener((eventData) => { GameManager.Instance.SetPlayerSkinIdServerRpc(Mathf.Clamp(GameManager.Instance.FetchPlayerDataById(NetworkManager.LocalClientId).SkinId.Value + 1, 0, 3)); });
+        rightArrowClickEntry.callback.AddListener((eventData) => { SetPlayerSkinId(1); });
         LegArrowRight.GetComponent<EventTrigger>().triggers.Add(rightArrowClickEntry);
 
         // pause
@@ -220,6 +220,16 @@ public class UIManager : NetworkBehaviour
 
         if (!NetworkManager.IsHost) return;
         GameManager.Instance.activeStory = storyNames[0];
+    }
+
+    public void SetPlayerSkinId(int targetValue)
+    {
+        int currentId = PlayerController.Instance.GetComponent<PlayerData>().SkinId.Value;
+        targetValue = currentId + targetValue > 3 ? 0 : currentId + targetValue < 0 ? 3 : currentId + targetValue;
+        Material targetMaterial = targetValue == 0 ? GameManager.Instance.playerMat1 : targetValue == 1 ? GameManager.Instance.playerMat2 : targetValue == 2 ? GameManager.Instance.playerMat3 : GameManager.Instance.playerMat4;
+        Debug.Log(targetValue + ", " + targetMaterial.name);
+        PlayerController.Instance.transform.Find("Model").Find("Character_Body").GetComponent<Renderer>().material = targetMaterial;
+        GameManager.Instance.SetPlayerSkinIdServerRpc(targetValue);
     }
 
     public void ResetUIState()

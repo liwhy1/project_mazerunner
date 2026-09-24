@@ -452,10 +452,9 @@ public class GameManager : NetworkBehaviour
     }
 
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
-    public void SetPlayerSkinIdServerRpc(int skinId = -1, RpcParams rpcParams = default)
+    public void SetPlayerSkinIdServerRpc(int skinId, RpcParams rpcParams = default)
     {
-        if (skinId != -1) FetchPlayerDataById(rpcParams.Receive.SenderClientId).SkinId.Value = skinId;
-        SetPlayerSkinIdClientRpc(rpcParams.Receive.SenderClientId);
+        FetchPlayerDataById(rpcParams.Receive.SenderClientId).SkinId.Value = skinId;
     }
 
     [ClientRpc]
