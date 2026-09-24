@@ -22,7 +22,8 @@ public class PlayerData : NetworkBehaviour
         PlayerName.OnValueChanged += OnPlayerNameChanged;
         IsGameStarted.OnValueChanged += OnReadyStateChanged;
         PersistentPlayerId.OnValueChanged += OnPersistentIdChanged;
-        SkinId.OnValueChanged += OnSkindIdChanged;
+        SkinId.OnValueChanged += OnSkinIdChanged;
+        IsMapReady.OnValueChanged += OnMapReadyStateChanged;
 
         if (IsOwner)
         {
@@ -31,7 +32,13 @@ public class PlayerData : NetworkBehaviour
         }
     }
 
-    private void OnSkindIdChanged(int oldValue, int newValue)
+    private void OnMapReadyStateChanged(bool oldValue, bool newValue)
+    {
+        if (!IsOwner) return;
+        GameManager.Instance.CheckLobbyMapStateServerRpc();
+    }
+
+    private void OnSkinIdChanged(int oldValue, int newValue)
     {
         if (!IsOwner) return;
         GameManager.Instance.SetPlayerPropertiesServerRpc();
@@ -76,7 +83,8 @@ public class PlayerData : NetworkBehaviour
             PlayerName.OnValueChanged -= OnPlayerNameChanged;
             IsGameStarted.OnValueChanged -= OnReadyStateChanged;
             PersistentPlayerId.OnValueChanged -= OnPersistentIdChanged;
-            SkinId.OnValueChanged -= OnSkindIdChanged;
+            SkinId.OnValueChanged -= OnSkinIdChanged;
+            IsMapReady.OnValueChanged -= OnMapReadyStateChanged;
         }
     }
 }

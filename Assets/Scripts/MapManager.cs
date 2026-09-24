@@ -274,7 +274,7 @@ public class MapManager : MonoBehaviour
             mapElements.Add(new MapElementData{iconPrefab = "MapIcon", iconSprite = icon.name, iconPosition = icon.transform.localPosition});
         }
 
-        if (GameManager.Instance.networkState == NetworkState.Online)
+        if (GameManager.Instance.networkState != NetworkState.Offline)
         {
             saveIcon.transform.GetChild(0).gameObject.SetActive(true);
             saveIcon.transform.GetChild(1).gameObject.SetActive(false);

@@ -381,6 +381,11 @@ public class GameManager : NetworkBehaviour
     public void SetPlayerMapStateServerRpc(bool targetState, RpcParams rpcParams = default)
     {
         FetchPlayerDataById(rpcParams.Receive.SenderClientId).IsMapReady.Value = targetState;
+    }
+
+    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+    public void CheckLobbyMapStateServerRpc()
+    {
         if (playerList.All(p => p.IsMapReady.Value == true))
         {
             Debug.Log("GameManager: All individual maps ready");
