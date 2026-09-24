@@ -142,10 +142,8 @@ public class EditorManager : MonoBehaviour
         Ray ray = editorCamera.ScreenPointToRay(Pointer.current.position.ReadValue());
         if (Physics.Raycast(ray, out RaycastHit hit))
         {
-            Vector3 targetPosition = hit.point;
-            Quaternion targetRotation = Quaternion.LookRotation(Vector3.ProjectOnPlane(targetPrefab.transform.forward, hit.normal).normalized, hit.normal);
-
-            GameObject newStructure = Instantiate(targetPrefab, targetPosition, targetRotation, structureHolder);
+            Vector3 targetPosition = hit.point + Vector3.up * 2f;
+            GameObject newStructure = Instantiate(targetPrefab, targetPosition, Quaternion.identity, structureHolder);
             UpdateStructureTransform(newStructure);
         }
     }
