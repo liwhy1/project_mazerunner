@@ -218,6 +218,7 @@ public class MapManager : MonoBehaviour
         Vector3 targetPosition = InputManager.Instance.pointerPosition;
         GameObject newDot = Instantiate(drawDot, targetPosition, Quaternion.Euler(0f, 0f, 0f), mapComponenets.transform);
         newDot.transform.localEulerAngles = Vector3.zero;
+        newDot.transform.SetAsFirstSibling();
         newDot.SetActive(true);
 
         // add pointer enter event to allow detecting existance
@@ -264,13 +265,13 @@ public class MapManager : MonoBehaviour
         InventoryManager.Instance.OnJournalDisable();
 
         List<MapElementData> mapElements = new List<MapElementData>();
-        foreach (var icon in activeIcons)
-        {
-            mapElements.Add(new MapElementData{iconPrefab = "MapIcon", iconSprite = icon.name, iconPosition = icon.transform.localPosition});
-        }
         foreach (var icon in activeDrawDots)
         {
             mapElements.Add(new MapElementData{iconPrefab = "DrawDot", iconSprite = "DrawDot", iconPosition = icon.transform.localPosition});
+        }
+        foreach (var icon in activeIcons)
+        {
+            mapElements.Add(new MapElementData{iconPrefab = "MapIcon", iconSprite = icon.name, iconPosition = icon.transform.localPosition});
         }
 
         if (GameManager.Instance.networkState == NetworkState.Online)

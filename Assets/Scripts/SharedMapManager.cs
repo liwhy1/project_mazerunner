@@ -370,7 +370,11 @@ public class SharedMapManager : NetworkBehaviour
         {
             Debug.Log("SMM: Updating element data for: " + targetObject);
             targetObject.name = targetSprite;
-            if (targetSprite == "DrawDot") SetupDotEventTriggers(targetObject.gameObject);
+            if (targetSprite == "DrawDot") 
+            {
+                targetObject.transform.SetSiblingIndex(iconPile.transform.GetSiblingIndex());
+                SetupDotEventTriggers(targetObject.gameObject);
+            }
             else
             {
                 targetObject.transform.Find("Sprite").GetComponent<Image>().sprite = Resources.LoadAll<Sprite>("MapIconsNew").FirstOrDefault(s => s.name.Contains(targetSprite));
