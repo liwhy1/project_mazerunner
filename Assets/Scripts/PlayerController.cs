@@ -86,6 +86,9 @@ public class PlayerController : NetworkBehaviour
         // check for ground
         GroundCheckHandler();
 
+        // toggle camera based on shared map view activity
+        playerCamera.gameObject.SetActive(!(InventoryManager.Instance.isInventoryActive && (GameManager.Instance.mapCamera.gameObject.activeSelf || (EditorManager.Instance && EditorManager.Instance.editorMapInstance && EditorManager.Instance.editorMapInstance.activeSelf))));
+
         // set player animation state
         bool isAgentNavigating = !(!playerAgent.pathPending && (!playerAgent.hasPath || playerAgent.velocity.sqrMagnitude == 0f));
         playerAnimator.SetBool("isRunning", isPlayerMoving || isAgentNavigating);
@@ -97,6 +100,7 @@ public class PlayerController : NetworkBehaviour
         transform.Find("NameCanvas").rotation = Quaternion.Euler(90f, 0f, 0f);
 
         if (!IsOwner && GameManager.Instance.networkState != NetworkState.Offline) return;
+
         // handle camera
         CameraHandler();
     }
@@ -112,9 +116,6 @@ public class PlayerController : NetworkBehaviour
 
     private void CameraHandler()
     {
-        // toggle camera based on shared map view activity
-        playerCamera.gameObject.SetActive(!(InventoryManager.Instance.isInventoryActive && (GameManager.Instance.mapCamera.gameObject.activeSelf || (EditorManager.Instance && EditorManager.Instance.editorMapInstance && EditorManager.Instance.editorMapInstance.activeSelf))));
-
         if (!enableCamera || playerCamera == null) return;
 
         // follow player
