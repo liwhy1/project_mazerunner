@@ -175,10 +175,10 @@ public class UIManager : NetworkBehaviour
             if (lastSelectedObject && lastSelectedObject.GetComponent<UIElement>()) lastSelectedObject.GetComponent<UIElement>().OnElementShrink();
 
             // highlight selected element
-            if (currentSelectedObject.GetComponent<UIElement>()) currentSelectedObject.GetComponent<UIElement>().OnElementGrow();
+            if (currentSelectedObject && currentSelectedObject.GetComponent<UIElement>()) currentSelectedObject.GetComponent<UIElement>().OnElementGrow();
 
             // activate input filed on current selection, if exits
-            if (currentSelectedObject.GetComponent<TMP_InputField>()) currentSelectedObject.GetComponent<TMP_InputField>().ActivateInputField();
+            if (currentSelectedObject && currentSelectedObject.GetComponent<TMP_InputField>()) currentSelectedObject.GetComponent<TMP_InputField>().ActivateInputField();
 
             lastSelectedObject = currentSelectedObject;
         }
