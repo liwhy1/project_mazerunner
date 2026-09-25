@@ -47,6 +47,8 @@ public class UIManager : NetworkBehaviour
     [SerializeField] private TMP_Text gameStateText;
     [SerializeField] private GameObject finishButton;
     [SerializeField] private GameObject sharedMapView;
+    [SerializeField] private GameObject timerObject;
+
     [Header("Pause Data")]
     [SerializeField] private GameObject pauseObject;
     [SerializeField] public GameObject resumeButton;
