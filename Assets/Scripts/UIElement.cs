@@ -1,4 +1,3 @@
-using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -9,8 +8,8 @@ public class UIElement : MonoBehaviour
     public Color highlightColor = Color.gray;
     public Color selectColor = Color.darkGray;
     public Color disabledColor = Color.white;
+    Vector3 startSize;
     public bool isElementSetup = false;
-    public bool isWorldSpace = false;
     public bool enableHighlight = true;
     public bool enableGrow = true;
     public bool isSelected = false;
@@ -29,7 +28,12 @@ public class UIElement : MonoBehaviour
         selectColor = Color.darkGray;
         disabledColor = Color.white;
         disabledColor.a = .3f;
-        isWorldSpace = transform.localScale.x < 1;
+        startSize = transform.localScale;
+        if (startSize == Vector3.zero)
+        {
+            startSize = Vector3.one;
+            transform.localScale = Vector3.one;
+        }
         if (GetComponent<EventTrigger>() == null) gameObject.AddComponent<EventTrigger>();
 
         // setup event triggers
@@ -100,7 +104,7 @@ public class UIElement : MonoBehaviour
 
         if (enableGrow) 
         {
-            transform.localScale = new Vector3(isWorldSpace ? 0.00105f : 1.05f, isWorldSpace ? 0.00105f : 1.05f, isWorldSpace ? 0.00105f : 1.05f);
+            transform.localScale = startSize * 1.05f;
         }
         if (enableHighlight) OnElementHighlight();
     }
@@ -108,7 +112,7 @@ public class UIElement : MonoBehaviour
     public void OnElementShrink()
     {
         if (!isEnabled) return;
-        transform.localScale = new Vector3(isWorldSpace ? 0.001f : 1f, isWorldSpace ? 0.001f : 1f, isWorldSpace ? 0.001f : 1f);
+        transform.localScale = startSize;
         OnElementUnHighlight();
     }
 
