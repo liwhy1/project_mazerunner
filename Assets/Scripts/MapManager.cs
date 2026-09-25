@@ -267,10 +267,12 @@ public class MapManager : MonoBehaviour
         List<MapElementData> mapElements = new List<MapElementData>();
         foreach (var icon in activeDrawDots)
         {
+            if (icon == null) continue; // NOTE: These checks should prevent failed map data sending
             mapElements.Add(new MapElementData{iconPrefab = "DrawDot", iconSprite = "DrawDot", iconPosition = icon.transform.localPosition});
         }
         foreach (var icon in activeIcons)
         {
+            if (icon == null) continue;
             mapElements.Add(new MapElementData{iconPrefab = "MapIcon", iconSprite = icon.name, iconPosition = icon.transform.localPosition});
         }
 
