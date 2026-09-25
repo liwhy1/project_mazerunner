@@ -69,7 +69,6 @@ public class GameManager : NetworkBehaviour
         Instance = this;
         isPaused = true;
         networkState = NetworkState.None;
-        mainCamera = Camera.main.gameObject;
         PlayerPrefs.DeleteAll();
         PlayerPrefs.Save();
 
@@ -187,6 +186,7 @@ public class GameManager : NetworkBehaviour
     {
         Debug.Log("GameManager: Starting game as Master");
         isMaster = true;
+        terrainObject.transform.parent.gameObject.SetActive(false);
         OnStartHost();
     }
 
@@ -538,7 +538,6 @@ public class GameManager : NetworkBehaviour
     {
         // NOTE: This function should only be called by a master player
         SharedMapManager.Instance.OnSharedMapReadyServerRpc();
-        
     }
 
     public ulong FetchLocalClientId()
