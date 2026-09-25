@@ -21,6 +21,7 @@ public class UIManager : NetworkBehaviour
     [Header("Host Data")]
     [SerializeField] private GameObject hostObject;
     [SerializeField] private GameObject startHostButton;
+    [SerializeField] private GameObject startMasterButton;
     [SerializeField] private GameObject hostBackButton;
     [SerializeField] private TMP_InputField hostPlayerNameInput;
 
@@ -39,9 +40,13 @@ public class UIManager : NetworkBehaviour
     [SerializeField] private TMP_Text lobbyJoinCodeText;
     [SerializeField] private TMP_Text lobbyPlayerListText;
     [SerializeField] private TMP_Text waitingOnHostText;
+    [SerializeField] private GameObject playerView;
     [SerializeField] private GameObject LegArrowRight;
     [SerializeField] private GameObject LegArrowLeft;
 
+    [SerializeField] private TMP_Text gameStateText;
+    [SerializeField] private GameObject finishButton;
+    [SerializeField] private GameObject sharedMapView;
     [Header("Pause Data")]
     [SerializeField] private GameObject pauseObject;
     [SerializeField] public GameObject resumeButton;
@@ -358,22 +363,22 @@ public class UIManager : NetworkBehaviour
     {
         ResetUIState();
         lobbyObject.SetActive(true);
-
         loadingIcon.SetActive(false);
 
-        if (!NetworkManager.IsHost)
-        {
-            eventSystem.SetSelectedGameObject(lobbyQuitButton);
-            waitingOnHostText.gameObject.SetActive(true);
-            storyDropdown.gameObject.SetActive(false);
-            startButton.gameObject.SetActive(false);
-        }
-        else
-        {
-            // setup story dropdown
-            eventSystem.SetSelectedGameObject(storyDropdown);
-            SetupStoryDropdown();
-        }
+        // conditionally enable elements
+        playerView.SetActive(!GameManager.Instance.isMaster);
+        gameStateText.gameObject.SetActive(GameManager.Instance.isMaster);
+        gameStateText.text = "";
+        waitingOnHostText.gameObject.SetActive(!NetworkManager.IsHost);
+        storyDropdown.gameObject.SetActive(NetworkManager.IsHost);
+        startButton.SetActive(NetworkManager.IsHost);
+        finishButton.SetActive(false);
+        sharedMapView.SetActive(false);
+        timerObject.SetActive(false);
+        eventSystem.SetSelectedGameObject(NetworkManager.IsHost ? storyDropdown : lobbyQuitButton);
+
+        // setup story dropdown
+        SetupStoryDropdown();
     }
 
     public void OnPauseToggle()
@@ -400,8 +405,8 @@ public class UIManager : NetworkBehaviour
 
     public void SetJoinCodeText(string targetText)
     {
-        lobbyJoinCodeText.text = "Join Code: " + targetText;
-        pauseJoinCodeText.text = "Join Code: " + targetText;
+        lobbyJoinCodeText.text = "Join Code: \n<b>" + targetText;
+        pauseJoinCodeText.text = "Join Code: \n<b>" + targetText;
     }
 
     public string GetJoinCodeInput()
@@ -411,8 +416,11 @@ public class UIManager : NetworkBehaviour
 
     public void OnLobbyStart()
     {
-        startButton.gameObject.SetActive(true);
+        startButton.SetActive(!GameManager.Instance.isMaster);
+        timerObject.SetActive(GameManager.Instance.isMaster);
+        storyDropdown.SetActive(false);
         waitingOnHostText.gameObject.SetActive(false);
+        SetMasterGameStateText("Individual mapping\n" + GameManager.Instance.playerList.Count(p => p.IsMapReady.Value == true) + "/" + GameManager.Instance.playerList.Count);
     }
 
     public void OnOpenDialog(string titleText, string contentText, string buttonText, string targetAction = "")
@@ -480,5 +488,28 @@ public class UIManager : NetworkBehaviour
             Destroy(activeDialog);
             activeDialog = null;
         }
+    }
+
+    public void SetMasterGameStateText(string targetText)
+    {
+        gameStateText.text = "<b>Game State:</b>\n";
+        gameStateText.text += targetText;
+    }
+
+    public void OnSharedMapEnabled()
+    {
+        SetMasterGameStateText("Shared mapping");
+        finishButton.SetActive(true);
+        GameManager.Instance.mapCamera.gameObject.SetActive(true);
+        GameManager.Instance.mapCamera.transform.position = new Vector3(0.33f, -100f, 0.34f);
+        GameManager.Instance.mapCamera.targetTexture = (RenderTexture)sharedMapView.GetComponent<RawImage>().texture;
+        sharedMapView.SetActive(true);
+    }
+
+    public void OnSharedMapReady()
+    {
+        SetMasterGameStateText("Explore map");
+        GameManager.Instance.OnSharedMapReady();
+        finishButton.SetActive(false);
     }
 }

@@ -18,6 +18,9 @@ public class GameManager : NetworkBehaviour
     public List<PlayerData> playerList = new List<PlayerData>();
     public string activeStory;
 
+    public bool isMaster;
+    public bool isMasterGameStarted;
+
     [SerializeField] private GameObject mainCamera;
     public Camera mapCamera;
     public Camera playerViewCamera;
@@ -70,12 +73,6 @@ public class GameManager : NetworkBehaviour
         PlayerPrefs.DeleteAll();
         PlayerPrefs.Save();
 
-        // call setup on uielemenets
-        foreach (var element in FindObjectsByType<UIElement>(FindObjectsInactive.Include))
-        {
-            element.OnSetup();
-        }
-
         NetworkManager.OnClientConnectedCallback += OnClientConnected;
         NetworkManager.OnClientDisconnectCallback += OnClientDisconnected;
     }
@@ -124,24 +121,30 @@ public class GameManager : NetworkBehaviour
     public void OnLobbyStart()
     {
         // set gamestate
-        if (networkState == NetworkState.Online) SetPlayerGameStateServerRpc(true);
+        if (networkState == NetworkState.Online && !isMaster) SetPlayerGameStateServerRpc(true);
+
         isPaused = false;
-        mainCamera.SetActive(false);
         playerViewCamera.gameObject.SetActive(false);
         SharedMapManager.Instance.gameObject.GetComponent<Canvas>().worldCamera = mapCamera;
 
-        // reset ui
-        UIManager.Instance.ResetUIState();
+        if (!isMaster) 
+        {
+            mainCamera.SetActive(false);
 
-        // tutorial dialog
-        string targetContent = "<b>Player movement:</b>\n(WASD) / (Point & Click)\n<b>Camera height control:</b>\n(Mouse Wheel) / (UI Plus & Minus icon)";
-        UIManager.Instance.OnOpenDialog("Tutorial", targetContent, "");
+            // reset ui
+            UIManager.Instance.ResetUIState();
+
+            // tutorial dialog
+            string targetContent = "<b>Player movement:</b>\n(WASD) / (Point & Click)\n<b>Camera height control:</b>\n(Mouse Wheel) / (UI Plus & Minus icon)";
+            UIManager.Instance.OnOpenDialog("Tutorial", targetContent, "");
+
+            // move player to map
+            PlayerController.Instance.SetPlayerPosition(playerSpawnPosition.transform.position + Vector3.forward * FetchPersistentPlayerId());
+        }
+        else isMasterGameStarted = true;
 
         // fetch active story
         if (networkState == NetworkState.Online) FetchActiveStoryServerRpc();
-
-        // move player to map
-        PlayerController.Instance.SetPlayerPosition(playerSpawnPosition.transform.position + Vector3.forward * FetchPersistentPlayerId());
 
         if (!NetworkManager.IsHost) return;
 
@@ -155,8 +158,16 @@ public class GameManager : NetworkBehaviour
 
         if (NetworkManager.IsHost)
         {
-            // spawn player object
-            SpawnPlayer(clientId);
+            if (isMaster && NetworkManager.LocalClientId == clientId)
+            {
+                // move to lobby connect state without instantiating player data
+                OnLobbyConnect();             
+            }
+            else
+            {
+                // spawn player object
+                SpawnPlayer(clientId);   
+            }
 
             // spawn shared map if it doesn't exist already
             if (!SharedMapManager.Instance)
@@ -172,12 +183,19 @@ public class GameManager : NetworkBehaviour
         PlayerLeftClientRpc(clientId);
     }
 
+    public void OnStartMaster()
+    {
+        Debug.Log("GameManager: Starting game as Master");
+        isMaster = true;
+        OnStartHost();
+    }
+
     public async void OnStartHost()
     {
-        if (string.IsNullOrEmpty(PlayerPrefs.GetString("PlayerName"))) return;
+        if (string.IsNullOrEmpty(PlayerPrefs.GetString("PlayerName")) && !isMaster) return;
 
         UIManager.Instance.loadingIcon.SetActive(true);
-        string relayCode = await RelayManager.Instance.StartHost(3);
+        string relayCode = await RelayManager.Instance.StartHost(4);
 
         if (!string.IsNullOrEmpty(relayCode))
         {
@@ -361,7 +379,7 @@ public class GameManager : NetworkBehaviour
         Debug.Log("GameManager: Fetching player render state");
         foreach (var player in playerList)
         {
-            if (player.PersistentPlayerId.Value == FetchPersistentPlayerId()) continue;
+            if (FetchPersistentPlayerId() > -1 && player.PersistentPlayerId.Value == FetchPersistentPlayerId()) continue;
 
             if (!FetchGameStartState())
             {
@@ -391,9 +409,11 @@ public class GameManager : NetworkBehaviour
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
     public void CheckLobbyMapStateServerRpc()
     {
+        UIManager.Instance.SetMasterGameStateText("Individual mapping\n" + playerList.Count(p => p.IsMapReady.Value == true) + "/" + playerList.Count);
         if (playerList.All(p => p.IsMapReady.Value == true))
         {
             Debug.Log("GameManager: All individual maps ready");
+            UIManager.Instance.OnSharedMapEnabled();
             SharedMapManager.Instance.OnSendMapInsanceClientRpc();
         }
     }
@@ -457,7 +477,8 @@ public class GameManager : NetworkBehaviour
 
         if (!FetchGameStartState())
         {
-            PlayerController.Instance.SetPlayerPosition(Vector3.one + Vector3.forward * 3 * FetchPersistentPlayerId());            
+            // TODO: idk what this does
+            //PlayerController.Instance.SetPlayerPosition(Vector3.one + Vector3.forward * 3 * FetchPersistentPlayerId());            
         }
     }
 
@@ -513,6 +534,13 @@ public class GameManager : NetworkBehaviour
         FetchPlayerDataById(rpcParams.Receive.SenderClientId).IsGameStarted.Value = targetState;
     }
 
+    public void OnSharedMapReady()
+    {
+        // NOTE: This function should only be called by a master player
+        SharedMapManager.Instance.OnSharedMapReadyServerRpc();
+        
+    }
+
     public ulong FetchLocalClientId()
     {
         return NetworkManager.LocalClientId;
@@ -520,12 +548,13 @@ public class GameManager : NetworkBehaviour
 
     public int FetchPersistentPlayerId()
     {
+        if (!PlayerController.Instance) return -1; // NOTE: This should only be the case on master player
         return PlayerController.Instance.GetComponent<PlayerData>().PersistentPlayerId.Value;
     }
 
     public bool FetchGameStartState()
     {
-        if (!PlayerController.Instance) return false;
+        if (!PlayerController.Instance) return isMasterGameStarted;
         
         if (networkState == NetworkState.Offline)
         {

@@ -118,6 +118,7 @@ public class SharedMapManager : NetworkBehaviour
 
     public void OnStartElementDrag(GameObject targetElement)
     {
+        if (!PlayerController.Instance) return;
         if (activeTool == null || PlayerController.Instance.playerCamera.activeSelf) return;
 
         // get ownership
@@ -220,6 +221,7 @@ public class SharedMapManager : NetworkBehaviour
 
     public void OnDrawLine()
     {
+        if (!PlayerController.Instance) return;
         if (activeTool != pencilIcon || PlayerController.Instance.playerCamera.activeSelf || !enablePlacement || enableDiscard || InputManager.Instance.lookAction.ReadValue<Vector2>() == Vector2.zero) return;
 
         // instantiate new dots in world space based on mouse position
@@ -368,7 +370,6 @@ public class SharedMapManager : NetworkBehaviour
     {
         if (NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(targetElement, out NetworkObject targetObject))
         {
-            Debug.Log("SMM: Updating element data for: " + targetObject);
             targetObject.name = targetSprite;
             if (targetSprite == "DrawDot") 
             {
