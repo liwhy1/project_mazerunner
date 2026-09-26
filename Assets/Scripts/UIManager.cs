@@ -159,8 +159,8 @@ public class UIManager : NetworkBehaviour
         LegArrowRight.GetComponent<EventTrigger>().triggers.Add(rightArrowClickEntry);
 
         // pause
-        AddEventTrigger(resumeButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, GameManager.Instance.OnPauseToggle);
-        AddEventTrigger(resumeButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, GameManager.Instance.OnPauseToggle);
+        AddEventTrigger(resumeButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, InputManager.Instance.OnPauseAction);
+        AddEventTrigger(resumeButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, InputManager.Instance.OnPauseAction);
         AddEventTrigger(pauseQuitButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnQuitButton);
         AddEventTrigger(pauseQuitButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnQuitButton);
         storyDropdown.GetComponent<TMP_Dropdown>().onValueChanged.AddListener(delegate { GameManager.Instance.activeStory = storyDropdown.GetComponent<TMP_Dropdown>().captionText.text; });

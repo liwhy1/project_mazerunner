@@ -1,11 +1,9 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
 public enum NetworkState {None, Offline, Online};
@@ -26,7 +24,6 @@ public class GameManager : NetworkBehaviour
     public Camera playerViewCamera;
     public GameObject playerSpawnPosition;
     public GameObject terrainObject;
-    private Coroutine scrollRoutine;
 
     public Material playerMat1;
     public Material playerMat2;
@@ -85,21 +82,6 @@ public class GameManager : NetworkBehaviour
             NetworkManager.OnClientDisconnectCallback -= OnClientDisconnected;            
         }
         catch {}
-    }
-
-    public void OnPauseToggle()
-    {
-        if (!FetchGameStartState()) return;
-
-        isPaused = !isPaused;
-        UIManager.Instance.OnPauseToggle();
-    }
-
-    public void OnInventoryToggle()
-    {
-        if (isPaused) return;
-
-        InventoryManager.Instance.OnToggleInventory();
     }
 
     public void OnNameChanged(string inputText)
@@ -280,75 +262,6 @@ public class GameManager : NetworkBehaviour
         
         playerList.Sort((a, b) => a.OwnerClientId.CompareTo(b.OwnerClientId));
         UIManager.Instance.OnRefreshPlayerList();
-    }
-
-    public void OnJump()
-    {
-        if (PlayerController.Instance) PlayerController.Instance.OnJump();
-    }
-
-    public void OnPrimaryAction()
-    {
-        if (isPaused) return;
-        // prevent clicking through ui elements
-        if (InputManager.Instance.IsPointerOverUI()) return;
-
-        if (PlayerController.Instance && !InventoryManager.Instance.isInventoryActive)
-        {
-            Ray ray = PlayerController.Instance.playerCamera.GetComponent<Camera>().ScreenPointToRay(Pointer.current.position.ReadValue());
-            if (Physics.Raycast(ray, out RaycastHit hit))
-            {
-                if (hit.collider.gameObject.CompareTag("Interactable"))
-                {
-                    UIManager.Instance.OnOpenDialog("Test", "This is a test dialog", "Continue", "");
-                }
-                else
-                {
-                    PlayerController.Instance.OnMove(hit.point);
-                }
-            }
-        }
-        else if (EditorManager.Instance && InventoryManager.Instance.isInventoryActive)
-        {
-            EditorManager.Instance.OnPrimaryAction();
-        }
-    }
-
-    public void OnScrollStart(float inputValue)
-    {
-        if (scrollRoutine != null) return;
-        scrollRoutine = StartCoroutine(OnAutoScroll(inputValue));
-    }
-
-    private IEnumerator OnAutoScroll(float inputValue)
-    {
-        // TODO: this looks bad :(
-        while(true)
-        {
-            OnScrollAction(inputValue);
-            yield return new WaitForSeconds(0.1f);            
-        }
-    } 
-
-    public void OnScrollStop()
-    {
-        StopCoroutine(scrollRoutine);
-        scrollRoutine = null;
-    }
-
-    public void OnScrollAction(float inputValue)
-    {
-        if (isPaused) return;
-        float targetValue = inputValue > 0 ? .25f : inputValue < 0 ? -.25f : 0;
-
-        if (PlayerController.Instance && !InventoryManager.Instance.isInventoryActive)
-        {
-            PlayerController.Instance.OnUpdateCameraHeight(targetValue);
-        }
-        else if (EditorManager.Instance && InventoryManager.Instance.isInventoryActive)
-        {
-            EditorManager.Instance.OnScrollAction(targetValue);
-        }
     }
 
     [ClientRpc]

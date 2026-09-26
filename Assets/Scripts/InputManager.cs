@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.EventSystems;
 using System.Collections.Generic;
+using System.Collections;
 
 public class InputManager : MonoBehaviour
 {
@@ -20,6 +21,7 @@ public class InputManager : MonoBehaviour
     public InputAction interactAction;
     public InputAction scrollAction;
     public InputAction submitNavAction;
+    private Coroutine scrollRoutine;
 
     private void Awake()
     {
@@ -43,11 +45,11 @@ public class InputManager : MonoBehaviour
         submitNavAction = inputSystem.UI.SubmitNav;
 
         // subscribe to input events
-        pauseAction.performed += context => GameManager.Instance.OnPauseToggle();
-        inventoryAction.performed += context => GameManager.Instance.OnInventoryToggle();
-        jumpAction.performed += context => GameManager.Instance.OnJump();
-        primaryAction.performed += context => GameManager.Instance.OnPrimaryAction();
-        scrollAction.performed += context => GameManager.Instance.OnScrollAction(scrollAction.ReadValue<float>());
+        pauseAction.performed += context => OnPauseAction();
+        inventoryAction.performed += context => OnInventoryAction();
+        jumpAction.performed += context => OnJumpAction();
+        primaryAction.performed += context => OnPrimaryAction();
+        scrollAction.performed += context => OnScrollAction();
         submitNavAction.performed += context => UIManager.Instance.OnNavigationDown();
     }
 
@@ -62,7 +64,7 @@ public class InputManager : MonoBehaviour
 
     public bool IsPointerOverUI()
     {
-        PointerEventData pointerData = new PointerEventData(EventSystem.current) { position = pointerPosition };
+        PointerEventData pointerData = new PointerEventData(EventSystem.current) { position = Pointer.current.position.ReadValue() };
 
         List<RaycastResult> castResults = new List<RaycastResult>();
         EventSystem.current.RaycastAll(pointerData, castResults);
@@ -76,4 +78,92 @@ public class InputManager : MonoBehaviour
 
         return false;
     }
+
+    public void OnPauseAction()
+    {
+        if (!GameManager.Instance.FetchGameStartState()) return;
+
+        GameManager.Instance.isPaused = !GameManager.Instance.isPaused;
+        UIManager.Instance.OnPauseToggle();
+    }
+
+    public void OnInventoryAction()
+    {
+        if (GameManager.Instance.isPaused) return;
+
+        InventoryManager.Instance.OnToggleInventory();
+    }
+
+    public void OnJumpAction()
+    {
+        if (GameManager.Instance.isPaused) return;
+
+        if (PlayerController.Instance) PlayerController.Instance.OnJump();
+    }
+
+    public void OnPrimaryAction()
+    {
+        if (GameManager.Instance.isPaused) return;
+
+        // prevent clicking through ui elements
+        if (IsPointerOverUI()) return;
+
+        if (PlayerController.Instance && !InventoryManager.Instance.isInventoryActive)
+        {
+            Ray ray = PlayerController.Instance.playerCamera.GetComponent<Camera>().ScreenPointToRay(Pointer.current.position.ReadValue());
+            if (Physics.Raycast(ray, out RaycastHit hit))
+            {
+                PlayerController.Instance.OnMove(hit.point);
+            }
+        }
+        else if (EditorManager.Instance && InventoryManager.Instance.isInventoryActive)
+        {
+            EditorManager.Instance.OnPrimaryAction();
+        }
+    }
+
+    public void OnScrollStart()
+    {
+        if (GameManager.Instance.isPaused) return;
+
+        if (scrollRoutine != null) return;
+        scrollRoutine = StartCoroutine(OnAutoScroll());
+    }
+
+    private IEnumerator OnAutoScroll()
+    {
+        if (GameManager.Instance.isPaused) yield break;
+
+        while(true)
+        {
+            OnScrollAction();
+            yield return new WaitForSeconds(0.1f);            
+        }
+    } 
+
+    public void OnScrollStop()
+    {
+        if (GameManager.Instance.isPaused) return;
+
+        StopCoroutine(scrollRoutine);
+        scrollRoutine = null;
+    }
+
+    public void OnScrollAction()
+    {
+        if (GameManager.Instance.isPaused) return;
+
+        float scrollValue = scrollAction.ReadValue<float>();
+        float targetValue = scrollValue > 0 ? .25f : scrollValue < 0 ? -.25f : 0;
+
+        if (PlayerController.Instance && !InventoryManager.Instance.isInventoryActive)
+        {
+            PlayerController.Instance.OnUpdateCameraHeight(targetValue);
+        }
+        else if (EditorManager.Instance && InventoryManager.Instance.isInventoryActive)
+        {
+            EditorManager.Instance.OnScrollAction(targetValue);
+        }
+    }
+
 }
