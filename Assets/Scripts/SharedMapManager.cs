@@ -287,7 +287,7 @@ public class SharedMapManager : NetworkBehaviour
 
         if (GameManager.Instance.networkState == NetworkState.Online)
         {
-            OnSharedMapReadyServerRpc();
+            OnSharedMapReadyClientRpc();
         }
         else
         {
@@ -439,11 +439,5 @@ public class SharedMapManager : NetworkBehaviour
     public void OnSharedMapReadyClientRpc()
     {
         OnMapFinished();
-    }
-
-    [ServerRpc]
-    public void OnSharedMapReadyServerRpc()
-    {
-        OnSharedMapReadyClientRpc();
     }
 }

@@ -155,8 +155,8 @@ public class UIManager : NetworkBehaviour
         // lobby
         AddEventTrigger(startButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, GameManager.Instance.OnLobbyStart);
         AddEventTrigger(startButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, GameManager.Instance.OnLobbyStart);
-        AddEventTrigger(finishButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnSharedMapReady);
-        AddEventTrigger(finishButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnSharedMapReady);
+        AddEventTrigger(finishButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnMasterSharedMapReady);
+        AddEventTrigger(finishButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnMasterSharedMapReady);
         AddEventTrigger(lobbyQuitButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnQuitButton);
         AddEventTrigger(lobbyQuitButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnQuitButton);
 
@@ -523,7 +523,7 @@ public class UIManager : NetworkBehaviour
         gameStateText.text += targetText;
     }
 
-    public void OnSharedMapEnabled()
+    public void OnMasterSharedMapEnabled()
     {
         SetMasterGameStateText("Shared mapping");
         finishButton.SetActive(true);
@@ -533,10 +533,10 @@ public class UIManager : NetworkBehaviour
         sharedMapView.SetActive(true);
     }
 
-    public void OnSharedMapReady()
+    public void OnMasterSharedMapReady()
     {
         SetMasterGameStateText("Explore map");
-        GameManager.Instance.OnSharedMapReady();
+        SharedMapManager.Instance.OnSharedMapReadyClientRpc();
         finishButton.SetActive(false);
     }
 }

@@ -307,7 +307,7 @@ public class GameManager : NetworkBehaviour
         if (playerList.All(p => p.IsMapReady.Value == true))
         {
             Debug.Log("GameManager: All individual maps ready");
-            UIManager.Instance.OnSharedMapEnabled();
+            if (isMaster) UIManager.Instance.OnMasterSharedMapEnabled();
             SharedMapManager.Instance.OnSendMapInsanceClientRpc();
         }
     }
@@ -384,12 +384,6 @@ public class GameManager : NetworkBehaviour
     public void SetPlayerGameStateServerRpc(bool targetState, RpcParams rpcParams = default)
     {
         FetchPlayerDataById(rpcParams.Receive.SenderClientId).IsGameStarted.Value = targetState;
-    }
-
-    public void OnSharedMapReady()
-    {
-        // NOTE: This function should only be called by a master player
-        SharedMapManager.Instance.OnSharedMapReadyServerRpc();
     }
 
     public ulong FetchLocalClientId()
