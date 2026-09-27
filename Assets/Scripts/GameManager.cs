@@ -91,7 +91,6 @@ public class GameManager : NetworkBehaviour
         UIManager.Instance.OnLobbyConnect();
         InventoryManager.Instance.OnSetup();
         FetchLobbyDataServerRpc();
-        SetPlayerPropertiesServerRpc();
     }
 
     public void OnLobbyStart()
@@ -220,6 +219,22 @@ public class GameManager : NetworkBehaviour
         SceneManager.LoadScene(1);
     }
 
+    [ClientRpc]
+    private void PlayerLeftClientRpc(ulong clientId)
+    {
+        Debug.Log("GameManager: Client disconnected: " + clientId);
+
+        // host disconnect & self kick
+        if (!NetworkManager.IsHost && (clientId == NetworkManager.ServerClientId || clientId == NetworkManager.LocalClientId))
+        {
+            OnDisconnectClient();
+            return;
+        }
+
+        playerList.RemoveAll(player => player.OwnerClientId == clientId);
+        UIManager.Instance.OnRefreshPlayerList();
+    }
+
     public void SpawnPlayer(ulong clientId)
     {
         Debug.Log("GameManager: Spawning player for: " + clientId);
@@ -244,10 +259,8 @@ public class GameManager : NetworkBehaviour
         }
     }
 
-    [Rpc(SendTo.Everyone, InvokePermission = RpcInvokePermission.Everyone)]
-    public void RefreshPlayerListClientRpc()
+    public void RefreshPlayerList()
     {
-        Debug.Log("GameManager: Player list refreshed");
         playerList.Clear();
         PlayerData[] players = FindObjectsByType<PlayerData>();
         foreach (PlayerData player in players)
@@ -257,55 +270,29 @@ public class GameManager : NetworkBehaviour
         
         playerList.Sort((a, b) => a.OwnerClientId.CompareTo(b.OwnerClientId));
         UIManager.Instance.OnRefreshPlayerList();
+        Debug.Log("GameManager: Player list refreshed");
     }
 
-    [ClientRpc]
-    private void PlayerLeftClientRpc(ulong clientId)
+    [Rpc(SendTo.Everyone, InvokePermission = RpcInvokePermission.Everyone)]
+    public void UpdatePlayerRenderStateRpc()
     {
-        Debug.Log("GameManager: Client disconnected: " + clientId);
-
-        // host disconnect & self kick
-        if (!NetworkManager.IsHost && (clientId == NetworkManager.ServerClientId || clientId == NetworkManager.LocalClientId))
+        foreach (var player in playerList)
         {
-            OnDisconnectClient();
-            return;
+            bool isOwner = player.OwnerClientId == NetworkManager.LocalClientId;
+            bool shouldRenderPlayer = !isOwner && player.IsGameStarted.Value && FetchPlayerDataById(NetworkManager.LocalClientId).IsGameStarted.Value;
+            bool shouldRenderName = isOwner || (!isOwner && player.IsGameStarted.Value && FetchPlayerDataById(NetworkManager.LocalClientId).IsGameStarted.Value);
+            player.transform.Find("NameCanvas").gameObject.SetActive(shouldRenderPlayer);
+            foreach (Transform child in player.transform.Find("Model").transform)
+            {
+                if (child.GetComponent<Renderer>()) child.GetComponent<Renderer>().enabled = shouldRenderName;
+            }            
         }
-
-        playerList.RemoveAll(player => player.OwnerClientId == clientId);
-        UIManager.Instance.OnRefreshPlayerList();
     }
 
     [ClientRpc]
     public void OnLobbyStartClientRpc()
     {
         UIManager.Instance.OnLobbyStart();
-    }
-
-    [Rpc(SendTo.Everyone, InvokePermission = RpcInvokePermission.Everyone)]
-    public void FetchPlayerRenderStateServerRpc()
-    {
-        Debug.Log("GameManager: Fetching player render state");
-        foreach (var player in playerList)
-        {
-            if (FetchPersistentPlayerId() > -1 && player.PersistentPlayerId.Value == FetchPersistentPlayerId()) continue;
-
-            if (!FetchGameStartState())
-            {
-                foreach (Transform child in player.transform.Find("Model").transform)
-                {
-                    if (child.GetComponent<Renderer>()) child.GetComponent<Renderer>().enabled = false;
-                }
-                player.transform.Find("NameCanvas").gameObject.SetActive(false);
-            }
-            else if (player.IsGameStarted.Value)
-            {
-                foreach (Transform child in player.transform.Find("Model").transform)
-                {
-                    if (child.GetComponent<Renderer>()) child.GetComponent<Renderer>().enabled = true;
-                }
-                player.transform.Find("NameCanvas").gameObject.SetActive(true);
-            }
-        }
     }
 
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
@@ -363,30 +350,6 @@ public class GameManager : NetworkBehaviour
         while (playerList.Any(p => p.PersistentPlayerId.Value == targetId)) targetId++;
         FetchPlayerDataById(playerId).PersistentPlayerId.Value = targetId;
         Debug.Log("GameManager: Assigned persistent id: " + targetId + " to: " + playerId);
-        RefreshPlayerListClientRpc();
-    }
-
-    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
-    public void SetPlayerPropertiesServerRpc()
-    {
-        Debug.Log("GameManager: Updating player properties for " + playerList.Count + " players");
-        foreach (var player in playerList)
-        {
-            SetPlayerPropertiesClientRpc(player.PersistentPlayerId.Value);
-        }
-    }
-
-    [ClientRpc]
-    public void SetPlayerPropertiesClientRpc(int targetId)
-    {
-        PlayerData targetPlayer = playerList.FirstOrDefault(p => p.PersistentPlayerId.Value == targetId);
-        if (!targetPlayer) return;
-
-        if (!FetchGameStartState())
-        {
-            // TODO: idk what this does
-            //PlayerController.Instance.SetPlayerPosition(Vector3.one + Vector3.forward * 3 * FetchPersistentPlayerId());            
-        }
     }
 
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]

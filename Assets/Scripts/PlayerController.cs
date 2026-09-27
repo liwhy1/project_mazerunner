@@ -45,14 +45,8 @@ public class PlayerController : NetworkBehaviour
         // setup client player
         if (!IsOwner)
         {
-            transform.Find("NameCanvas").gameObject.SetActive(false);
             GetComponent<NavMeshAgent>().enabled = false;
-            gameObject.name = "Player_" + NetworkManager.LocalClientId;
-
-            foreach (Transform child in playerModel.transform)
-            {
-                if (child.GetComponent<Renderer>()) child.GetComponent<Renderer>().enabled = false;
-            }
+            gameObject.name = "Player_" + GetComponent<NetworkObject>().OwnerClientId;
             return;
         }
 
@@ -62,17 +56,13 @@ public class PlayerController : NetworkBehaviour
 
     private void OnSetup()
     {
-        Debug.Log("playersetup");
         Instance = this;
         playerRigidbody = GetComponent<Rigidbody>();
         playerRigidbody.isKinematic = true;
         playerAgent = GetComponent<NavMeshAgent>();
         enableMovement = true;
         enableCamera = true;
-        gameObject.name = "Player_" + NetworkManager.LocalClientId;
-
-        // disable name indicator on own player
-        transform.Find("NameCanvas").gameObject.SetActive(false);
+        gameObject.name = "Player_" + GetComponent<NetworkObject>().OwnerClientId;
 
         playerCamera = Instantiate(Resources.Load<GameObject>("PlayerCamera"));
         playerCamera.name = "PlayerCamera";

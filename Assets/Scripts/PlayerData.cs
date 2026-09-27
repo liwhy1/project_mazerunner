@@ -19,7 +19,6 @@ public class PlayerData : NetworkBehaviour
         // apply existing values
         nameText = transform.Find("NameCanvas").Find("Name").GetComponent<TMP_Text>();
         nameText.text = PlayerName.Value.ToString();
-
         GetComponent<PlayerController>().SetPlayerSkinData(SkinData.Value);
 
         // subscribe to value updates from the server
@@ -56,17 +55,16 @@ public class PlayerData : NetworkBehaviour
 
     private void OnReadyStateChanged(bool oldValue, bool newValue)
     {
-        if (!IsOwner) return;
-        GameManager.Instance.FetchPlayerRenderStateServerRpc();
+        GameManager.Instance.UpdatePlayerRenderStateRpc();
     }
 
     private void OnPlayerNameChanged(FixedString64Bytes oldName, FixedString64Bytes newName)
     {
         nameText.text = newName.ToString();
 
-        if (!IsOwner) return;
         // refresh player list for each client
-        GameManager.Instance.RefreshPlayerListClientRpc();
+        GameManager.Instance.RefreshPlayerList();
+        GameManager.Instance.UpdatePlayerRenderStateRpc();
     }
 
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
@@ -81,14 +79,11 @@ public class PlayerData : NetworkBehaviour
 
     public override void OnNetworkDespawn()
     {
-        if (IsOwner)
-        {
-            PlayerName.OnValueChanged -= OnPlayerNameChanged;
-            IsGameStarted.OnValueChanged -= OnReadyStateChanged;
-            PersistentPlayerId.OnValueChanged -= OnPersistentIdChanged;
-            SkinData.OnValueChanged -= OnSkinIdChanged;
-            IsMapReady.OnValueChanged -= OnMapReadyStateChanged;
-        }
+        PlayerName.OnValueChanged -= OnPlayerNameChanged;
+        IsGameStarted.OnValueChanged -= OnReadyStateChanged;
+        PersistentPlayerId.OnValueChanged -= OnPersistentIdChanged;
+        SkinData.OnValueChanged -= OnSkinIdChanged;
+        IsMapReady.OnValueChanged -= OnMapReadyStateChanged;
     }
 }
 
