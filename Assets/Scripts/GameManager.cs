@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -14,7 +15,7 @@ public class GameManager : NetworkBehaviour
     public NetworkState networkState;
     public string joinCode;
     public List<PlayerData> playerList = new List<PlayerData>();
-    public string activeStory;
+    public NetworkVariable<FixedString64Bytes> activeStory = new NetworkVariable<FixedString64Bytes>("Prototype1", NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
     public bool isMaster;
     public bool isMasterGameStarted;
@@ -117,9 +118,6 @@ public class GameManager : NetworkBehaviour
             PlayerController.Instance.SetPlayerPosition(playerSpawnPosition.transform.position + Vector3.forward * FetchPersistentPlayerId());
         }
         else isMasterGameStarted = true;
-
-        // fetch active story
-        if (networkState == NetworkState.Online) FetchActiveStoryServerRpc();
 
         if (!NetworkManager.IsHost) return;
 
@@ -358,20 +356,12 @@ public class GameManager : NetworkBehaviour
         FetchPlayerDataById(rpcParams.Receive.SenderClientId).SkinData.Value = skinData;
     }
 
-    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
-    public void FetchActiveStoryServerRpc(RpcParams rpcParams = default)
-    {
-        SetActiveStoryClientRpc(rpcParams.Receive.SenderClientId, activeStory);
-    }
-
     [ClientRpc]
-    public void SetActiveStoryClientRpc(ulong targetPlayer, string targetStory)
+    public void SetActiveStoryClientRpc(string targetStory)
     {
-        if (NetworkManager.LocalClientId == targetPlayer)
-        {
-            Debug.Log("GameManager: Selecting story: " + targetStory);
-            activeStory = targetStory;
-        }
+        if (!IsHost) return;
+        Debug.Log("GameManager: Selecting story: " + targetStory);
+        activeStory.Value = targetStory;
     }
 
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]

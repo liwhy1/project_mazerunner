@@ -165,7 +165,7 @@ public class UIManager : NetworkBehaviour
         AddEventTrigger(resumeButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, InputManager.Instance.OnPauseAction);
         AddEventTrigger(pauseQuitButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnQuitButton);
         AddEventTrigger(pauseQuitButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnQuitButton);
-        storyDropdown.GetComponent<TMP_Dropdown>().onValueChanged.AddListener(delegate { GameManager.Instance.activeStory = storyDropdown.GetComponent<TMP_Dropdown>().captionText.text; });
+        storyDropdown.GetComponent<TMP_Dropdown>().onValueChanged.AddListener(delegate { GameManager.Instance.SetActiveStoryClientRpc(storyDropdown.GetComponent<TMP_Dropdown>().captionText.text); });
     }
 
     public void HandleActiveNavigationElement()
@@ -277,7 +277,7 @@ public class UIManager : NetworkBehaviour
         storyDropdown.GetComponent<TMP_Dropdown>().AddOptions(storyNames);
 
         if (!NetworkManager.IsHost) return;
-        GameManager.Instance.activeStory = storyNames[0];
+        GameManager.Instance.SetActiveStoryClientRpc(storyNames[0]);
     }
 
     public void IncreasePlayerSkinValue(string targetValue)
