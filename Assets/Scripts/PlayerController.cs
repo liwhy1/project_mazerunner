@@ -34,8 +34,10 @@ public class PlayerController : NetworkBehaviour
     private void Start()
     {
         // only run this in offline mode
-        if (GameManager.Instance.networkState == NetworkState.Online) return;
-        OnSetup();
+        if (GameManager.Instance.networkState == NetworkState.Offline)
+        {
+            OnSetup();            
+        }
     }
 
     public override void OnNetworkSpawn()
@@ -43,9 +45,9 @@ public class PlayerController : NetworkBehaviour
         // setup client player
         if (!IsOwner)
         {
-            playerCamera.gameObject.SetActive(false);
             transform.Find("NameCanvas").gameObject.SetActive(false);
             GetComponent<NavMeshAgent>().enabled = false;
+            gameObject.name = "Player_" + NetworkManager.LocalClientId;
 
             foreach (Transform child in playerModel.transform)
             {
@@ -60,18 +62,20 @@ public class PlayerController : NetworkBehaviour
 
     private void OnSetup()
     {
+        Debug.Log("playersetup");
         Instance = this;
         playerRigidbody = GetComponent<Rigidbody>();
         playerRigidbody.isKinematic = true;
         playerAgent = GetComponent<NavMeshAgent>();
         enableMovement = true;
         enableCamera = true;
-        gameObject.name = "Player";
+        gameObject.name = "Player_" + NetworkManager.LocalClientId;
 
         // disable name indicator on own player
         transform.Find("NameCanvas").gameObject.SetActive(false);
 
         playerCamera = Instantiate(Resources.Load<GameObject>("PlayerCamera"));
+        playerCamera.name = "PlayerCamera";
         GameManager.Instance.playerViewCamera.transform.SetParent(transform);
         GameManager.Instance.playerViewCamera.transform.localPosition = Vector3.zero + Vector3.forward;
         GameManager.Instance.playerViewCamera.transform.LookAt(transform);
@@ -241,5 +245,11 @@ public class PlayerController : NetworkBehaviour
         if (GameManager.Instance.isPaused || !isGrounded || !enableMovement || playerRigidbody.isKinematic || InventoryManager.Instance.isInventoryActive) return;
 
         playerRigidbody.linearVelocity = gameObject.transform.up * jumpStrength;
+    }
+
+    public void SetPlayerSkinData(SkinData skinData)
+    {
+        var skinMaterials = Resources.LoadAll<Material>("Customisation/PlayerSkins");
+        transform.Find("Model").Find("Character_Body").GetComponent<Renderer>().material = skinMaterials[skinData.colorId];
     }
 }

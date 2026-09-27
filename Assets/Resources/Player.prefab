@@ -298,7 +298,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 3627643225
+  GlobalObjectIdHash: 336401319
   InScenePlacedSourceGlobalObjectIdHash: 336401319
   m_InScenePlacedDisabledByDefault: 1
   DeferredDespawnTick: 0
@@ -464,7 +464,7 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   playerRigidbody: {fileID: 1429384509551890543}
   playerAgent: {fileID: -3442950278129805438}
-  playerCamera: {fileID: 7879844359141490863, guid: 4c6bb6f539225c04d92773192bd74548, type: 3}
+  playerCamera: {fileID: 0}
   playerModel: {fileID: 4943810472123092358}
   playerAnimator: {fileID: 6077839391754934971}
   enableMovement: 0
@@ -578,11 +578,14 @@ MonoBehaviour:
       MinSecondsBetweenUpdates: 0
       MaxSecondsBetweenUpdates: 0
     m_InternalValue: -1
-  SkinId:
+  SkinData:
     UpdateTraits:
       MinSecondsBetweenUpdates: 0
       MaxSecondsBetweenUpdates: 0
-    m_InternalValue: 0
+    m_InternalValue:
+      colorId: 0
+      genderId: 0
+      hairId: 0
 --- !u!1 &837254839292224995
 GameObject:
   m_ObjectHideFlags: 0

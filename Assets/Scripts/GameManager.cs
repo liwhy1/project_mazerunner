@@ -25,11 +25,6 @@ public class GameManager : NetworkBehaviour
     public GameObject playerSpawnPosition;
     public GameObject terrainObject;
 
-    public Material playerMat1;
-    public Material playerMat2;
-    public Material playerMat3;
-    public Material playerMat4;
-
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void Initialize()
     {
@@ -378,7 +373,6 @@ public class GameManager : NetworkBehaviour
         foreach (var player in playerList)
         {
             SetPlayerPropertiesClientRpc(player.PersistentPlayerId.Value);
-            SetPlayerSkinIdClientRpc(player.OwnerClientId);
         }
     }
 
@@ -396,17 +390,9 @@ public class GameManager : NetworkBehaviour
     }
 
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
-    public void SetPlayerSkinIdServerRpc(int skinId, RpcParams rpcParams = default)
+    public void SetPlayerSkinDataServerRpc(SkinData skinData, RpcParams rpcParams = default)
     {
-        FetchPlayerDataById(rpcParams.Receive.SenderClientId).SkinId.Value = skinId;
-    }
-
-    [ClientRpc]
-    public void SetPlayerSkinIdClientRpc(ulong playerId)
-    {
-        int skinId = FetchPlayerDataById(playerId).SkinId.Value;
-        Material targetMaterial = skinId == 0 ? playerMat1 : skinId == 1 ? playerMat2 : skinId == 2 ? playerMat3 : playerMat4;
-        FetchPlayerDataById(playerId).transform.Find("Model").Find("Character_Body").GetComponent<Renderer>().material = targetMaterial;
+        FetchPlayerDataById(rpcParams.Receive.SenderClientId).SkinData.Value = skinData;
     }
 
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]

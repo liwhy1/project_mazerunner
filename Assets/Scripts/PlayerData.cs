@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using TMPro;
 using Unity.Collections;
@@ -10,19 +11,22 @@ public class PlayerData : NetworkBehaviour
     public NetworkVariable<bool> IsMapReady = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     public NetworkVariable<bool> IsGameStarted = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     public NetworkVariable<int> PersistentPlayerId = new NetworkVariable<int>(-1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-    public NetworkVariable<int> SkinId = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    public NetworkVariable<SkinData> SkinData = new NetworkVariable<SkinData>(new SkinData(), NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     private TMP_Text nameText;
 
     public override void OnNetworkSpawn()
     {
+        // apply existing values
         nameText = transform.Find("NameCanvas").Find("Name").GetComponent<TMP_Text>();
         nameText.text = PlayerName.Value.ToString();
+
+        GetComponent<PlayerController>().SetPlayerSkinData(SkinData.Value);
 
         // subscribe to value updates from the server
         PlayerName.OnValueChanged += OnPlayerNameChanged;
         IsGameStarted.OnValueChanged += OnReadyStateChanged;
         PersistentPlayerId.OnValueChanged += OnPersistentIdChanged;
-        SkinId.OnValueChanged += OnSkinIdChanged;
+        SkinData.OnValueChanged += OnSkinIdChanged;
         IsMapReady.OnValueChanged += OnMapReadyStateChanged;
 
         if (IsOwner)
@@ -38,10 +42,9 @@ public class PlayerData : NetworkBehaviour
         GameManager.Instance.CheckLobbyMapStateServerRpc();
     }
 
-    private void OnSkinIdChanged(int oldValue, int newValue)
+    private void OnSkinIdChanged(SkinData oldValue, SkinData newValue)
     {
-        if (!IsOwner) return;
-        GameManager.Instance.SetPlayerPropertiesServerRpc();
+        GetComponent<PlayerController>().SetPlayerSkinData(newValue);
     }
 
     private void OnPersistentIdChanged(int oldValue, int newValue)
@@ -83,8 +86,41 @@ public class PlayerData : NetworkBehaviour
             PlayerName.OnValueChanged -= OnPlayerNameChanged;
             IsGameStarted.OnValueChanged -= OnReadyStateChanged;
             PersistentPlayerId.OnValueChanged -= OnPersistentIdChanged;
-            SkinId.OnValueChanged -= OnSkinIdChanged;
+            SkinData.OnValueChanged -= OnSkinIdChanged;
             IsMapReady.OnValueChanged -= OnMapReadyStateChanged;
         }
+    }
+}
+
+[Serializable]
+public class SkinData : INetworkSerializable, IEquatable<SkinData>
+{
+    public int colorId;
+    public int genderId;
+    public int hairId;
+
+    public void NetworkSerialize<T>(BufferSerializer<T> serializer)
+        where T : IReaderWriter
+    {
+        serializer.SerializeValue(ref colorId);
+        serializer.SerializeValue(ref genderId);
+        serializer.SerializeValue(ref hairId);
+    }
+
+    public bool Equals(SkinData other)
+    {
+        return colorId == other.colorId &&
+               genderId == other.genderId &&
+               hairId == other.hairId;
+    }
+
+    public override bool Equals(object obj)
+    {
+        return obj is SkinData other && Equals(other);
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(colorId, genderId, hairId);
     }
 }

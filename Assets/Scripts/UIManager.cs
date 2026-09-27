@@ -109,8 +109,15 @@ public class UIManager : NetworkBehaviour
 
     private void AddEventTrigger(EventTrigger trigger, EventTriggerType type, UnityAction action)
     {
-        EventTrigger.Entry entry = new EventTrigger.Entry{eventID = type};
+        EventTrigger.Entry entry = new EventTrigger.Entry { eventID = type };
         entry.callback.AddListener(_ => action());
+        trigger.triggers.Add(entry);
+    }
+
+    private void AddEventTrigger<T>(EventTrigger trigger, EventTriggerType type, UnityAction<T> action, T value)
+    {
+        EventTrigger.Entry entry = new EventTrigger.Entry { eventID = type };
+        entry.callback.AddListener(_ => action(value));
         trigger.triggers.Add(entry);
     }
 
@@ -150,13 +157,8 @@ public class UIManager : NetworkBehaviour
         AddEventTrigger(lobbyQuitButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnQuitButton);
         AddEventTrigger(lobbyQuitButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnQuitButton);
 
-        EventTrigger.Entry leftArrowClickEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerClick};
-        leftArrowClickEntry.callback.AddListener((eventData) => { SetPlayerSkinId(-1); });
-        LegArrowLeft.GetComponent<EventTrigger>().triggers.Add(leftArrowClickEntry);        
-
-        EventTrigger.Entry rightArrowClickEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerClick};
-        rightArrowClickEntry.callback.AddListener((eventData) => { SetPlayerSkinId(1); });
-        LegArrowRight.GetComponent<EventTrigger>().triggers.Add(rightArrowClickEntry);
+        AddEventTrigger(LegArrowLeft.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, DecreasePlayerSkinValue, "color");
+        AddEventTrigger(LegArrowRight.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, IncreasePlayerSkinValue, "color");
 
         // pause
         AddEventTrigger(resumeButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, InputManager.Instance.OnPauseAction);
@@ -278,14 +280,38 @@ public class UIManager : NetworkBehaviour
         GameManager.Instance.activeStory = storyNames[0];
     }
 
-    public void SetPlayerSkinId(int targetValue)
+    public void IncreasePlayerSkinValue(string targetValue)
     {
-        int currentId = PlayerController.Instance.GetComponent<PlayerData>().SkinId.Value;
-        targetValue = currentId + targetValue > 3 ? 0 : currentId + targetValue < 0 ? 3 : currentId + targetValue;
-        Material targetMaterial = targetValue == 0 ? GameManager.Instance.playerMat1 : targetValue == 1 ? GameManager.Instance.playerMat2 : targetValue == 2 ? GameManager.Instance.playerMat3 : GameManager.Instance.playerMat4;
-        Debug.Log(targetValue + ", " + targetMaterial.name);
-        PlayerController.Instance.transform.Find("Model").Find("Character_Body").GetComponent<Renderer>().material = targetMaterial;
-        GameManager.Instance.SetPlayerSkinIdServerRpc(targetValue);
+        SkinData currentData = PlayerController.Instance.GetComponent<PlayerData>().SkinData.Value;
+        switch (targetValue)
+        {
+            case "color": currentData.colorId = (currentData.colorId + 1) % 5; break;
+            case "gender": currentData.genderId = (currentData.genderId + 1) % 4; break;
+            case "hair": currentData.hairId = (currentData.hairId + 1) % 4; break;
+        }
+
+        // update value locally first
+        PlayerController.Instance.SetPlayerSkinData(currentData);
+
+        // let the server confirm the new data
+        GameManager.Instance.SetPlayerSkinDataServerRpc(currentData);
+    }
+
+    public void DecreasePlayerSkinValue(string targetValue)
+    {
+        SkinData currentData = PlayerController.Instance.GetComponent<PlayerData>().SkinData.Value;
+        switch (targetValue)
+        {
+            case "color": currentData.colorId = (currentData.colorId - 1 + 5) % 5; break;
+            case "gender": currentData.genderId = (currentData.genderId - 1 + 4) % 4; break;
+            case "hair": currentData.hairId = (currentData.hairId - 1 + 4) % 4; break;
+        }
+
+        // update value locally first
+        PlayerController.Instance.SetPlayerSkinData(currentData);
+
+        // let the server confirm the new data
+        GameManager.Instance.SetPlayerSkinDataServerRpc(currentData);
     }
 
     public void ResetUIState()
@@ -431,7 +457,7 @@ public class UIManager : NetworkBehaviour
         OnCloseDialog();
 
         // create new dialog
-        GameObject newDialog = Instantiate(Resources.Load<GameObject>("Elements/TextDialog"), transform);
+        GameObject newDialog = Instantiate(Resources.Load<GameObject>("UIElements/TextDialog"), transform);
         newDialog.transform.localPosition = Vector3.zero;
         activeDialog = newDialog;
 
