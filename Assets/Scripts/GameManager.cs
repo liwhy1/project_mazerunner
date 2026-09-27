@@ -18,6 +18,7 @@ public class GameManager : NetworkBehaviour
     [Header("Network vars")]
     public NetworkVariable<FixedString64Bytes> activeStory = new NetworkVariable<FixedString64Bytes>("Prototype3", NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     public NetworkVariable<FixedString64Bytes> joinCode = new NetworkVariable<FixedString64Bytes>("######", NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    public NetworkVariable<bool> isLobbyStarted = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
     public bool isMaster;
     public bool isMasterGameStarted;
@@ -69,6 +70,7 @@ public class GameManager : NetworkBehaviour
 
         NetworkManager.OnClientConnectedCallback += OnClientConnected;
         NetworkManager.OnClientDisconnectCallback += OnClientDisconnected;
+        isLobbyStarted.OnValueChanged += OnLobbyStartValueChanged;
     }
 
     public override void OnDestroy()
@@ -93,7 +95,15 @@ public class GameManager : NetworkBehaviour
         networkState = NetworkState.Online;
         UIManager.Instance.OnLobbyConnect();
         InventoryManager.Instance.OnSetup();
-        FetchLobbyDataServerRpc();
+        if (isLobbyStarted.Value) UIManager.Instance.OnLobbyStart();
+    }
+
+    public void OnLobbyStartValueChanged(bool oldValue, bool newValue)
+    {
+        if (newValue)
+        {
+            UIManager.Instance.OnLobbyStart();
+        }
     }
 
     public void OnLobbyStart()
@@ -121,10 +131,10 @@ public class GameManager : NetworkBehaviour
         }
         else isMasterGameStarted = true;
 
-        if (!NetworkManager.IsHost) return;
-
-        // notify clients about lobby start
-        OnLobbyStartClientRpc();
+        if (NetworkManager.IsHost)
+        {
+            isLobbyStarted.Value = true;
+        }
     }
 
     private void OnClientConnected(ulong clientId)
@@ -288,12 +298,6 @@ public class GameManager : NetworkBehaviour
         }
     }
 
-    [ClientRpc]
-    public void OnLobbyStartClientRpc()
-    {
-        UIManager.Instance.OnLobbyStart();
-    }
-
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
     public void SetPlayerMapStateServerRpc(bool targetState, RpcParams rpcParams = default)
     {
@@ -363,21 +367,6 @@ public class GameManager : NetworkBehaviour
         if (!IsHost) return;
         Debug.Log("GameManager: Selecting story: " + targetStory);
         activeStory.Value = targetStory;
-    }
-
-    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
-    public void FetchLobbyDataServerRpc()
-    {
-        SetLobbyDataClientRpc(FetchGameStartState());
-    }
-
-    [ClientRpc]
-    public void SetLobbyDataClientRpc(bool isLobbyStarted)
-    {
-        if (!NetworkManager.IsHost)
-        {
-            if (isLobbyStarted) UIManager.Instance.OnLobbyStart();
-        }
     }
 
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
