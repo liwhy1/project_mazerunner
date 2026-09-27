@@ -6,6 +6,7 @@ using UnityEngine.EventSystems;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine.Events;
+using Unity.Collections;
 
 public class UIManager : NetworkBehaviour
 {
@@ -95,6 +96,8 @@ public class UIManager : NetworkBehaviour
 
         // subscribe to events(watch vod)
         SetupUITriggers();
+
+        GameManager.Instance.joinCode.OnValueChanged += OnJoinCodeValueChanged;
     }
 
     private void Update()
@@ -404,6 +407,7 @@ public class UIManager : NetworkBehaviour
         sharedMapView.SetActive(false);
         timerObject.SetActive(false);
         eventSystem.SetSelectedGameObject(NetworkManager.IsHost ? storyDropdown : lobbyQuitButton);
+        SetJoinCode(string.IsNullOrEmpty(joinCodeInput.text) ? GameManager.Instance.joinCode.Value.ToString() : joinCodeInput.text);
 
         // setup story dropdown
         SetupStoryDropdown();
@@ -431,10 +435,15 @@ public class UIManager : NetworkBehaviour
         }
     }
 
-    public void SetJoinCodeText(string targetText)
+    private void OnJoinCodeValueChanged(FixedString64Bytes oldValue, FixedString64Bytes newValue)
     {
-        lobbyJoinCodeText.text = "Join Code: \n<b>" + targetText;
-        pauseJoinCodeText.text = "Join Code: \n<b>" + targetText;
+        SetJoinCode(newValue.ToString());
+    }
+
+    public void SetJoinCode(string newValue)
+    {
+        lobbyJoinCodeText.text = "Join Code: \n<b>" + newValue;
+        pauseJoinCodeText.text = "Join Code: \n<b>" + newValue;
     }
 
     public string GetJoinCodeInput()

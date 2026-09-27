@@ -13,9 +13,11 @@ public class GameManager : NetworkBehaviour
     public static GameManager Instance;
     public bool isPaused;
     public NetworkState networkState;
-    public string joinCode;
     public List<PlayerData> playerList = new List<PlayerData>();
-    public NetworkVariable<FixedString64Bytes> activeStory = new NetworkVariable<FixedString64Bytes>("Prototype1", NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+
+    [Header("Network vars")]
+    public NetworkVariable<FixedString64Bytes> activeStory = new NetworkVariable<FixedString64Bytes>("Prototype3", NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    public NetworkVariable<FixedString64Bytes> joinCode = new NetworkVariable<FixedString64Bytes>("######", NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
     public bool isMaster;
     public bool isMasterGameStarted;
@@ -173,8 +175,7 @@ public class GameManager : NetworkBehaviour
 
         if (!string.IsNullOrEmpty(relayCode))
         {
-            joinCode = relayCode;
-            UIManager.Instance.SetJoinCodeText(relayCode);
+            joinCode.Value = relayCode;
             return;
         }
 
@@ -367,15 +368,14 @@ public class GameManager : NetworkBehaviour
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
     public void FetchLobbyDataServerRpc()
     {
-        SetLobbyDataClientRpc(joinCode, FetchGameStartState());
+        SetLobbyDataClientRpc(FetchGameStartState());
     }
 
     [ClientRpc]
-    public void SetLobbyDataClientRpc(string lobbyCode, bool isLobbyStarted)
+    public void SetLobbyDataClientRpc(bool isLobbyStarted)
     {
         if (!NetworkManager.IsHost)
         {
-            UIManager.Instance.SetJoinCodeText(lobbyCode);
             if (isLobbyStarted) UIManager.Instance.OnLobbyStart();
         }
     }
