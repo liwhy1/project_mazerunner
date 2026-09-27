@@ -87,30 +87,11 @@ public class MapManager : MonoBehaviour
             targetElement.AddComponent<EventTrigger>();
         }
 
-        // begin drag trigger
-        EventTrigger.Entry beginDragEntry = new EventTrigger.Entry() {eventID = EventTriggerType.BeginDrag};
-        beginDragEntry.callback.AddListener((eventData) => { OnStartElementDrag(targetElement); });
-        targetElement.GetComponent<EventTrigger>().triggers.Add(beginDragEntry);
-
-        // on drag trigger
-        EventTrigger.Entry dragEntry = new EventTrigger.Entry() {eventID = EventTriggerType.Drag};
-        dragEntry.callback.AddListener((eventData) => { OnElementDrag(targetElement); });
-        targetElement.GetComponent<EventTrigger>().triggers.Add(dragEntry);
-
-        // end drag trigger
-        EventTrigger.Entry endDragEntry = new EventTrigger.Entry() {eventID = EventTriggerType.EndDrag};
-        endDragEntry.callback.AddListener((eventData) => { OnStopElementDrag(targetElement); });
-        targetElement.GetComponent<EventTrigger>().triggers.Add(endDragEntry);
-
-        // pointer enter trigger
-        EventTrigger.Entry enterHoverEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerEnter};
-        enterHoverEntry.callback.AddListener((eventData) => { OnEnablePlacement(); });
-        targetElement.GetComponent<EventTrigger>().triggers.Add(enterHoverEntry);
-
-        // pointer exit trigger
-        EventTrigger.Entry exitHoverEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerExit};
-        exitHoverEntry.callback.AddListener((eventData) => { OnDisablePlacement(); });
-        targetElement.GetComponent<EventTrigger>().triggers.Add(exitHoverEntry);
+        UIManager.Instance.AddEventTrigger(targetElement.GetComponent<EventTrigger>(), EventTriggerType.BeginDrag, OnStartElementDrag, targetElement);
+        UIManager.Instance.AddEventTrigger(targetElement.GetComponent<EventTrigger>(), EventTriggerType.Drag, OnElementDrag, targetElement);
+        UIManager.Instance.AddEventTrigger(targetElement.GetComponent<EventTrigger>(), EventTriggerType.EndDrag, OnStopElementDrag, targetElement);
+        UIManager.Instance.AddEventTrigger(targetElement.GetComponent<EventTrigger>(), EventTriggerType.PointerEnter, OnEnablePlacement);
+        UIManager.Instance.AddEventTrigger(targetElement.GetComponent<EventTrigger>(), EventTriggerType.PointerExit, OnDisablePlacement);
     }
 
     private void InstantiateNewIcon(string targetSprite, bool enableTitle, int siblingIndex)
@@ -223,9 +204,7 @@ public class MapManager : MonoBehaviour
 
         // add pointer enter event to allow detecting existance
         newDot.AddComponent<EventTrigger>();
-        EventTrigger.Entry enterHoverEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerEnter};
-        enterHoverEntry.callback.AddListener((eventData) => { SetHoveredDot(newDot); });
-        newDot.GetComponent<EventTrigger>().triggers.Add(enterHoverEntry);
+        UIManager.Instance.AddEventTrigger(newDot.GetComponent<EventTrigger>(), EventTriggerType.PointerEnter, SetHoveredDot, newDot);
         newDot.GetComponent<Image>().raycastTarget = false;
 
         // store active dots in a list

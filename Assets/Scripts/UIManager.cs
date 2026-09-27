@@ -110,14 +110,14 @@ public class UIManager : NetworkBehaviour
         HandleActiveNavigationElement();
     }
 
-    private void AddEventTrigger(EventTrigger trigger, EventTriggerType type, UnityAction action)
+    public void AddEventTrigger(EventTrigger trigger, EventTriggerType type, UnityAction action)
     {
         EventTrigger.Entry entry = new EventTrigger.Entry { eventID = type };
         entry.callback.AddListener(_ => action());
         trigger.triggers.Add(entry);
     }
 
-    private void AddEventTrigger<T>(EventTrigger trigger, EventTriggerType type, UnityAction<T> action, T value)
+    public void AddEventTrigger<T>(EventTrigger trigger, EventTriggerType type, UnityAction<T> action, T value)
     {
         EventTrigger.Entry entry = new EventTrigger.Entry { eventID = type };
         entry.callback.AddListener(_ => action(value));
@@ -487,21 +487,11 @@ public class UIManager : NetworkBehaviour
         eventSystem.SetSelectedGameObject(mainButton.activeSelf ? mainButton : closeButton);
 
         // setup triggers
-        EventTrigger.Entry closeClickEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerClick};
-        closeClickEntry.callback.AddListener((eventData) => { OnCloseDialog(); });
-        closeButton.GetComponent<EventTrigger>().triggers.Add(closeClickEntry);
+        AddEventTrigger(closeButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnCloseDialog);
+        AddEventTrigger(closeButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnCloseDialog);
 
-        EventTrigger.Entry closeSubmitEntry = new EventTrigger.Entry() {eventID = EventTriggerType.Submit};
-        closeSubmitEntry.callback.AddListener((eventData) => { OnCloseDialog(); });
-        closeButton.GetComponent<EventTrigger>().triggers.Add(closeSubmitEntry);
-
-        EventTrigger.Entry mainClickEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerClick};
-        mainClickEntry.callback.AddListener((eventData) => { DialogActionHandler(targetAction); });
-        mainButton.GetComponent<EventTrigger>().triggers.Add(mainClickEntry);
-
-        EventTrigger.Entry mainSubmitEntry = new EventTrigger.Entry() {eventID = EventTriggerType.Submit};
-        mainSubmitEntry.callback.AddListener((eventData) => { DialogActionHandler(targetAction); });
-        mainButton.GetComponent<EventTrigger>().triggers.Add(mainSubmitEntry);
+        AddEventTrigger(mainButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, DialogActionHandler, targetAction);
+        AddEventTrigger(mainButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, DialogActionHandler, targetAction);
     }
 
     private void DialogActionHandler(string targetAction)

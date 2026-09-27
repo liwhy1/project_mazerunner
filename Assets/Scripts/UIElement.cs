@@ -34,9 +34,10 @@ public class UIElement : MonoBehaviour
             startSize = Vector3.one;
             transform.localScale = Vector3.one;
         }
-        if (GetComponent<EventTrigger>() == null) gameObject.AddComponent<EventTrigger>();
 
         // setup event triggers
+        if (GetComponent<EventTrigger>() == null) gameObject.AddComponent<EventTrigger>();
+
         EventTrigger.Entry pointerClickEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerClick};
         pointerClickEntry.callback.AddListener((eventData) => { OnElementClick(); });
         GetComponent<EventTrigger>().triggers.Add(pointerClickEntry);
