@@ -5,6 +5,7 @@ using Unity.Netcode;
 using UnityEngine.EventSystems;
 using System.Linq;
 using UnityEngine.Events;
+using System.Collections.Generic;
 
 public class UIManager : NetworkBehaviour
 {
@@ -24,11 +25,12 @@ public class UIManager : NetworkBehaviour
     public Image cameraZoomInIcon;
     public Image cameraZoomOutIcon;
     public GameObject loadingIcon;
-    public Image minimapIcon;
-    [SerializeField] private Image minimapPlayerIcon;
-    [SerializeField] private Image minimapPlayer2Icon;
-    [SerializeField] private Image minimapPlayer3Icon;
     private GameObject lastSelectedObject;
+
+    [Header("Minimap Data")]
+    public GameObject minimapObject;
+    [SerializeField] private Image minimapIcon;
+    [SerializeField] private List<GameObject> minimapPlayerIcons;
 
     [Header("Dialog Data")]
     public GameObject activeDialog;
@@ -121,31 +123,46 @@ public class UIManager : NetworkBehaviour
         }
     }
 
+    private void SetupMinimapIcon(int playerId)
+    {
+        GameObject newIcon = Instantiate(Resources.Load<GameObject>("PlayerIcon"), Vector3.zero, Quaternion.identity, minimapIcon.transform.parent);
+        newIcon.name = "playerIcon_" + playerId;
+        newIcon.SetActive(true);
+        minimapPlayerIcons.Add(newIcon);
+    }
+
     private void UpdateMinimapPosition()
     {
-        // TODO: don't read any of this :)
         // setup vars
         GameObject terrainObject = GameManager.Instance.terrainObject;
         MeshRenderer renderer = terrainObject.GetComponent<MeshRenderer>();
         Bounds bounds = renderer.bounds;
         RectTransform minimapRect = minimapIcon.GetComponent<RectTransform>();
 
-        minimapPlayerIcon.gameObject.SetActive(false);
-        minimapPlayer2Icon.gameObject.SetActive(false);
-        minimapPlayer3Icon.gameObject.SetActive(false);
+        // check for dead icons
+        var deadIcons = minimapPlayerIcons.FindAll(i => GameManager.Instance.playerList.All(p => p.PersistentPlayerId.Value.ToString() != i.name.Split('_')[1]));
+        foreach (var icon in deadIcons)
+        {
+            minimapPlayerIcons.Remove(icon);
+            Destroy(icon.gameObject);
+        }
+
         foreach (var player in GameManager.Instance.playerList)
         {
             int playerId = player.PersistentPlayerId.Value;
-            if (playerId > -1)
+            GameObject playerIcon = minimapPlayerIcons.FirstOrDefault(i => i.name == "playerIcon_" + playerId);
+            if (playerIcon)
             {
                 Vector3 playerPosition = player.gameObject.transform.position;
                 float normalizedX = Mathf.InverseLerp(bounds.min.x, bounds.max.x, playerPosition.x);
                 float normalizedY = Mathf.InverseLerp(bounds.min.z, bounds.max.z, playerPosition.z);
-                RectTransform playerIconRect = playerId == 0 ? minimapPlayerIcon.GetComponent<RectTransform>() : playerId == 1 ?minimapPlayer2Icon.GetComponent<RectTransform>() : minimapPlayer3Icon.GetComponent<RectTransform>();
-                playerIconRect.gameObject.GetComponent<Image>().color = player.transform.Find("Model").Find("Character_Body").GetComponent<Renderer>().material.color;
+                RectTransform playerIconRect = playerIcon.GetComponent<RectTransform>();
+                Color newColor = Color.HSVToRGB(.1f + playerId * .1f, 1f, 1f);
+                playerIconRect.gameObject.GetComponent<Image>().color = newColor;
                 playerIconRect.gameObject.SetActive(true);
                 playerIconRect.anchoredPosition = new Vector2(Mathf.Lerp(minimapRect.rect.xMin, minimapRect.rect.xMax, normalizedX), Mathf.Lerp(minimapRect.rect.yMin, minimapRect.rect.yMax, normalizedY));                
             }
+            else if (player.IsGameStarted.Value) SetupMinimapIcon(playerId);
         }
     }
 
