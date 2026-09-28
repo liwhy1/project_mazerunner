@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.Video;
 
 public class VideoPlayerManager : MonoBehaviour
@@ -34,5 +35,10 @@ public class VideoPlayerManager : MonoBehaviour
     {
         videoPlayer.frame = 0;
         videoPlayer.Pause();
+    }
+
+    public void OnSetVolume(Slider volumeSlider)
+    {
+        videoPlayer.SetDirectAudioVolume(0, volumeSlider.value);
     }
 }
