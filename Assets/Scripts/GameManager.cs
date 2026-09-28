@@ -302,6 +302,7 @@ public class GameManager : NetworkBehaviour
     [Rpc(SendTo.Everyone, InvokePermission = RpcInvokePermission.Everyone)]
     public void UpdatePlayerRenderStateRpc()
     {
+        if (isMaster) return;
         foreach (var player in playerList)
         {
             bool isOwner = player.OwnerClientId == NetworkManager.LocalClientId;
