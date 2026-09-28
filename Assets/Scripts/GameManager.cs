@@ -14,15 +14,15 @@ public class GameManager : NetworkBehaviour
     public bool isPaused;
     public NetworkState networkState;
     public List<PlayerData> playerList = new List<PlayerData>();
+    public bool isMaster;
+    public bool isMasterGameStarted;
 
     [Header("Network vars")]
     public NetworkVariable<FixedString64Bytes> activeStory = new NetworkVariable<FixedString64Bytes>("Prototype3", NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     public NetworkVariable<FixedString64Bytes> joinCode = new NetworkVariable<FixedString64Bytes>("######", NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     public NetworkVariable<bool> isLobbyStarted = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
-    public bool isMaster;
-    public bool isMasterGameStarted;
-
+    [Header("Reference data")]
     [SerializeField] private GameObject mainCamera;
     public Camera mapCamera;
     public Camera playerViewCamera;
@@ -79,7 +79,8 @@ public class GameManager : NetworkBehaviour
         try
         {
             NetworkManager.OnClientConnectedCallback -= OnClientConnected;
-            NetworkManager.OnClientDisconnectCallback -= OnClientDisconnected;            
+            NetworkManager.OnClientDisconnectCallback -= OnClientDisconnected;
+            isLobbyStarted.OnValueChanged -= OnLobbyStartValueChanged;
         }
         catch {}
     }
@@ -93,16 +94,16 @@ public class GameManager : NetworkBehaviour
     public void OnLobbyConnect()
     {
         networkState = NetworkState.Online;
-        UIManager.Instance.OnLobbyConnect();
+        MenuManager.Instance.OnLobbyConnect();
         InventoryManager.Instance.OnSetup();
-        if (isLobbyStarted.Value) UIManager.Instance.OnLobbyStart();
+        if (isLobbyStarted.Value) MenuManager.Instance.OnLobbyStart();
     }
 
     public void OnLobbyStartValueChanged(bool oldValue, bool newValue)
     {
         if (newValue)
         {
-            UIManager.Instance.OnLobbyStart();
+            MenuManager.Instance.OnLobbyStart();
         }
     }
 
@@ -121,6 +122,7 @@ public class GameManager : NetworkBehaviour
 
             // reset ui
             UIManager.Instance.ResetUIState();
+            MenuManager.Instance.ResetUIState();
 
             // tutorial dialog
             string targetContent = "<b>Player movement:</b>\n(WASD) / (Point & Click)\n<b>Camera height control:</b>\n(Mouse Wheel) / (UI Plus & Minus icon)";
@@ -194,7 +196,7 @@ public class GameManager : NetworkBehaviour
 
     public async void OnStartClient()
     {
-        string joinCode = UIManager.Instance.GetJoinCodeInput();
+        string joinCode = MenuManager.Instance.GetJoinCodeInput();
 
         if (string.IsNullOrEmpty(PlayerPrefs.GetString("PlayerName")) || string.IsNullOrEmpty(joinCode)) return;
 
@@ -307,11 +309,11 @@ public class GameManager : NetworkBehaviour
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
     public void CheckLobbyMapStateServerRpc()
     {
-        UIManager.Instance.SetMasterGameStateText("Individual mapping\n" + playerList.Count(p => p.IsMapReady.Value == true) + "/" + playerList.Count);
+        MenuManager.Instance.SetMasterGameStateText("Individual mapping\n" + playerList.Count(p => p.IsMapReady.Value == true) + "/" + playerList.Count);
         if (playerList.All(p => p.IsMapReady.Value == true))
         {
             Debug.Log("GameManager: All individual maps ready");
-            if (isMaster) UIManager.Instance.OnMasterSharedMapEnabled();
+            if (isMaster) MenuManager.Instance.OnMasterSharedMapEnabled();
             SharedMapManager.Instance.OnSendMapInsanceClientRpc();
         }
     }

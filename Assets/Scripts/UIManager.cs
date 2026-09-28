@@ -3,59 +3,20 @@ using UnityEngine.UI;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine.EventSystems;
-using System.Collections.Generic;
 using System.Linq;
 using UnityEngine.Events;
-using Unity.Collections;
 
 public class UIManager : NetworkBehaviour
 {
     public static UIManager Instance;
-    private EventSystem eventSystem;
-
-    [Header("Menu Data")]
-    [SerializeField] private GameObject menuObject;
-    [SerializeField] private GameObject hostButton;
-    [SerializeField] private GameObject joinButton;
-    [SerializeField] private GameObject offlineButton;
-
-    [Header("Host Data")]
-    [SerializeField] private GameObject hostObject;
-    [SerializeField] private GameObject startHostButton;
-    [SerializeField] private GameObject startMasterButton;
-    [SerializeField] private GameObject hostBackButton;
-    [SerializeField] private TMP_InputField hostPlayerNameInput;
-
-    [Header("Join Data")]
-    [SerializeField] private GameObject joinObject;
-    [SerializeField] private GameObject startClientButton;
-    [SerializeField] private GameObject joinBackButton;
-    [SerializeField] private TMP_InputField joinCodeInput;
-    [SerializeField] private TMP_InputField joinPlayerNameInput;
-
-    [Header("Lobby Data")]
-    [SerializeField] private GameObject lobbyObject;
-    [SerializeField] private GameObject startButton;
-    [SerializeField] private GameObject lobbyQuitButton;
-    [SerializeField] private GameObject storyDropdown;
-    [SerializeField] private TMP_Text lobbyJoinCodeText;
-    [SerializeField] private TMP_Text lobbyPlayerListText;
-    [SerializeField] private TMP_Text waitingOnHostText;
-    [SerializeField] private GameObject playerView;
-    [SerializeField] private GameObject LegArrowRight;
-    [SerializeField] private GameObject LegArrowLeft;
-
-    [SerializeField] private TMP_Text gameStateText;
-    [SerializeField] private GameObject finishButton;
-    [SerializeField] private GameObject sharedMapView;
-    [SerializeField] private GameObject timerObject;
+    public EventSystem eventSystem;
 
     [Header("Pause Data")]
     [SerializeField] private GameObject pauseObject;
     [SerializeField] public GameObject resumeButton;
     [SerializeField] private GameObject pauseQuitButton;
-    [SerializeField] private TMP_Text pauseJoinCodeText;
-    [SerializeField] private TMP_Text pausePlayerListText;
+    public TMP_Text pauseJoinCodeText;
+    public TMP_Text pausePlayerListText;
 
     [Header("HUD Data")]
     [SerializeField] private Image pauseIcon;
@@ -89,15 +50,14 @@ public class UIManager : NetworkBehaviour
         // reset ui
         ResetUIState();
 
-        // enable menu
-        menuObject.SetActive(true);
-        eventSystem.firstSelectedGameObject = hostButton;
-        eventSystem.SetSelectedGameObject(hostButton);
+        // setup pause triggers
+        AddEventTrigger(resumeButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, InputManager.Instance.OnPauseAction);
+        AddEventTrigger(resumeButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, InputManager.Instance.OnPauseAction);
+        AddEventTrigger(pauseQuitButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnQuitButton);
+        AddEventTrigger(pauseQuitButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnQuitButton);
 
-        // subscribe to events(watch vod)
-        SetupUITriggers();
-
-        GameManager.Instance.joinCode.OnValueChanged += OnJoinCodeValueChanged;
+        // setup menumanager
+        GetComponent<MenuManager>().OnSetup();
     }
 
     private void Update()
@@ -122,53 +82,6 @@ public class UIManager : NetworkBehaviour
         EventTrigger.Entry entry = new EventTrigger.Entry { eventID = type };
         entry.callback.AddListener(_ => action(value));
         trigger.triggers.Add(entry);
-    }
-
-    private void SetupUITriggers()
-    {
-        // menu
-        AddEventTrigger(hostButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnHostGame);
-        AddEventTrigger(hostButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnHostGame);
-        AddEventTrigger(joinButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnJoinGame);
-        AddEventTrigger(joinButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnJoinGame);
-        AddEventTrigger(offlineButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnOfflineGame);
-        AddEventTrigger(offlineButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnOfflineGame);
-
-        // host
-        AddEventTrigger(startMasterButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, GameManager.Instance.OnStartMaster);
-        AddEventTrigger(startMasterButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, GameManager.Instance.OnStartMaster);
-        AddEventTrigger(startHostButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, GameManager.Instance.OnStartHost);
-        AddEventTrigger(startHostButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, GameManager.Instance.OnStartHost);
-        AddEventTrigger(hostBackButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnQuitButton);
-        AddEventTrigger(hostBackButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnQuitButton);
-        hostPlayerNameInput.onValueChanged.AddListener(delegate { GameManager.Instance.OnNameChanged(hostPlayerNameInput.text); });
-        hostPlayerNameInput.onSubmit.AddListener(delegate { GameManager.Instance.OnStartHost(); });
-
-        // join
-        AddEventTrigger(startClientButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, GameManager.Instance.OnStartClient);
-        AddEventTrigger(startClientButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, GameManager.Instance.OnStartClient);
-        AddEventTrigger(joinBackButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnQuitButton);
-        AddEventTrigger(joinBackButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnQuitButton);
-        joinPlayerNameInput.onValueChanged.AddListener(delegate { GameManager.Instance.OnNameChanged(joinPlayerNameInput.text); });
-        joinCodeInput.onSubmit.AddListener(delegate { GameManager.Instance.OnStartClient(); });
-
-        // lobby
-        AddEventTrigger(startButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, GameManager.Instance.OnLobbyStart);
-        AddEventTrigger(startButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, GameManager.Instance.OnLobbyStart);
-        AddEventTrigger(finishButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnMasterSharedMapReady);
-        AddEventTrigger(finishButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnMasterSharedMapReady);
-        AddEventTrigger(lobbyQuitButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnQuitButton);
-        AddEventTrigger(lobbyQuitButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnQuitButton);
-
-        AddEventTrigger(LegArrowLeft.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, DecreasePlayerSkinValue, "color");
-        AddEventTrigger(LegArrowRight.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, IncreasePlayerSkinValue, "color");
-
-        // pause
-        AddEventTrigger(resumeButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, InputManager.Instance.OnPauseAction);
-        AddEventTrigger(resumeButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, InputManager.Instance.OnPauseAction);
-        AddEventTrigger(pauseQuitButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnQuitButton);
-        AddEventTrigger(pauseQuitButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnQuitButton);
-        storyDropdown.GetComponent<TMP_Dropdown>().onValueChanged.AddListener(delegate { GameManager.Instance.SetActiveStoryClientRpc(storyDropdown.GetComponent<TMP_Dropdown>().captionText.text); });
     }
 
     public void HandleActiveNavigationElement()
@@ -267,114 +180,7 @@ public class UIManager : NetworkBehaviour
         minimapIcon.transform.localScale = Vector3.one;
     }
 
-    private void SetupStoryDropdown()
-    {
-        storyDropdown.GetComponent<TMP_Dropdown>().ClearOptions();
-        var storyFolders = Resources.LoadAll<Texture2D>("Information");
-        List<string> storyNames = new List<string>();
-        foreach (var item in storyFolders)
-        {
-            if (item.name.Contains("image")) continue;
-            storyNames.Add(item.name);
-        }
-        storyDropdown.GetComponent<TMP_Dropdown>().AddOptions(storyNames);
-
-        if (!NetworkManager.IsHost) return;
-        GameManager.Instance.SetActiveStoryClientRpc(storyNames[0]);
-    }
-
-    public void IncreasePlayerSkinValue(string targetValue)
-    {
-        SkinData currentData = PlayerController.Instance.GetComponent<PlayerData>().SkinData.Value;
-        switch (targetValue)
-        {
-            case "color": currentData.colorId = (currentData.colorId + 1) % 5; break;
-            case "gender": currentData.genderId = (currentData.genderId + 1) % 4; break;
-            case "hair": currentData.hairId = (currentData.hairId + 1) % 4; break;
-        }
-
-        // update value locally first
-        PlayerController.Instance.SetPlayerSkinData(currentData);
-
-        // let the server confirm the new data
-        GameManager.Instance.SetPlayerSkinDataServerRpc(currentData);
-    }
-
-    public void DecreasePlayerSkinValue(string targetValue)
-    {
-        SkinData currentData = PlayerController.Instance.GetComponent<PlayerData>().SkinData.Value;
-        switch (targetValue)
-        {
-            case "color": currentData.colorId = (currentData.colorId - 1 + 5) % 5; break;
-            case "gender": currentData.genderId = (currentData.genderId - 1 + 4) % 4; break;
-            case "hair": currentData.hairId = (currentData.hairId - 1 + 4) % 4; break;
-        }
-
-        // update value locally first
-        PlayerController.Instance.SetPlayerSkinData(currentData);
-
-        // let the server confirm the new data
-        GameManager.Instance.SetPlayerSkinDataServerRpc(currentData);
-    }
-
-    public void ResetUIState()
-    {
-        waitingOnHostText.gameObject.SetActive(false);
-        pauseObject.SetActive(false);
-        hostObject.SetActive(false);
-        joinObject.SetActive(false);
-        menuObject.SetActive(false);
-        lobbyObject.SetActive(false);
-        loadingIcon.SetActive(false);
-        inventoryIcon.gameObject.SetActive(true);
-        cameraZoomInIcon.gameObject.SetActive(true);
-        cameraZoomOutIcon.gameObject.SetActive(true);
-        minimapIcon.transform.parent.gameObject.SetActive(true);
-        pauseIcon.gameObject.SetActive(true);
-    }
-
-    private void OnJoinGame()
-    {
-        ResetUIState();
-        eventSystem.SetSelectedGameObject(joinPlayerNameInput.gameObject);
-        joinObject.SetActive(true);
-    }
-
-    private void OnHostGame()
-    {
-        ResetUIState();
-        eventSystem.SetSelectedGameObject(hostPlayerNameInput.gameObject);
-        hostObject.SetActive(true);
-    }
-
-    private void OnOfflineGame()
-    {
-        // set gamestate to offline
-        GameManager.Instance.networkState = NetworkState.Offline;
-
-        // trigger offline player spawn
-        GameManager.Instance.SpawnPlayer(0);
-
-        // trigger offline sharedmap spawn
-        GameManager.Instance.SpawnSharedMap(0);
-
-        // setup story dropdown
-        SetupStoryDropdown();
-
-        // set active ui element
-        eventSystem.SetSelectedGameObject(storyDropdown);
-
-        // setup inventory
-        InventoryManager.Instance.OnSetup();
-
-        lobbyObject.SetActive(true);
-        lobbyJoinCodeText.gameObject.SetActive(false);
-        pauseJoinCodeText.gameObject.SetActive(false);
-        lobbyPlayerListText.gameObject.SetActive(false);
-        pausePlayerListText.gameObject.SetActive(false);
-    }
-
-    private void OnQuitButton()
+    public void OnQuitButton()
     {
         // reset playerprefs
         PlayerPrefs.DeleteAll();
@@ -390,27 +196,15 @@ public class UIManager : NetworkBehaviour
         GameManager.Instance.OnDisconnectClient();
     }
 
-    public void OnLobbyConnect()
+    public void ResetUIState()
     {
-        ResetUIState();
-        lobbyObject.SetActive(true);
+        pauseObject.SetActive(false);
         loadingIcon.SetActive(false);
-
-        // conditionally enable elements
-        playerView.SetActive(!GameManager.Instance.isMaster);
-        gameStateText.gameObject.SetActive(GameManager.Instance.isMaster);
-        gameStateText.text = "";
-        waitingOnHostText.gameObject.SetActive(!NetworkManager.IsHost);
-        storyDropdown.gameObject.SetActive(NetworkManager.IsHost);
-        startButton.SetActive(NetworkManager.IsHost);
-        finishButton.SetActive(false);
-        sharedMapView.SetActive(false);
-        timerObject.SetActive(false);
-        eventSystem.SetSelectedGameObject(NetworkManager.IsHost ? storyDropdown : lobbyQuitButton);
-        SetJoinCode(string.IsNullOrEmpty(joinCodeInput.text) ? GameManager.Instance.joinCode.Value.ToString() : joinCodeInput.text);
-
-        // setup story dropdown
-        SetupStoryDropdown();
+        inventoryIcon.gameObject.SetActive(true);
+        cameraZoomInIcon.gameObject.SetActive(true);
+        cameraZoomOutIcon.gameObject.SetActive(true);
+        minimapIcon.transform.parent.gameObject.SetActive(true);
+        pauseIcon.gameObject.SetActive(true);
     }
 
     public void OnPauseToggle()
@@ -423,41 +217,16 @@ public class UIManager : NetworkBehaviour
 
     public void OnRefreshPlayerList()
     {
-        lobbyPlayerListText.text = "Players:\n";
+        MenuManager.Instance.lobbyPlayerListText.text = "Players:\n";
         pausePlayerListText.text = "Players:\n";
         foreach (var player in GameManager.Instance.playerList)
         {
             string targetText = player.PlayerName.Value.ToString();
             targetText += player.OwnerClientId == NetworkManager.LocalClientId ? " (you)" : "";
             targetText += player.OwnerClientId == NetworkManager.ServerClientId ? " (host)" : "";
-            lobbyPlayerListText.text += targetText + "\n";
+            MenuManager.Instance.lobbyPlayerListText.text += targetText + "\n";
             pausePlayerListText.text += targetText + "\n";
         }
-    }
-
-    private void OnJoinCodeValueChanged(FixedString64Bytes oldValue, FixedString64Bytes newValue)
-    {
-        SetJoinCode(newValue.ToString());
-    }
-
-    public void SetJoinCode(string newValue)
-    {
-        lobbyJoinCodeText.text = "Join Code: \n<b>" + newValue;
-        pauseJoinCodeText.text = "Join Code: \n<b>" + newValue;
-    }
-
-    public string GetJoinCodeInput()
-    {
-        return joinCodeInput.text.Trim().ToUpper();
-    }
-
-    public void OnLobbyStart()
-    {
-        startButton.SetActive(!GameManager.Instance.isMaster);
-        timerObject.SetActive(GameManager.Instance.isMaster);
-        storyDropdown.SetActive(false);
-        waitingOnHostText.gameObject.SetActive(false);
-        SetMasterGameStateText("Individual mapping\n" + GameManager.Instance.playerList.Count(p => p.IsMapReady.Value == true) + "/" + GameManager.Instance.playerList.Count);
     }
 
     public void OnOpenDialog(string titleText, string contentText, string buttonText, string targetAction = "")
@@ -515,28 +284,5 @@ public class UIManager : NetworkBehaviour
             Destroy(activeDialog);
             activeDialog = null;
         }
-    }
-
-    public void SetMasterGameStateText(string targetText)
-    {
-        gameStateText.text = "<b>Game State:</b>\n";
-        gameStateText.text += targetText;
-    }
-
-    public void OnMasterSharedMapEnabled()
-    {
-        SetMasterGameStateText("Shared mapping");
-        finishButton.SetActive(true);
-        GameManager.Instance.mapCamera.gameObject.SetActive(true);
-        GameManager.Instance.mapCamera.transform.position = new Vector3(0.33f, -100f, 0.34f);
-        GameManager.Instance.mapCamera.targetTexture = (RenderTexture)sharedMapView.GetComponent<RawImage>().texture;
-        sharedMapView.SetActive(true);
-    }
-
-    public void OnMasterSharedMapReady()
-    {
-        SetMasterGameStateText("Explore map");
-        SharedMapManager.Instance.OnSharedMapReadyClientRpc();
-        finishButton.SetActive(false);
     }
 }

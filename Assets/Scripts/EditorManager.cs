@@ -82,7 +82,7 @@ public class EditorManager : MonoBehaviour
 
     private void InstantiateNewIcon(string structureName)
     {
-        GameObject newIcon = Instantiate(Resources.Load<GameObject>("Elements/SquareIcon"), iconPile.transform);
+        GameObject newIcon = Instantiate(Resources.Load<GameObject>("UIElements/SquareIcon"), iconPile.transform);
         newIcon.name = structureName;
         newIcon.transform.localPosition = Vector3.zero;
         newIcon.transform.localEulerAngles = Vector3.zero;
