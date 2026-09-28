@@ -49,7 +49,7 @@ public class InputManager : MonoBehaviour
         inventoryAction.performed += context => OnInventoryAction();
         jumpAction.performed += context => OnJumpAction();
         primaryAction.performed += context => OnPrimaryAction();
-        scrollAction.performed += context => OnScrollAction();
+        scrollAction.performed += context => OnScrollAction(scrollAction.ReadValue<float>());
         submitNavAction.performed += context => UIManager.Instance.OnNavigationDown();
     }
 
@@ -122,21 +122,21 @@ public class InputManager : MonoBehaviour
         }
     }
 
-    public void OnScrollStart()
+    public void OnScrollStart(float scrollValue)
     {
         if (GameManager.Instance.isPaused) return;
 
         if (scrollRoutine != null) return;
-        scrollRoutine = StartCoroutine(OnAutoScroll());
+        scrollRoutine = StartCoroutine(OnAutoScroll(scrollValue));
     }
 
-    private IEnumerator OnAutoScroll()
+    private IEnumerator OnAutoScroll(float scrollValue)
     {
         if (GameManager.Instance.isPaused) yield break;
 
         while(true)
         {
-            OnScrollAction();
+            OnScrollAction(scrollValue);
             yield return new WaitForSeconds(0.1f);            
         }
     } 
@@ -149,11 +149,10 @@ public class InputManager : MonoBehaviour
         scrollRoutine = null;
     }
 
-    public void OnScrollAction()
+    public void OnScrollAction(float scrollValue)
     {
         if (GameManager.Instance.isPaused) return;
 
-        float scrollValue = scrollAction.ReadValue<float>();
         float targetValue = scrollValue > 0 ? .25f : scrollValue < 0 ? -.25f : 0;
 
         if (PlayerController.Instance && !InventoryManager.Instance.isInventoryActive)

@@ -58,6 +58,12 @@ public class UIManager : NetworkBehaviour
         AddEventTrigger(pauseQuitButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnQuitButton);
         AddEventTrigger(pauseQuitButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnQuitButton);
 
+        // setup zoom triggers
+        AddEventTrigger(cameraZoomInIcon.GetComponent<EventTrigger>(), EventTriggerType.PointerDown, InputManager.Instance.OnScrollStart, -1f);
+        AddEventTrigger(cameraZoomInIcon.GetComponent<EventTrigger>(), EventTriggerType.PointerUp, InputManager.Instance.OnScrollStop);
+        AddEventTrigger(cameraZoomOutIcon.GetComponent<EventTrigger>(), EventTriggerType.PointerDown, InputManager.Instance.OnScrollStart, 1f);
+        AddEventTrigger(cameraZoomOutIcon.GetComponent<EventTrigger>(), EventTriggerType.PointerUp, InputManager.Instance.OnScrollStop);
+
         // setup menumanager
         GetComponent<MenuManager>().OnSetup();
     }
