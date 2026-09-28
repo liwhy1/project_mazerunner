@@ -1,3 +1,4 @@
+using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -70,7 +71,7 @@ public class UIElement : MonoBehaviour
     public void OnElementEnable()
     {
         isEnabled = true;
-        GetComponent<EventTrigger>().enabled = true;
+        GetComponents<EventTrigger>().All(p => p.enabled = true);
         GetComponent<Image>().color = normalColor;
         if (transform.Find("Sprite")) transform.Find("Sprite").GetComponent<Image>().color = normalColor;
     }
@@ -79,7 +80,7 @@ public class UIElement : MonoBehaviour
     {
         isEnabled = false;
         isSelected = false;
-        GetComponent<EventTrigger>().enabled = false;
+        GetComponents<EventTrigger>().All(p => p.enabled = false);
         transform.localScale = new Vector3(1f, 1f, 1f);
         GetComponent<Image>().color = disabledColor;
         if (transform.Find("Sprite")) transform.Find("Sprite").GetComponent<Image>().color = disabledColor;
