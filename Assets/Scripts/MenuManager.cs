@@ -45,7 +45,7 @@ public class MenuManager : NetworkBehaviour
 
     [SerializeField] private TMP_Text gameStateText;
     [SerializeField] private GameObject finishButton;
-    [SerializeField] private GameObject sharedMapView;
+    public GameObject sharedMapView;
     [SerializeField] private GameObject timerObject;
 
     public void OnSetup()

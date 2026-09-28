@@ -64,9 +64,9 @@ public class UIManager : NetworkBehaviour
 
     private void Update()
     {
-        if (PlayerController.Instance)
+        if (GameManager.Instance.isLobbyStarted.Value)
         {
-            UpdateMinimapPosition();            
+            UpdateMinimapPosition();
         }
 
         HandleActiveNavigationElement();
@@ -125,7 +125,9 @@ public class UIManager : NetworkBehaviour
 
     private void SetupMinimapIcon(int playerId)
     {
-        GameObject newIcon = Instantiate(Resources.Load<GameObject>("PlayerIcon"), Vector3.zero, Quaternion.identity, minimapIcon.transform.parent);
+        Transform targetParent = GameManager.Instance.isMaster ? MenuManager.Instance.sharedMapView.transform : minimapIcon.transform.parent;
+        GameObject newIcon = Instantiate(Resources.Load<GameObject>("PlayerIcon"), Vector3.zero, Quaternion.identity, targetParent);
+        if (GameManager.Instance.isMaster) newIcon.transform.localScale = new Vector3(.5f, .5f, .5f);
         newIcon.name = "playerIcon_" + playerId;
         newIcon.SetActive(true);
         minimapPlayerIcons.Add(newIcon);
