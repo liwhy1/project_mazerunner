@@ -229,7 +229,7 @@ public class UIManager : NetworkBehaviour
         }
     }
 
-    public void OnOpenDialog(string titleText, string contentText, string buttonText, string targetAction = "")
+    public void OnOpenDialog(string titleText, string contentText, string buttonText = "", string targetAction = "")
     {
         // close any active dialogs
         OnCloseDialog();

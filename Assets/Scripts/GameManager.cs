@@ -180,7 +180,11 @@ public class GameManager : NetworkBehaviour
 
     public async void OnStartHost()
     {
-        if (string.IsNullOrEmpty(PlayerPrefs.GetString("PlayerName")) && !isMaster) return;
+        if (string.IsNullOrEmpty(PlayerPrefs.GetString("PlayerName")) && !isMaster) 
+        {
+            UIManager.Instance.OnOpenDialog("Notice", "Player name can't be empty!", "");
+            return;
+        }
 
         UIManager.Instance.loadingIcon.SetActive(true);
         string relayCode = await RelayManager.Instance.StartHost(4);
@@ -198,12 +202,23 @@ public class GameManager : NetworkBehaviour
     {
         string joinCode = MenuManager.Instance.GetJoinCodeInput();
 
-        if (string.IsNullOrEmpty(PlayerPrefs.GetString("PlayerName")) || string.IsNullOrEmpty(joinCode)) return;
+        if (string.IsNullOrEmpty(PlayerPrefs.GetString("PlayerName"))) 
+        {
+            UIManager.Instance.OnOpenDialog("Notice", "Player name can't be empty!", "");
+            return;
+        }
+
+        if (string.IsNullOrEmpty(joinCode))
+        {
+            UIManager.Instance.OnOpenDialog("Notice", "Join code can't be empty!", "");
+            return;
+        }
 
         UIManager.Instance.loadingIcon.SetActive(true);
         if (!await RelayManager.Instance.JoinHost(joinCode))
         {
             Debug.Log("GameManager: Failed to join game.");
+            UIManager.Instance.OnOpenDialog("Notice", "Failed to joing game!", "");
             UIManager.Instance.loadingIcon.SetActive(false);
             return;
         }
