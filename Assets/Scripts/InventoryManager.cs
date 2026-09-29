@@ -92,7 +92,7 @@ public class InventoryManager : MonoBehaviour
 
     private void GenerateJournalPage(GameObject targetView, int targetPage)
     {
-        string activeStory = GameManager.Instance.networkState == NetworkState.Online ? GameManager.Instance.activeStory.Value.ToString() : "Prototype2";
+        string activeStory = GameManager.Instance.networkState == NetworkState.Online ? GameManager.Instance.activeStory.Value.ToString() : "Prototype1";
         int persistentId = GameManager.Instance.networkState == NetworkState.Online ? GameManager.Instance.FetchPersistentPlayerId() : 0;
         string textTargetPath = "Information/" + activeStory + "/info" + persistentId.ToString();
         string imageTargetPath = "Information/" + activeStory + "/image" + persistentId.ToString();
