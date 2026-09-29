@@ -3,12 +3,22 @@ using UnityEngine;
 public class AudioManager : MonoBehaviour
 {
     public static AudioManager Instance;
+    private AudioSource audioSource;
 
+    [Header("Environment")]
     [SerializeField] private AudioClip riverSound;
+    [SerializeField] private AudioClip footstepSound;
+
+    [Header("UI")]
+    [SerializeField] private AudioClip dialogOpenSound;
+    [SerializeField] private AudioClip dialogCloseSound;
+    [SerializeField] private AudioClip buttonClickSound;
+    [SerializeField] private AudioClip elementPlaceSound;
 
     private void Start()
     {
         Instance = this;
+        audioSource = GetComponent<AudioSource>();
     }
 
     private void Update()
@@ -29,4 +39,16 @@ public class AudioManager : MonoBehaviour
 
         riverSource.volume = Mathf.InverseLerp(6f, 0f, currentDistance);
     }
+
+    private void PlaySoundClip(AudioClip targetClip)
+    {
+        audioSource.pitch = Random.Range(4.5f, 8) / 10f;
+        audioSource.PlayOneShot(targetClip);
+    }
+
+    public void OnDialogOpen() => PlaySoundClip(dialogOpenSound);
+    public void OnDialogClose() => PlaySoundClip(dialogCloseSound);
+    public void OnButtonClick() => PlaySoundClip(buttonClickSound);
+    public void OnElementPlace() => PlaySoundClip(elementPlaceSound);
+    public void OnFootstep() => PlaySoundClip(footstepSound);
 }

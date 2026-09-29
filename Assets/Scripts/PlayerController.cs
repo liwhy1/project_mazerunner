@@ -23,9 +23,11 @@ public class PlayerController : NetworkBehaviour
     public float movementSpeed;
     public float walkSpeed = 20f;
     public float sprintSpeed = 30f;
+    private float lastFootstepTime = 0f;
     public bool isGrounded;
     private Vector3 lastPlayerPosition;
     private bool isPlayerMoving;
+    private bool isAgentNavigating;
 
     [Header("Camera Data")]
     public bool enableCamera;
@@ -82,11 +84,14 @@ public class PlayerController : NetworkBehaviour
         // check for ground
         GroundCheckHandler();
 
+        // handle footstep
+        FootStepHandler();
+
         // toggle camera based on shared map view activity
         playerCamera.gameObject.SetActive(!(InventoryManager.Instance.isInventoryActive && (GameManager.Instance.mapCamera.gameObject.activeSelf || (EditorManager.Instance && EditorManager.Instance.editorMapInstance && EditorManager.Instance.editorMapInstance.activeSelf))));
 
         // set player animation state
-        bool isAgentNavigating = !(!playerAgent.pathPending && (!playerAgent.hasPath || playerAgent.velocity.sqrMagnitude == 0f));
+        isAgentNavigating = !(!playerAgent.pathPending && (!playerAgent.hasPath || playerAgent.velocity.sqrMagnitude == 0f));
         playerAnimator.SetBool("isRunning", isPlayerMoving || isAgentNavigating);
     }
 
@@ -230,6 +235,17 @@ public class PlayerController : NetworkBehaviour
         playerAgent.isStopped = true;
         playerAgent.ResetPath();
         gameObject.transform.position = targetPosition;
+    }
+
+    private void FootStepHandler()
+    {
+        if ((isPlayerMoving || isAgentNavigating) && isGrounded) lastFootstepTime += Time.deltaTime;
+        else lastFootstepTime = .34f;
+        if (lastFootstepTime > .36f)
+        {
+            AudioManager.Instance.OnFootstep();
+            lastFootstepTime = 0f;
+        }
     }
 
     public void OnJump()

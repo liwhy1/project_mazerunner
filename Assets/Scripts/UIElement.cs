@@ -53,6 +53,10 @@ public class UIElement : MonoBehaviour
         pointerClickEntry.callback.AddListener((eventData) => { OnElementClick(); });
         GetComponent<EventTrigger>().triggers.Add(pointerClickEntry);
 
+        EventTrigger.Entry pointerSubmitEntry = new EventTrigger.Entry() {eventID = EventTriggerType.Submit};
+        pointerSubmitEntry.callback.AddListener((eventData) => { OnElementClick(); });
+        GetComponent<EventTrigger>().triggers.Add(pointerSubmitEntry);
+
         EventTrigger.Entry pointerEnterEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerEnter};
         pointerEnterEntry.callback.AddListener((eventData) => { OnElementGrow(); });
         GetComponent<EventTrigger>().triggers.Add(pointerEnterEntry);
@@ -131,6 +135,7 @@ public class UIElement : MonoBehaviour
     public void OnElementClick()
     {
         if (!isEnabled) return;
+        AudioManager.Instance.OnButtonClick();
         if (resetOnClick) OnElementShrink();
     }
 }

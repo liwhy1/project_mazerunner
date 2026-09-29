@@ -152,6 +152,9 @@ public class SharedMapManager : NetworkBehaviour
     {
         if (activeTool == null || PlayerController.Instance.playerCamera.activeSelf) return;
 
+        // play sfx
+        AudioManager.Instance.OnElementPlace();
+
         // destroy element if its dropped over a discard allowed area
         if (enableDiscard)
         {

@@ -162,6 +162,9 @@ public class MapManager : MonoBehaviour
     {
         if (activeTool == null) return;
 
+        // play sfx
+        AudioManager.Instance.OnElementPlace();
+
         // destroy element if its dropped over a discard allowed area
         if (enableDiscard)
         {

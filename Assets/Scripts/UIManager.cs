@@ -259,6 +259,9 @@ public class UIManager : NetworkBehaviour
         // close any active dialogs
         OnCloseDialog();
 
+        // play open sound
+        AudioManager.Instance.OnDialogOpen();
+
         // create new dialog
         GameObject newDialog = Instantiate(Resources.Load<GameObject>("UIElements/TextDialog"), transform);
         newDialog.transform.localPosition = Vector3.zero;
@@ -306,6 +309,7 @@ public class UIManager : NetworkBehaviour
     {
         if (activeDialog)
         {
+            AudioManager.Instance.OnDialogClose();
             Destroy(activeDialog);
             activeDialog = null;
         }
