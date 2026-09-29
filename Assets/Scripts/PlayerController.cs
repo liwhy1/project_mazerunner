@@ -107,6 +107,7 @@ public class PlayerController : NetworkBehaviour
 
         Collider[] hits = Physics.OverlapBox(checkCenter, new Vector3(0.4f, 0.05f, 0.4f), Quaternion.identity, Physics.AllLayers, QueryTriggerInteraction.Ignore);
         isGrounded = hits.Any(h => h.transform != transform);
+        playerAnimator.SetBool("isGrounded", playerRigidbody.isKinematic ? true : isGrounded);
     }
 
     private void CameraHandler()
@@ -246,9 +247,8 @@ public class PlayerController : NetworkBehaviour
     {
         yield return new WaitForSeconds(.4f);
         float currentTime = 0f;
-        while (currentTime < 1f)
+        while (currentTime < .5f)
         {
-            Debug.Log(isGrounded);
             if (isGrounded) break;
             currentTime += .1f;
             yield return new WaitForSeconds(.1f);
