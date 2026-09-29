@@ -38,7 +38,7 @@ public class GameManager : NetworkBehaviour
         // create NetworkManager
         if (FindAnyObjectByType<NetworkManager>() == null)
         {
-            GameObject networkManager = Instantiate(Resources.Load<GameObject>("NetworkManager"));
+            GameObject networkManager = Instantiate(Resources.Load<GameObject>("GameComponents/NetworkManager"));
             networkManager.name = "NetworkManager";
             DontDestroyOnLoad(networkManager);
         }
@@ -46,7 +46,7 @@ public class GameManager : NetworkBehaviour
         // create InputManager
         if (FindAnyObjectByType<InputManager>() == null)
         {
-            GameObject inputManager = Instantiate(Resources.Load<GameObject>("InputManager"));
+            GameObject inputManager = Instantiate(Resources.Load<GameObject>("GameComponents/InputManager"));
             inputManager.name = "InputManager";
             DontDestroyOnLoad(inputManager);
         }
@@ -54,9 +54,17 @@ public class GameManager : NetworkBehaviour
         // create EventSystem
         if (FindAnyObjectByType<EventSystem>() == null)
         {
-            GameObject eventSystem = Instantiate(Resources.Load<GameObject>("EventSystem"));
+            GameObject eventSystem = Instantiate(Resources.Load<GameObject>("GameComponents/EventSystem"));
             eventSystem.name = "EventSystem";
             DontDestroyOnLoad(eventSystem);
+        }
+
+        // create AudioManager
+        if (FindAnyObjectByType<AudioManager>() == null)
+        {
+            GameObject audioManager = Instantiate(Resources.Load<GameObject>("GameComponents/AudioManager"));
+            audioManager.name = "AudioManager";
+            DontDestroyOnLoad(audioManager);
         }
     }
 
