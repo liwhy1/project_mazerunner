@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
@@ -234,7 +235,26 @@ public class PlayerController : NetworkBehaviour
         if (!IsOwner) return;
         if (GameManager.Instance.isPaused || !isGrounded || !enableMovement || playerRigidbody.isKinematic || InventoryManager.Instance.isInventoryActive) return;
 
+        playerAnimator.SetBool("isJumping", true);
         playerRigidbody.linearVelocity = gameObject.transform.up * jumpStrength;
+
+        if (jumpRoutine == null) jumpRoutine = StartCoroutine(JumpHandler());
+    }
+
+    private Coroutine jumpRoutine;
+    private IEnumerator JumpHandler()
+    {
+        yield return new WaitForSeconds(.4f);
+        float currentTime = 0f;
+        while (currentTime < 1f)
+        {
+            Debug.Log(isGrounded);
+            if (isGrounded) break;
+            currentTime += .1f;
+            yield return new WaitForSeconds(.1f);
+        }
+        playerAnimator.SetBool("isJumping", false);
+        jumpRoutine = null;
     }
 
     public void SetPlayerSkinData(SkinData skinData)
