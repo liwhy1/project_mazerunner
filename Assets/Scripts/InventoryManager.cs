@@ -35,6 +35,7 @@ public class InventoryManager : MonoBehaviour
     private void Update()
     {
         pageBackground.SetActive(PlayerController.Instance && PlayerController.Instance.playerCamera.activeSelf);
+        GameManager.Instance.mapCamera.gameObject.SetActive(isInventoryActive && MapManager.Instance.gameObject.activeSelf && MapManager.Instance.activeMapPage == MapManager.Instance.sharedViewPage);
     }
 
     public void OnSetup()
@@ -142,7 +143,6 @@ public class InventoryManager : MonoBehaviour
 
     public void OnInventoryBack()
     {
-        GameManager.Instance.mapCamera.gameObject.SetActive(false);
         buttonLayout.SetActive(true);
         journalObject.SetActive(false);
         mapObject.SetActive(false);

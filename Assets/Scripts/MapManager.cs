@@ -20,7 +20,7 @@ public class MapManager : MonoBehaviour
     [SerializeField] private GameObject sharedViewButton;
     [SerializeField] private GameObject ownViewPage;
     [SerializeField] private GameObject individualViewPage;
-    [SerializeField] private GameObject sharedViewPage;
+    public GameObject sharedViewPage;
     public GameObject activeMapPage;
 
     [Header("Icon Data")]
@@ -338,7 +338,6 @@ public class MapManager : MonoBehaviour
     public void SetMapPage(GameObject pageObject)
     {
         activeMapPage = pageObject;
-        GameManager.Instance.mapCamera.gameObject.SetActive(false);
 
         ownViewPage.SetActive(false);
         individualViewPage.SetActive(false);
@@ -365,7 +364,6 @@ public class MapManager : MonoBehaviour
         else if (pageObject == sharedViewPage)
         {
             sharedViewButton.GetComponent<UIElement>().OnElementSelect();
-            GameManager.Instance.mapCamera.gameObject.SetActive(true);
         }
     }
 
