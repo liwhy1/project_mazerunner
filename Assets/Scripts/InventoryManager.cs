@@ -19,7 +19,6 @@ public class InventoryManager : MonoBehaviour
     [SerializeField] private GameObject editorIconObject;
 
     [Header("Journal Data")]
-    private bool isJournalGenerated;
     [SerializeField] private ScrollRect journalPageView;
     [SerializeField] private TMP_Text journalPageNumber;
     [SerializeField] private GameObject journalText;
@@ -75,20 +74,29 @@ public class InventoryManager : MonoBehaviour
     public void OnOpenJournal()
     {
         buttonLayout.gameObject.SetActive(false);
-        if (!isJournalGenerated)
-        {
-            journalPage1Layout.SetActive(true);
-            journalPage2Layout.SetActive(false);
-            journalPageView.content = journalPage1Layout.GetComponent<RectTransform>();
-            journalPageNumber.text = "Page 1";
-
-            // generate pages
-            GenerateJournalPage(journalPage1Layout, 1);
-            GenerateJournalPage(journalPage2Layout, 2);
-
-            isJournalGenerated = true;
-        }
         journalObject.SetActive(true);
+    }
+
+    public void OnSetupStory()
+    {
+        string activeStory = GameManager.Instance.networkState == NetworkState.Online ? GameManager.Instance.activeStory.Value.ToString() : "Prototype1";
+
+        // setup map
+        GameObject mapBackground = MapManager.Instance.ownViewPage.transform.Find("Background").gameObject;
+        GameObject sharedMapBackground = SharedMapManager.Instance.transform.Find("Background").gameObject;
+        Sprite mapSprite = Resources.Load<Sprite>("Information/" + activeStory + "/MapSprite");
+        mapBackground.GetComponent<Image>().sprite = mapSprite;
+        sharedMapBackground.GetComponent<Image>().sprite = mapSprite;
+
+        // setup journal
+        journalPage1Layout.SetActive(true);
+        journalPage2Layout.SetActive(false);
+        journalPageView.content = journalPage1Layout.GetComponent<RectTransform>();
+        journalPageNumber.text = "Page 1";
+
+        // generate pages
+        GenerateJournalPage(journalPage1Layout, 1);
+        GenerateJournalPage(journalPage2Layout, 2);
     }
 
     private void GenerateJournalPage(GameObject targetView, int targetPage)
@@ -97,6 +105,15 @@ public class InventoryManager : MonoBehaviour
         int persistentId = GameManager.Instance.networkState == NetworkState.Online ? GameManager.Instance.FetchPersistentPlayerId() : 0;
         string textTargetPath = "Information/" + activeStory + "/info" + persistentId.ToString();
         string imageTargetPath = "Information/" + activeStory + "/image" + persistentId.ToString();
+
+        // don't generate page if the path target doesn't exist
+        if (!Resources.Load<TextAsset>(textTargetPath + "_" + targetPage))
+        {
+            Destroy(targetView);
+            journalObject.transform.Find("NextPageButton").gameObject.SetActive(false);
+            return;
+        }
+
         string loadedText = Resources.Load<TextAsset>(textTargetPath + "_" + targetPage).text;
         string[] loadedTextBlocks = Regex.Split(loadedText, @"(\[image[12345]\])");
 

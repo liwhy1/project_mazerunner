@@ -18,7 +18,7 @@ public class MapManager : MonoBehaviour
     [SerializeField] private GameObject ownViewButton;
     public GameObject individualViewButton;
     [SerializeField] private GameObject sharedViewButton;
-    [SerializeField] private GameObject ownViewPage;
+    public GameObject ownViewPage;
     [SerializeField] private GameObject individualViewPage;
     public GameObject sharedViewPage;
     public GameObject activeMapPage;

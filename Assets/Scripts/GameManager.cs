@@ -123,6 +123,7 @@ public class GameManager : NetworkBehaviour
         isPaused = false;
         playerViewCamera.gameObject.SetActive(false);
         SharedMapManager.Instance.gameObject.GetComponent<Canvas>().worldCamera = mapCamera;
+        InventoryManager.Instance.OnSetupStory();
 
         if (!isMaster) 
         {
