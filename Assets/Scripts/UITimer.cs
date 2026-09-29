@@ -1,7 +1,7 @@
 using TMPro;
 using UnityEngine;
 
-public class TimerManager : MonoBehaviour
+public class UITimer : MonoBehaviour
 {
     [SerializeField] private GameObject playToggleButton;
     [SerializeField] private TMP_Text timerText;

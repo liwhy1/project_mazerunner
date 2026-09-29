@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Video;
 
-public class VideoPlayerManager : MonoBehaviour
+public class UIVideoPlayer : MonoBehaviour
 {
     [SerializeField] private GameObject playToggleButton;
     [SerializeField] private VideoPlayer videoPlayer;
