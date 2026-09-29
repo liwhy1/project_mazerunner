@@ -19,6 +19,7 @@ public class PlayerController : NetworkBehaviour
     public bool enableMovement;
     public Vector2 moveDirection;
     public float jumpStrength = 5f;
+    private Coroutine jumpRoutine;
     public float movementSpeed;
     public float walkSpeed = 20f;
     public float sprintSpeed = 30f;
@@ -233,7 +234,7 @@ public class PlayerController : NetworkBehaviour
 
     public void OnJump()
     {
-        if (!IsOwner) return;
+        if (!IsOwner && GameManager.Instance.networkState == NetworkState.Online) return;
         if (GameManager.Instance.isPaused || !isGrounded || !enableMovement || playerRigidbody.isKinematic || InventoryManager.Instance.isInventoryActive) return;
 
         playerAnimator.SetBool("isJumping", true);
@@ -242,7 +243,6 @@ public class PlayerController : NetworkBehaviour
         if (jumpRoutine == null) jumpRoutine = StartCoroutine(JumpHandler());
     }
 
-    private Coroutine jumpRoutine;
     private IEnumerator JumpHandler()
     {
         yield return new WaitForSeconds(.4f);
