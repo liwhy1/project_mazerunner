@@ -39,14 +39,19 @@ public class MenuManager : NetworkBehaviour
     public TMP_Text lobbyJoinCodeText;
     public TMP_Text lobbyPlayerListText;
     [SerializeField] private TMP_Text waitingOnHostText;
-    [SerializeField] private GameObject playerView;
-    [SerializeField] private GameObject LegArrowRight;
-    [SerializeField] private GameObject LegArrowLeft;
-
     [SerializeField] private TMP_Text gameStateText;
     [SerializeField] private GameObject finishButton;
     public GameObject sharedMapView;
     [SerializeField] private GameObject timerObject;
+
+    [Header("Player Customisation Data")]
+    [SerializeField] private GameObject playerView;
+    [SerializeField] private GameObject headArrowLeft;
+    [SerializeField] private GameObject headArrowRight;
+    [SerializeField] private GameObject bodyArrowLeft;
+    [SerializeField] private GameObject bodyArrowRight;
+    [SerializeField] private GameObject legArrowLeft;
+    [SerializeField] private GameObject legArrowRight;
 
     public void OnSetup()
     {
@@ -116,8 +121,13 @@ public class MenuManager : NetworkBehaviour
         UIManager.Instance.AddEventTrigger(lobbyQuitButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnOpenMenu);
         storyDropdown.GetComponent<TMP_Dropdown>().onValueChanged.AddListener(delegate { GameManager.Instance.SetActiveStoryClientRpc(storyDropdown.GetComponent<TMP_Dropdown>().captionText.text); });
 
-        UIManager.Instance.AddEventTrigger(LegArrowLeft.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, DecreasePlayerSkinValue, "color");
-        UIManager.Instance.AddEventTrigger(LegArrowRight.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, IncreasePlayerSkinValue, "color");
+        // player customisation
+        UIManager.Instance.AddEventTrigger(headArrowLeft.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, DecreasePlayerSkinValue, "hair");
+        UIManager.Instance.AddEventTrigger(headArrowRight.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, IncreasePlayerSkinValue, "hair");
+        UIManager.Instance.AddEventTrigger(bodyArrowLeft.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, DecreasePlayerSkinValue, "color");
+        UIManager.Instance.AddEventTrigger(bodyArrowRight.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, IncreasePlayerSkinValue, "color");
+        UIManager.Instance.AddEventTrigger(legArrowLeft.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, DecreasePlayerSkinValue, "gender");
+        UIManager.Instance.AddEventTrigger(legArrowRight.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, IncreasePlayerSkinValue, "gender");
     }
 
     private void SetupStoryDropdown()
