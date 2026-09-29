@@ -11,6 +11,7 @@ public class UIElement : MonoBehaviour
     public Color disabledColor = Color.white;
     Vector3 startSize;
     public bool isElementSetup = false;
+    public bool enableBackground = true;
     public bool enableHighlight = true;
     public bool enableGrow = true;
     public bool isSelected = false;
@@ -29,6 +30,15 @@ public class UIElement : MonoBehaviour
         selectColor = Color.darkGray;
         disabledColor = Color.white;
         disabledColor.a = .3f;
+
+        if (!enableBackground) 
+        {
+            normalColor.a = 0f;
+            highlightColor.a = 0f;
+            selectColor.a = 0f;
+            disabledColor.a = 0f;
+        }
+
         startSize = transform.localScale;
         if (startSize == Vector3.zero)
         {
