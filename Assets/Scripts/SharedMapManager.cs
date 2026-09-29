@@ -48,7 +48,7 @@ public class SharedMapManager : NetworkBehaviour
    private void GenerateIcons()
     {
         // load icons from resources folder
-        var mapIcons = Resources.LoadAll<Sprite>("MapIconsNew");
+        var mapIcons = Resources.LoadAll<Sprite>("MapIcons");
 
         // setup icons
         foreach (var icon in mapIcons)
@@ -78,7 +78,7 @@ public class SharedMapManager : NetworkBehaviour
         newIcon.name = targetSprite;
         newIcon.transform.localPosition = Vector3.zero;
         newIcon.transform.localEulerAngles = Vector3.zero;
-        newIcon.transform.Find("Sprite").GetComponent<Image>().sprite = Resources.LoadAll<Sprite>("MapIconsNew").FirstOrDefault(s => s.name.Contains(targetSprite));
+        newIcon.transform.Find("Sprite").GetComponent<Image>().sprite = Resources.LoadAll<Sprite>("MapIcons").FirstOrDefault(s => s.name.Contains(targetSprite));
         newIcon.transform.Find("Sprite").GetComponent<Image>().preserveAspect = true;
         newIcon.transform.Find("Name").gameObject.SetActive(enableTitle);
         newIcon.transform.Find("Name").GetComponent<TMP_Text>().text = targetSprite.Remove(targetSprite.Length - 2, 2);
@@ -356,7 +356,7 @@ public class SharedMapManager : NetworkBehaviour
             }
             else
             {
-                targetObject.transform.Find("Sprite").GetComponent<Image>().sprite = Resources.LoadAll<Sprite>("MapIconsNew").FirstOrDefault(s => s.name.Contains(targetSprite));
+                targetObject.transform.Find("Sprite").GetComponent<Image>().sprite = Resources.LoadAll<Sprite>("MapIcons").FirstOrDefault(s => s.name.Contains(targetSprite));
                 targetObject.transform.Find("Sprite").GetComponent<Image>().preserveAspect = true;
                 targetObject.transform.Find("Name").gameObject.SetActive(false);
                 SetupElementTriggers(targetObject.gameObject);
@@ -401,7 +401,7 @@ public class SharedMapManager : NetworkBehaviour
             newObject.name = element.iconSprite;
             if (element.iconPrefab == "MapIcon")
             {
-                newObject.transform.Find("Sprite").GetComponent<Image>().sprite = Resources.LoadAll<Sprite>("MapIconsNew").FirstOrDefault(i => i.name.Contains(element.iconSprite));
+                newObject.transform.Find("Sprite").GetComponent<Image>().sprite = Resources.LoadAll<Sprite>("MapIcons").FirstOrDefault(i => i.name.Contains(element.iconSprite));
                 newObject.transform.Find("Sprite").GetComponent<Image>().preserveAspect = true;
                 newObject.transform.Find("Name").gameObject.SetActive(false);
             }

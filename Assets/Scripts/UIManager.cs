@@ -197,7 +197,7 @@ public class UIManager : NetworkBehaviour
 
             // apply icon values
             newIcon.transform.localEulerAngles = Vector3.zero;
-            newIcon.transform.Find("Sprite").GetComponent<Image>().sprite = Resources.LoadAll<Sprite>("MapIconsNew").FirstOrDefault(s => s.name.Contains(icon.name));
+            newIcon.transform.Find("Sprite").GetComponent<Image>().sprite = Resources.LoadAll<Sprite>("MapIcons").FirstOrDefault(s => s.name.Contains(icon.name));
             newIcon.transform.Find("Sprite").GetComponent<Image>().preserveAspect = true;
             newIcon.transform.Find("Name").gameObject.SetActive(false);
         }

@@ -71,7 +71,7 @@ public class MapManager : MonoBehaviour
     private void GenerateIcons()
     {
         // load icons from resources folder
-        var mapIcons = Resources.LoadAll<Sprite>("MapIconsNew");
+        var mapIcons = Resources.LoadAll<Sprite>("MapIcons");
 
         // setup icons
         foreach (var icon in mapIcons)
@@ -100,7 +100,7 @@ public class MapManager : MonoBehaviour
         newIcon.name = targetSprite;
         newIcon.transform.localPosition = Vector3.zero;
         newIcon.transform.localEulerAngles = Vector3.zero;
-        newIcon.transform.Find("Sprite").GetComponent<Image>().sprite = Resources.LoadAll<Sprite>("MapIconsNew").FirstOrDefault(s => s.name.Contains(targetSprite));
+        newIcon.transform.Find("Sprite").GetComponent<Image>().sprite = Resources.LoadAll<Sprite>("MapIcons").FirstOrDefault(s => s.name.Contains(targetSprite));
         newIcon.transform.Find("Sprite").GetComponent<Image>().preserveAspect = true;
         newIcon.transform.Find("Name").gameObject.SetActive(enableTitle);
         newIcon.transform.Find("Name").GetComponent<TMP_Text>().text = targetSprite.Remove(targetSprite.Length - 2, 2);

@@ -86,7 +86,7 @@ public class EditorManager : MonoBehaviour
         newIcon.name = structureName;
         newIcon.transform.localPosition = Vector3.zero;
         newIcon.transform.localEulerAngles = Vector3.zero;
-        Sprite targetSprite = Resources.LoadAll<Sprite>("MapIconsNew").FirstOrDefault(s => s.name.Contains(structureName.ToLower().Substring(0, 4)));
+        Sprite targetSprite = Resources.LoadAll<Sprite>("MapIcons").FirstOrDefault(s => s.name.Contains(structureName.ToLower().Substring(0, 4)));
         if (targetSprite) newIcon.transform.Find("Sprite").GetComponent<Image>().sprite = targetSprite;
         newIcon.transform.Find("Sprite").GetComponent<Image>().preserveAspect = true;
         newIcon.transform.Find("Text").gameObject.SetActive(true);
