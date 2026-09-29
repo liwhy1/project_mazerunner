@@ -46,6 +46,9 @@ public class EditorManager : MonoBehaviour
         GenerateIcons();
     }
 
+    private void OnDisable() => OnDisableEditor();
+    private void OnEnable() => OnEnableEditor();
+
     public void OnEnableEditor()
     {
         if (editorMapInstance == null)
@@ -57,11 +60,13 @@ public class EditorManager : MonoBehaviour
             structureHolder = editorMapInstance.transform.Find("StructureHolder");
         }
         else editorMapInstance.SetActive(true);
+        editorCamera.gameObject.SetActive(true);
     }
 
     public void OnDisableEditor()
     {
         if (editorMapInstance) editorMapInstance.SetActive(false);
+        editorCamera.gameObject.SetActive(false);
     }
  
     private void GenerateIcons()
