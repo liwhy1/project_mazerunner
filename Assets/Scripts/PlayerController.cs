@@ -65,7 +65,7 @@ public class PlayerController : NetworkBehaviour
         enableCamera = true;
         gameObject.name = "Player_" + GetComponent<NetworkObject>().OwnerClientId;
 
-        playerCamera = Instantiate(Resources.Load<GameObject>("PlayerCamera"));
+        playerCamera = Instantiate(Resources.Load<GameObject>("GameComponents/PlayerCamera"));
         playerCamera.name = "PlayerCamera";
         GameManager.Instance.playerViewCamera.transform.SetParent(transform);
         GameManager.Instance.playerViewCamera.transform.localPosition = Vector3.zero + Vector3.forward;

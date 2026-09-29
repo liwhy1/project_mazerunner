@@ -132,7 +132,7 @@ public class UIManager : NetworkBehaviour
     private void SetupMinimapIcon(int playerId)
     {
         Transform targetParent = GameManager.Instance.isMaster ? MenuManager.Instance.sharedMapView.transform : minimapIcon.transform.parent;
-        GameObject newIcon = Instantiate(Resources.Load<GameObject>("PlayerIcon"), Vector3.zero, Quaternion.identity, targetParent);
+        GameObject newIcon = Instantiate(Resources.Load<GameObject>("MapPrefabs/PlayerIcon"), Vector3.zero, Quaternion.identity, targetParent);
         if (GameManager.Instance.isMaster) newIcon.transform.localScale = new Vector3(.5f, .5f, .5f);
         newIcon.name = "playerIcon_" + playerId;
         newIcon.SetActive(true);
@@ -182,7 +182,7 @@ public class UIManager : NetworkBehaviour
         {
             // prevent mirroring drawdots
             if (!icon.GetComponent<NetworkObject>() || icon.name.Contains("Dot")) continue;
-            GameObject newIcon = Instantiate(Resources.Load<GameObject>("MapIcon"), minimapIcon.transform.parent);
+            GameObject newIcon = Instantiate(Resources.Load<GameObject>("MapPrefabs/MapIcon"), minimapIcon.transform.parent);
 
             // calculate world canvas pos to screen canvas
             Vector2 screenPosition = GameManager.Instance.mapCamera.WorldToScreenPoint(icon.position);

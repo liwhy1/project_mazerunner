@@ -74,7 +74,7 @@ public class SharedMapManager : NetworkBehaviour
 
     private void InstantiateNewIcon(string targetPrefab, string targetSprite, bool enableTitle, int siblingIndex)
     {
-        GameObject newIcon = Instantiate(Resources.Load<GameObject>(targetPrefab), iconPile.transform);
+        GameObject newIcon = Instantiate(Resources.Load<GameObject>("MapPrefabs/" + targetPrefab), iconPile.transform);
         newIcon.name = targetSprite;
         newIcon.transform.localPosition = Vector3.zero;
         newIcon.transform.localEulerAngles = Vector3.zero;
@@ -209,7 +209,7 @@ public class SharedMapManager : NetworkBehaviour
         Vector3 worldPosition = InputManager.Instance.pointerPosition;
         worldPosition.z = GameManager.Instance.mapCamera.nearClipPlane + 1f;
         Vector3 targetPosition = GameManager.Instance.mapCamera.ScreenToWorldPoint(worldPosition);
-        GameObject newDot = Instantiate(Resources.Load<GameObject>("SharedDrawDot"), targetPosition, Quaternion.identity, transform);
+        GameObject newDot = Instantiate(Resources.Load<GameObject>("MapPrefabs/" + "SharedDrawDot"), targetPosition, Quaternion.identity, transform);
         newDot.GetComponent<RectTransform>().sizeDelta = new Vector3(.02f, 0.02f);
         newDot.SetActive(true);
 
@@ -324,7 +324,7 @@ public class SharedMapManager : NetworkBehaviour
     public void SpawnMapElementServerRpc(string iconPrefab, string iconSprite, Vector3 iconPosition)
     {
         Debug.Log("SMM: Spawning new object with type: " + iconPrefab);
-        GameObject newObject = Instantiate(Resources.Load<GameObject>(iconPrefab));
+        GameObject newObject = Instantiate(Resources.Load<GameObject>("MapPrefabs/" + iconPrefab));
         newObject.GetComponent<NetworkObject>().Spawn();
         newObject.transform.SetParent(transform, false);
         newObject.transform.localPosition = new Vector3(iconPosition.x, iconPosition.y, 1f);
@@ -397,7 +397,7 @@ public class SharedMapManager : NetworkBehaviour
         Debug.Log("SMM: Spawning map objects for player: " + playerName);
         foreach (var element in mapElements)
         {
-            GameObject newObject = Instantiate(Resources.Load<GameObject>(element.iconPrefab));
+            GameObject newObject = Instantiate(Resources.Load<GameObject>("MapPrefabs/" + element.iconPrefab));
             newObject.name = element.iconSprite;
             if (element.iconPrefab == "MapIcon")
             {

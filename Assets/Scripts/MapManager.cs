@@ -32,7 +32,6 @@ public class MapManager : MonoBehaviour
     [SerializeField] private bool enableDiscard;
 
     [Header("Draw Data")]
-    [SerializeField] private GameObject drawDot;
     [SerializeField] private float maxAllowedDots = 500f;
     private List<GameObject> activeDrawDots = new List<GameObject>();
     private GameObject activeHoveredDot;
@@ -96,7 +95,7 @@ public class MapManager : MonoBehaviour
 
     private void InstantiateNewIcon(string targetSprite, bool enableTitle, int siblingIndex)
     {
-        GameObject newIcon = Instantiate(Resources.Load<GameObject>("MapIcon"), iconPile.transform);
+        GameObject newIcon = Instantiate(Resources.Load<GameObject>("MapPrefabs/" + "MapIcon"), iconPile.transform);
         newIcon.name = targetSprite;
         newIcon.transform.localPosition = Vector3.zero;
         newIcon.transform.localEulerAngles = Vector3.zero;
@@ -197,7 +196,7 @@ public class MapManager : MonoBehaviour
 
         // instantiate new dots in world space based on mouse position
         Vector3 targetPosition = InputManager.Instance.pointerPosition;
-        GameObject newDot = Instantiate(drawDot, targetPosition, Quaternion.Euler(0f, 0f, 0f), mapComponenets.transform);
+        GameObject newDot = Instantiate(Resources.Load<GameObject>("MapPrefabs/" + "DrawDot"), targetPosition, Quaternion.Euler(0f, 0f, 0f), mapComponenets.transform);
         newDot.transform.localEulerAngles = Vector3.zero;
         newDot.transform.SetAsFirstSibling();
         newDot.SetActive(true);
