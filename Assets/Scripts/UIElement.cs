@@ -87,7 +87,12 @@ public class UIElement : MonoBehaviour
         isEnabled = true;
         GetComponents<EventTrigger>().All(p => p.enabled = true);
         GetComponent<Image>().color = normalColor;
-        if (transform.Find("Sprite")) transform.Find("Sprite").GetComponent<Image>().color = normalColor;
+        if (transform.Find("Sprite")) 
+        {
+            Color tempColor = transform.Find("Sprite").GetComponent<Image>().color;
+            tempColor.a = 1f;
+            transform.Find("Sprite").GetComponent<Image>().color = tempColor;
+        }
     }
 
     public void OnElementDisable()
@@ -97,7 +102,12 @@ public class UIElement : MonoBehaviour
         GetComponents<EventTrigger>().All(p => p.enabled = false);
         transform.localScale = new Vector3(1f, 1f, 1f);
         GetComponent<Image>().color = disabledColor;
-        if (transform.Find("Sprite")) transform.Find("Sprite").GetComponent<Image>().color = disabledColor;
+        if (transform.Find("Sprite")) 
+        {
+            Color tempColor = transform.Find("Sprite").GetComponent<Image>().color;
+            tempColor.a = .3f;
+            transform.Find("Sprite").GetComponent<Image>().color = tempColor;
+        }
     }
 
     public void OnElementHighlight() 
