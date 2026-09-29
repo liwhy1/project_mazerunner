@@ -160,7 +160,7 @@ public class MenuManager : NetworkBehaviour
         PlayerController.Instance.SetPlayerSkinData(currentData);
 
         // let the server confirm the new data
-        GameManager.Instance.SetPlayerSkinDataServerRpc(currentData);
+        if (GameManager.Instance.networkState == NetworkState.Online) GameManager.Instance.SetPlayerSkinDataServerRpc(currentData);
     }
 
     public void DecreasePlayerSkinValue(string targetValue)
@@ -177,7 +177,7 @@ public class MenuManager : NetworkBehaviour
         PlayerController.Instance.SetPlayerSkinData(currentData);
 
         // let the server confirm the new data
-        GameManager.Instance.SetPlayerSkinDataServerRpc(currentData);
+        if (GameManager.Instance.networkState == NetworkState.Online) GameManager.Instance.SetPlayerSkinDataServerRpc(currentData);
     }
 
     private void OnOpenMenu()
