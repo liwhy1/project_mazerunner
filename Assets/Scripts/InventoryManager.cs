@@ -34,7 +34,9 @@ public class InventoryManager : MonoBehaviour
     private void Update()
     {
         pageBackground.SetActive(PlayerController.Instance && PlayerController.Instance.playerCamera.activeSelf);
-        GameManager.Instance.mapCamera.gameObject.SetActive(isInventoryActive && MapManager.Instance.gameObject.activeSelf && MapManager.Instance.activeMapPage == MapManager.Instance.sharedViewPage);
+        if (!GameManager.Instance.isMaster) GameManager.Instance.mapCamera.gameObject.SetActive(isInventoryActive && MapManager.Instance.gameObject.activeSelf && MapManager.Instance.activeMapPage == MapManager.Instance.sharedViewPage);
+        else GameManager.Instance.mapCamera.gameObject.SetActive(true);
+        if (SharedMapManager.Instance) SharedMapManager.Instance.GetComponent<GraphicRaycaster>().enabled = isInventoryActive && MapManager.Instance.gameObject.activeSelf && MapManager.Instance.activeMapPage == MapManager.Instance.sharedViewPage;
     }
 
     public void OnSetup()

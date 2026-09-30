@@ -388,8 +388,7 @@ public class GameManager : NetworkBehaviour
         FetchPlayerDataById(rpcParams.Receive.SenderClientId).SkinData.Value = skinData;
     }
 
-    [ClientRpc]
-    public void SetActiveStoryClientRpc(string targetStory)
+    public void SetActiveStory(string targetStory)
     {
         if (!IsHost) return;
         Debug.Log("GameManager: Selecting story: " + targetStory);

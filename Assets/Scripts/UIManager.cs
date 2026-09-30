@@ -271,10 +271,8 @@ public class UIManager : NetworkBehaviour
 
     public void OnPauseToggle()
     {
-        eventSystem.SetSelectedGameObject(resumeButton);
+        //eventSystem.SetSelectedGameObject(resumeButton);
         pauseObject.SetActive(!pauseObject.activeSelf);
-        pauseIcon.gameObject.SetActive(!pauseObject.activeSelf);
-        inventoryIcon.gameObject.SetActive(!pauseObject.activeSelf);
     }
 
     public void OnRefreshPlayerList()
@@ -318,7 +316,7 @@ public class UIManager : NetworkBehaviour
         mainButton.transform.GetChild(0).GetComponent<TMP_Text>().text = buttonText;
 
         // set ui selected button
-        eventSystem.SetSelectedGameObject(mainButton.activeSelf ? mainButton : closeButton);
+        //eventSystem.SetSelectedGameObject(mainButton.activeSelf ? mainButton : closeButton);
 
         // setup triggers
         AddEventTrigger(closeButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnCloseDialog);
