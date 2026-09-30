@@ -208,6 +208,9 @@ public class SharedMapManager : NetworkBehaviour
         if (!PlayerController.Instance) return;
         if (activeTool != pencilIcon || PlayerController.Instance.playerCamera.activeSelf || !enablePlacement || enableDiscard || InputManager.Instance.lookAction.ReadValue<Vector2>() == Vector2.zero) return;
 
+        // play sound effect
+        if (!AudioManager.Instance.IsPlaying()) AudioManager.Instance.OnDraw();
+
         // instantiate new dots in world space based on mouse position
         Vector3 worldPosition = InputManager.Instance.pointerPosition;
         worldPosition.z = GameManager.Instance.mapCamera.nearClipPlane + 1f;

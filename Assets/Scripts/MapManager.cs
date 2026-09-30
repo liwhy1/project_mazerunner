@@ -197,6 +197,9 @@ public class MapManager : MonoBehaviour
     {
         if (activeTool != pencilIcon || !enablePlacement || enableDiscard || InputManager.Instance.lookAction.ReadValue<Vector2>() == Vector2.zero) return;
 
+        // play sound effect
+        if (!AudioManager.Instance.IsPlaying()) AudioManager.Instance.OnDraw();
+
         // instantiate new dots in world space based on mouse position
         Vector3 targetPosition = InputManager.Instance.pointerPosition;
         GameObject newDot = Instantiate(Resources.Load<GameObject>("MapPrefabs/" + "DrawDot"), targetPosition, Quaternion.Euler(0f, 0f, 0f), mapComponenets.transform);

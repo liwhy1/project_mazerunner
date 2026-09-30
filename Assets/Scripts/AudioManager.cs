@@ -14,6 +14,7 @@ public class AudioManager : MonoBehaviour
     [SerializeField] private AudioClip dialogCloseSound;
     [SerializeField] private AudioClip buttonClickSound;
     [SerializeField] private AudioClip elementPlaceSound;
+    [SerializeField] private AudioClip pencilDrawSound;
 
     private void Start()
     {
@@ -42,13 +43,16 @@ public class AudioManager : MonoBehaviour
 
     private void PlaySoundClip(AudioClip targetClip, bool randomPitch = true)
     {
-        audioSource.pitch = randomPitch ? Random.Range(4f, 8f) / 10f : 1f;
+        audioSource.pitch = randomPitch ? Random.Range(.5f, 1f) : 1f;
         audioSource.PlayOneShot(targetClip);
     }
+
+    public bool IsPlaying() { return audioSource.isPlaying; }
 
     public void OnDialogOpen() => PlaySoundClip(dialogOpenSound);
     public void OnDialogClose() => PlaySoundClip(dialogCloseSound);
     public void OnButtonClick() => PlaySoundClip(buttonClickSound);
     public void OnElementPlace() => PlaySoundClip(elementPlaceSound);
     public void OnFootstep() => PlaySoundClip(footstepSound);
+    public void OnDraw() => PlaySoundClip(pencilDrawSound, true);
 }
