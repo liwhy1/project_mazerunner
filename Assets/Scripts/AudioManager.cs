@@ -40,9 +40,9 @@ public class AudioManager : MonoBehaviour
         riverSource.volume = Mathf.InverseLerp(6f, 0f, currentDistance);
     }
 
-    private void PlaySoundClip(AudioClip targetClip)
+    private void PlaySoundClip(AudioClip targetClip, bool randomPitch = true)
     {
-        audioSource.pitch = Random.Range(4.5f, 8) / 10f;
+        audioSource.pitch = randomPitch ? Random.Range(4f, 8f) / 10f : 1f;
         audioSource.PlayOneShot(targetClip);
     }
 
