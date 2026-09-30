@@ -10,15 +10,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: d2cf5753936d8504c8dd19be703d5349, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -62.3
+      value: -41.3
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: d2cf5753936d8504c8dd19be703d5349, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: 1.2970095
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: d2cf5753936d8504c8dd19be703d5349, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -27.2
+      value: -298.44675
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: d2cf5753936d8504c8dd19be703d5349, type: 3}
       propertyPath: m_LocalRotation.w
@@ -54,10 +54,40 @@ PrefabInstance:
       objectReference: {fileID: 2100000, guid: 8f105dd875ca76648a2abc5352a641ed, type: 2}
     - target: {fileID: 919132149155446097, guid: d2cf5753936d8504c8dd19be703d5349, type: 3}
       propertyPath: m_Name
-      value: SM_Gen_Env_Cliff_04
+      value: Rock4
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: d2cf5753936d8504c8dd19be703d5349, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5640023699896206572}
   m_SourcePrefab: {fileID: 100100000, guid: d2cf5753936d8504c8dd19be703d5349, type: 3}
+--- !u!1 &2259171238377091132 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: d2cf5753936d8504c8dd19be703d5349, type: 3}
+  m_PrefabInstance: {fileID: 1412821402082594157}
+  m_PrefabAsset: {fileID: 0}
+--- !u!64 &5640023699896206572
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2259171238377091132}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 222202299274120788, guid: d2cf5753936d8504c8dd19be703d5349, type: 3}
