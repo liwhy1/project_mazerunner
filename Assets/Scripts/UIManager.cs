@@ -15,9 +15,16 @@ public class UIManager : NetworkBehaviour
     [Header("Pause Data")]
     [SerializeField] private GameObject pauseObject;
     [SerializeField] public GameObject resumeButton;
+    [SerializeField] private GameObject settingsButton;
     [SerializeField] private GameObject pauseQuitButton;
     public TMP_Text pauseJoinCodeText;
     public TMP_Text pausePlayerListText;
+
+    [Header("Settings Data")]
+    [SerializeField] private GameObject settingsObject;
+    [SerializeField] private Slider uiVolumeSlider;
+    [SerializeField] private Slider environmentVolumeSlider;
+    [SerializeField] private GameObject settingsBackButton;
 
     [Header("HUD Data")]
     [SerializeField] private Image pauseIcon;
@@ -57,6 +64,14 @@ public class UIManager : NetworkBehaviour
         AddEventTrigger(resumeButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, InputManager.Instance.OnPauseAction);
         AddEventTrigger(pauseQuitButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnQuitButton);
         AddEventTrigger(pauseQuitButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnQuitButton);
+        AddEventTrigger(settingsButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnOpenSettings);
+        AddEventTrigger(settingsButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnOpenSettings);
+
+        // setup setting trigger
+        AddEventTrigger(settingsBackButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnCloseSettings);
+        AddEventTrigger(settingsBackButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnCloseSettings);
+        uiVolumeSlider.onValueChanged.AddListener(delegate { AudioManager.Instance.SetMixerGroupVolume("UI", uiVolumeSlider.value); });
+        environmentVolumeSlider.onValueChanged.AddListener(delegate { AudioManager.Instance.SetMixerGroupVolume("Environment", environmentVolumeSlider.value); });
 
         // setup zoom triggers
         AddEventTrigger(cameraZoomInIcon.GetComponent<EventTrigger>(), EventTriggerType.PointerDown, InputManager.Instance.OnScrollStart, -1f);
@@ -126,6 +141,27 @@ public class UIManager : NetworkBehaviour
         {
             EventSystem.current.SetSelectedGameObject(nextSelectable.gameObject);
             if (nextSelectable.GetComponent<TMP_InputField>()) nextSelectable.GetComponent<TMP_InputField>().ActivateInputField();
+        }
+    }
+
+    public void OnOpenSettings()
+    {
+        ResetUIState();
+        MenuManager.Instance.ResetUIState();
+        settingsObject.SetActive(true);
+        eventSystem.SetSelectedGameObject(uiVolumeSlider.gameObject);
+    }
+
+    public void OnCloseSettings()
+    {
+        settingsObject.SetActive(false);
+        if (GameManager.Instance.FetchGameStartState())
+        {
+            OnPauseToggle();
+        }
+        else
+        {
+            MenuManager.Instance.OnOpenMenu();
         }
     }
 
@@ -224,6 +260,7 @@ public class UIManager : NetworkBehaviour
     public void ResetUIState()
     {
         pauseObject.SetActive(false);
+        settingsObject.SetActive(false);
         loadingIcon.SetActive(false);
         inventoryIcon.gameObject.SetActive(true);
         cameraZoomInIcon.gameObject.SetActive(true);

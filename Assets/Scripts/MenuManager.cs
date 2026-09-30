@@ -16,6 +16,7 @@ public class MenuManager : NetworkBehaviour
     [SerializeField] private GameObject hostButton;
     [SerializeField] private GameObject joinButton;
     [SerializeField] private GameObject offlineButton;
+    [SerializeField] private GameObject settingsButton;
 
     [Header("Host Data")]
     [SerializeField] private GameObject hostObject;
@@ -93,6 +94,8 @@ public class MenuManager : NetworkBehaviour
         UIManager.Instance.AddEventTrigger(joinButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnJoinGame);
         UIManager.Instance.AddEventTrigger(offlineButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnOfflineGame);
         UIManager.Instance.AddEventTrigger(offlineButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnOfflineGame);
+        UIManager.Instance.AddEventTrigger(settingsButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, UIManager.Instance.OnOpenSettings);
+        UIManager.Instance.AddEventTrigger(settingsButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, UIManager.Instance.OnOpenSettings);
 
         // host
         UIManager.Instance.AddEventTrigger(startMasterButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, GameManager.Instance.OnStartMaster);
@@ -180,7 +183,7 @@ public class MenuManager : NetworkBehaviour
         if (GameManager.Instance.networkState == NetworkState.Online) GameManager.Instance.SetPlayerSkinDataServerRpc(currentData);
     }
 
-    private void OnOpenMenu()
+    public void OnOpenMenu()
     {
         ResetUIState();
         menuObject.SetActive(true);

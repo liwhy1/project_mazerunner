@@ -1,8 +1,10 @@
 using UnityEngine;
+using UnityEngine.Audio;
 
 public class AudioManager : MonoBehaviour
 {
     public static AudioManager Instance;
+    [SerializeField] private AudioMixer audioMixer;
     private AudioSource audioSource;
 
     [Header("Environment")]
@@ -48,6 +50,7 @@ public class AudioManager : MonoBehaviour
     }
 
     public bool IsPlaying() { return audioSource.isPlaying; }
+    public void SetMixerGroupVolume(string targetGroup, float targetVolume) => audioMixer.SetFloat(targetGroup, targetVolume);
 
     public void OnDialogOpen() => PlaySoundClip(dialogOpenSound);
     public void OnDialogClose() => PlaySoundClip(dialogCloseSound);
