@@ -34,6 +34,8 @@ public class PlayerController : NetworkBehaviour
     public bool rotateCamera;
     public float heightMultiplier = 8f;
     public float distanceMultiplier = 1f;
+    private Material savedMaterial;
+    private GameObject savedObject;
 
     private void Start()
     {
@@ -87,6 +89,9 @@ public class PlayerController : NetworkBehaviour
         // handle footstep
         FootStepHandler();
 
+        // handle camera obstructions
+        CameraObstructionHandler();
+
         // toggle camera based on shared map view activity
         playerCamera.gameObject.SetActive(!(InventoryManager.Instance.isInventoryActive && (GameManager.Instance.mapCamera.gameObject.activeSelf || (EditorManager.Instance && EditorManager.Instance.editorMapInstance && EditorManager.Instance.editorMapInstance.activeSelf))));
 
@@ -114,6 +119,32 @@ public class PlayerController : NetworkBehaviour
         Collider[] hits = Physics.OverlapBox(checkCenter, new Vector3(0.4f, 0.05f, 0.4f), Quaternion.identity, Physics.AllLayers, QueryTriggerInteraction.Ignore);
         isGrounded = hits.Any(h => h.transform != transform);
         playerAnimator.SetBool("isGrounded", playerRigidbody.isKinematic ? true : isGrounded);
+    }
+
+    private void CameraObstructionHandler()
+    {
+        Ray ray = new Ray(playerCamera.transform.position, transform.position - playerCamera.transform.position);
+        if (Physics.Raycast(ray, out RaycastHit hit))
+        {
+            // reset previous object
+            if (savedObject != null && savedObject != hit.collider.gameObject)
+            {
+                savedObject.GetComponent<Renderer>().material = savedMaterial;
+                savedObject = null;
+            }
+
+            // prevent applying to player or terrain
+            if (hit.collider.gameObject == gameObject || hit.collider.gameObject.transform.IsChildOf(transform) || hit.collider.name.ToLower().Contains("terrain") || savedObject == hit.collider.gameObject) return;
+
+            // save object & material
+            savedObject = hit.collider.gameObject;
+            savedMaterial = savedObject.GetComponent<Renderer>().material;
+
+            // apply new mat with transparent shader
+            Material clonedMaterial = new Material(savedMaterial);
+            clonedMaterial.shader = Shader.Find("Custom/TransparentLit");
+            savedObject.GetComponent<Renderer>().material = clonedMaterial;
+        }
     }
 
     private void CameraHandler()
