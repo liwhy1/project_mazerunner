@@ -9,7 +9,7 @@ public class SnapChildrenToGround : MonoBehaviour
     [Header("Placement Options")]
     public float offset = 0.0f;
     public bool alignToSlope = true;
-    public float raycastStartHeight = 100f;
+    public float raycastStartHeight = -5f;
     public float raycastDistance = 200f;
 
     [ContextMenu("Snap Children To Ground")]
