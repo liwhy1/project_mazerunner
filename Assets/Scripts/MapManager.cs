@@ -4,171 +4,183 @@ using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
-public class MapManager : MonoBehaviour
+public class MapManager : NetworkBehaviour
 {
     public static MapManager Instance;
-
-    [Header("Map Data")]
-    public GameObject mapComponenets;
-    public GameObject mapObjectP0;
-    public GameObject mapObjectP1;
-    public GameObject mapObjectP2;
-    [SerializeField] private GameObject ownViewButton;
-    public GameObject individualViewButton;
-    [SerializeField] private GameObject sharedViewButton;
-    public GameObject ownViewPage;
-    [SerializeField] private GameObject individualViewPage;
-    public GameObject sharedViewPage;
-    public GameObject activeMapPage;
+    public static MapManager SharedInstance;
+    public GameObject mapComponents;
 
     [Header("Icon Data")]
-    [SerializeField] private GameObject iconPile;
-    private Vector3 savedElementPosition;
-    [SerializeField] private float dragSmoothing = 25f;
     private List<GameObject> activeIcons = new List<GameObject>();
+    public List<Sprite> mapSprites = new List<Sprite>();
+    public GameObject iconPile;
+    [SerializeField] private Vector3 savedElementPosition;
     [SerializeField] private bool enablePlacement;
     [SerializeField] private bool enableDiscard;
+    [SerializeField] private bool isWorldSpace;
 
     [Header("Draw Data")]
-    [SerializeField] private float maxAllowedDots = 500f;
     private List<GameObject> activeDrawDots = new List<GameObject>();
-    private GameObject activeHoveredDot;
-    [SerializeField] private GameObject toolBar;
+    public GameObject activeHoveredDot;
+
+    [Header("UI Data")]
+    public GameObject toolBar;
     [SerializeField] private GameObject activeTool;
     [SerializeField] private GameObject pencilIcon;
     [SerializeField] private GameObject eraserIcon;
     [SerializeField] private GameObject trashIcon;
-    [SerializeField] private GameObject saveIcon;
+    public GameObject saveIcon;
+
+    private void Awake()
+    {
+        if (isWorldSpace) OnSetup();
+    }
 
     public void OnSetup()
     {
-        Debug.Log("MapManager: Setting up");
-        Instance = this;
+        if (isWorldSpace)
+        {
+            Debug.Log("SharedMapManager: Settings up");
+            SharedInstance = this;
+        }
+        else
+        {
+            Debug.Log("MapManager: Settings up");
+            Instance = this;
+        }
+
+        // load map icons
+        mapSprites = Resources.LoadAll<Sprite>("MapIcons").ToList();
+
+        // generate icons
+        mapSprites.ForEach(i => InstantiateNewIcon("MapIcon", i.name, true));
 
         // set active map tool
         SetActiveTool(pencilIcon);
 
-        // set active page
-        SetMapPage(ownViewPage);
-
-        // generate icon objects
-        GenerateIcons();
-
-        // disable inactive buttons
-        sharedViewButton.GetComponent<UIElement>().OnElementDisable();
-        individualViewButton.GetComponent<UIElement>().OnElementDisable();
-
-        // sync map state
-        if (GameManager.Instance.networkState == NetworkState.Online)
+        if (isWorldSpace && GameManager.Instance.networkState != NetworkState.Offline && !NetworkManager.IsHost)
         {
+            // conditionally disable save icon
+            saveIcon.SetActive(false);
+
+            // sync map state
             GameManager.Instance.SyncPlayerMapStateServerRpc();            
         }
     }
 
-    private void GenerateIcons()
+    private void InstantiateNewIcon(string targetPrefab, string targetSprite, bool enableTitle, int siblingIndex = -1)
     {
-        // load icons from resources folder
-        var mapIcons = Resources.LoadAll<Sprite>("MapIcons");
+        GameObject objectPrefab = Resources.Load<GameObject>("MapPrefabs/" + targetPrefab);
+        Sprite objectSprite = mapSprites.FirstOrDefault(s => s.name.Contains(targetSprite));
+        GameObject newIcon = Instantiate(objectPrefab, iconPile.transform);
+        Image newIconSprite = newIcon.transform.Find("Sprite").GetComponent<Image>();
+        TMP_Text newIconTitle = newIcon.transform.Find("Name").GetComponent<TMP_Text>();
 
-        // setup icons
-        foreach (var icon in mapIcons)
-        {
-            InstantiateNewIcon(icon.name, true, -1);
-        }
-    }
-
-    private void SetupElementTriggers(GameObject targetElement)
-    {
-        if (targetElement.GetComponent<EventTrigger>() == null)
-        {
-            targetElement.AddComponent<EventTrigger>();
-        }
-
-        UIManager.Instance.AddEventTrigger(targetElement.GetComponent<EventTrigger>(), EventTriggerType.BeginDrag, OnStartElementDrag, targetElement);
-        UIManager.Instance.AddEventTrigger(targetElement.GetComponent<EventTrigger>(), EventTriggerType.Drag, OnElementDrag, targetElement);
-        UIManager.Instance.AddEventTrigger(targetElement.GetComponent<EventTrigger>(), EventTriggerType.EndDrag, OnStopElementDrag, targetElement);
-        UIManager.Instance.AddEventTrigger(targetElement.GetComponent<EventTrigger>(), EventTriggerType.PointerEnter, OnEnablePlacement);
-        UIManager.Instance.AddEventTrigger(targetElement.GetComponent<EventTrigger>(), EventTriggerType.PointerExit, OnDisablePlacement);
-    }
-
-    private void InstantiateNewIcon(string targetSprite, bool enableTitle, int siblingIndex)
-    {
-        GameObject newIcon = Instantiate(Resources.Load<GameObject>("MapPrefabs/" + "MapIcon"), iconPile.transform);
+        // setup icon
         newIcon.name = targetSprite;
-        newIcon.transform.localPosition = Vector3.zero;
-        newIcon.transform.localEulerAngles = Vector3.zero;
-        newIcon.transform.Find("Sprite").GetComponent<Image>().sprite = Resources.LoadAll<Sprite>("MapIcons").FirstOrDefault(s => s.name.Contains(targetSprite));
-        newIcon.transform.Find("Sprite").GetComponent<Image>().preserveAspect = true;
-        newIcon.transform.Find("Name").gameObject.SetActive(enableTitle);
-        newIcon.transform.Find("Name").GetComponent<TMP_Text>().text = targetSprite.Remove(targetSprite.Length - 2, 2);
+        newIcon.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
+        // conditionally apply sibling index
         if (siblingIndex != -1) newIcon.transform.SetSiblingIndex(siblingIndex);
+
+        // setup sprite
+        newIconSprite.sprite = objectSprite;
+        newIconSprite.preserveAspect = true;
+
+        // setup title
+        newIconTitle.gameObject.SetActive(enableTitle);
+        newIconTitle.text = targetSprite.Remove(targetSprite.Length - 2, 2);
+
+        // conditionally apply world space transform data
+        if (isWorldSpace && targetPrefab == "MapIcon")
+        {
+            newIcon.transform.localScale = new Vector3(1f, 1f, 1f);
+            newIconSprite.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+            newIconTitle.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+            newIconTitle.transform.localPosition = new Vector3(0f, -6.25f, 0f);
+            newIconTitle.GetComponent<RectTransform>().sizeDelta = new Vector3(170f, 40f);            
+        }
+
+        // setup triggers
         SetupElementTriggers(newIcon);
     }
 
-    public void OnStartElementDrag(GameObject targetElement)
+    public void SetupElementTriggers(GameObject targetElement)
     {
-        if (activeTool == null) return;
+        // make sure the element has an eventtrigger
+        if (!targetElement.GetComponent<EventTrigger>()) targetElement.AddComponent<EventTrigger>();
+        EventTrigger elementTrigger = targetElement.GetComponent<EventTrigger>();
+
+        // add triggers
+        UIManager.Instance.AddEventTrigger(elementTrigger, EventTriggerType.BeginDrag, OnStartElementDrag, targetElement);
+        UIManager.Instance.AddEventTrigger(elementTrigger, EventTriggerType.Drag, OnElementDrag, targetElement);
+        UIManager.Instance.AddEventTrigger(elementTrigger, EventTriggerType.EndDrag, OnStopElementDrag, targetElement);
+        UIManager.Instance.AddEventTrigger(elementTrigger, EventTriggerType.PointerEnter, OnEnablePlacement);
+        UIManager.Instance.AddEventTrigger(elementTrigger, EventTriggerType.PointerExit, OnDisablePlacement);
+    }
+
+    private void OnStartElementDrag(GameObject targetElement)
+    {
+        if (activeTool == null || !gameObject.activeSelf) return;
 
         // save element position
         savedElementPosition = targetElement.transform.position;
+
+        // request ownership
+        if (targetElement.GetComponent<NetworkObject>())
+        {
+            MapNetworkManager.Instance.SetElementOwnershipServerRpc(targetElement.GetComponent<NetworkObject>().NetworkObjectId);
+        }
 
         // check if the element is dragged out of the pile
         if (targetElement.transform.parent == iconPile.transform)
         {
             // duplicate and replace original element
-            InstantiateNewIcon(targetElement.name, true, targetElement.transform.GetSiblingIndex());
+            InstantiateNewIcon("MapIcon", targetElement.name, true, targetElement.transform.GetSiblingIndex());
 
             // disable target element text
             targetElement.transform.Find("Name").gameObject.SetActive(false);
 
-            // pile position shouldn't be saved, this will be used to destroy instead
+            // preset saved position to prevent returning to the pile, this will be used to destroy instead
             savedElementPosition = Vector3.zero;
         }
 
         // set target element parent to the map
-        targetElement.transform.SetParent(transform);
-
-        // store active icons
-        if (!activeIcons.Contains(targetElement))
-        {
-            activeIcons.Add(targetElement);
-        }
+        targetElement.transform.SetParent(mapComponents.transform);
 
         // disable raycast target to allow detecting hover states under the element
         targetElement.GetComponent<Image>().raycastTarget = false;
 
-        // disable drawdot raycast target
+        // disable drawdot raycast targets
         SetDrawDotRaycastState(false);
     }
 
-    public void OnElementDrag(GameObject targetElement)
+    private void OnElementDrag(GameObject targetElement)
     {
-        if (activeTool == null) return;
-
-        // prevent dragging while the map isn't active
-        if (!gameObject.activeSelf) return;
+        if (activeTool == null || !gameObject.activeSelf) return;
 
         // force object to appear on top
         targetElement.transform.SetAsLastSibling();
 
         // follow mouse position with object
-        Vector3 targetPosition = InputManager.Instance.pointerPosition;
-        targetElement.transform.position = Vector3.Lerp(targetElement.transform.position, targetPosition, Time.deltaTime * dragSmoothing);
+        Vector3 targetPosition = isWorldSpace ? InputManager.Instance.GetPointerWorldPositon() : Pointer.current.position.ReadValue();
+        targetElement.transform.position = Vector3.Lerp(targetElement.transform.position, targetPosition, Time.deltaTime * 45f);
     }
 
-    public void OnStopElementDrag(GameObject targetElement)
+    private void OnStopElementDrag(GameObject targetElement)
     {
-        if (activeTool == null) return;
+        if (activeTool == null || !gameObject.activeSelf) return;
 
-        // play sfx
+        // play place sfx
         AudioManager.Instance.OnElementPlace();
 
         // destroy element if its dropped over a discard allowed area
         if (enableDiscard)
         {
-            Destroy(targetElement);
+            if (targetElement.GetComponent<NetworkObject>()) MapNetworkManager.Instance.DestroyMapElementServerRpc(targetElement.GetComponent<NetworkObject>().NetworkObjectId);
+            else Destroy(targetElement);
             return;
         }
 
@@ -181,138 +193,75 @@ public class MapManager : MonoBehaviour
                 Destroy(targetElement);
                 return;
             }
-
-            targetElement.transform.position = savedElementPosition;            
+            // return element to the saved postion
+            else
+            {
+                targetElement.transform.position = savedElementPosition;
+            }
         }
 
         // reset raycast target state
         targetElement.GetComponent<Image>().raycastTarget = true;
-        targetElement.transform.SetParent(mapComponenets.transform);
 
         // conditionally enable drawdot raycast state
         SetDrawDotRaycastState(activeTool == eraserIcon);
+
+        // conditionally store element
+        if (!activeIcons.Contains(targetElement)) activeIcons.Add(targetElement);
+
+        // spawn networkobject if the element was pulled from the pile
+        if (savedElementPosition == Vector3.zero && GameManager.Instance.networkState == NetworkState.Online && isWorldSpace)
+        {
+            MapNetworkManager.Instance.SpawnMapElementServerRpc("SharedMapIcon", targetElement.name, targetElement.transform.localPosition);
+            Destroy(targetElement);
+        }
     }
 
     public void OnDrawLine()
     {
-        if (activeTool != pencilIcon || !enablePlacement || enableDiscard || InputManager.Instance.lookAction.ReadValue<Vector2>() == Vector2.zero) return;
+        if (activeTool != pencilIcon || !gameObject.activeSelf || !enablePlacement || enableDiscard || InputManager.Instance.lookAction.ReadValue<Vector2>() == Vector2.zero) return;
 
-        // play sound effect
+        // conditionally play draw sfx
         if (!AudioManager.Instance.IsPlaying()) AudioManager.Instance.OnDraw();
 
-        // instantiate new dots in world space based on mouse position
-        Vector3 targetPosition = InputManager.Instance.pointerPosition;
-        GameObject newDot = Instantiate(Resources.Load<GameObject>("MapPrefabs/" + "DrawDot"), targetPosition, Quaternion.Euler(0f, 0f, 0f), mapComponenets.transform);
-        newDot.transform.localEulerAngles = Vector3.zero;
-        newDot.transform.SetAsFirstSibling();
+        // instantiate new dot based on mouse position
+        Vector3 targetPosition = isWorldSpace ? InputManager.Instance.GetPointerWorldPositon() : Pointer.current.position.ReadValue();
+        GameObject objectPrefab = Resources.Load<GameObject>("MapPrefabs/" + (isWorldSpace ? "SharedDrawDot" : "DrawDot"));
+        GameObject newDot = Instantiate(objectPrefab, targetPosition, Quaternion.identity, mapComponents.transform);
+        newDot.transform.SetSiblingIndex(isWorldSpace ? iconPile.transform.GetSiblingIndex() : 0);
         newDot.SetActive(true);
 
-        // add pointer enter event to allow detecting existance
-        newDot.AddComponent<EventTrigger>();
-        UIManager.Instance.AddEventTrigger(newDot.GetComponent<EventTrigger>(), EventTriggerType.PointerEnter, SetHoveredDot, newDot);
+        // add event trigger
+        SetupDrawDotEventTriggers(newDot);
         newDot.GetComponent<Image>().raycastTarget = false;
 
         // store active dots in a list
         activeDrawDots.Add(newDot);
 
-        // cleanup old dots based on limit
-        if (activeDrawDots.Count > maxAllowedDots)
+        // conditionally spawn network object
+        if (isWorldSpace)
         {
-            var targetDot = activeDrawDots.FirstOrDefault(d => d != null);
-            activeDrawDots.Remove(targetDot);
-            Destroy(targetDot);
+            newDot.GetComponent<RectTransform>().sizeDelta = new Vector3(.02f, 0.02f);
+            if (GameManager.Instance.networkState == NetworkState.Online)
+            {
+                MapNetworkManager.Instance.SpawnMapElementServerRpc("SharedDrawDot", "DrawDot", newDot.transform.localPosition);
+                Destroy(newDot);            
+            }
         }
-    }
-
-    public void OnMapToggleReady()
-    {
-        bool isMapready = iconPile.activeSelf;
-        toolBar.SetActive(!isMapready);
-        iconPile.SetActive(!isMapready);
-        saveIcon.transform.GetChild(0).gameObject.SetActive(isMapready);
-        saveIcon.transform.GetChild(1).gameObject.SetActive(!isMapready);
-        SetActiveTool(!isMapready ? pencilIcon : null);
-
-        if (GameManager.Instance.networkState == NetworkState.Online)
-        {
-            GameManager.Instance.SetPlayerMapStateServerRpc(isMapready);            
-        }
-        else
-        {
-            OnSendMapData();
-        }
-    }
-
-    public void OnSendMapData()
-    {
-        sharedViewButton.GetComponent<UIElement>().OnElementEnable();
-        InventoryManager.Instance.OnJournalDisable();
-
-        List<MapElementData> mapElements = new List<MapElementData>();
-        foreach (var icon in activeDrawDots)
-        {
-            if (icon == null) continue; // NOTE: These checks should prevent failed map data sending
-            mapElements.Add(new MapElementData{iconPrefab = "DrawDot", iconSprite = "DrawDot", iconPosition = icon.transform.localPosition});
-        }
-        foreach (var icon in activeIcons)
-        {
-            if (icon == null) continue;
-            mapElements.Add(new MapElementData{iconPrefab = "MapIcon", iconSprite = icon.name, iconPosition = icon.transform.localPosition});
-        }
-
-        if (GameManager.Instance.networkState != NetworkState.Offline)
-        {
-            saveIcon.transform.GetChild(0).gameObject.SetActive(true);
-            saveIcon.transform.GetChild(1).gameObject.SetActive(false);
-            SetActiveTool(null);
-            saveIcon.SetActive(false);
-            toolBar.SetActive(false);
-            iconPile.SetActive(false);
-
-            // prevent sending empty data
-            if (mapElements.Count == 0) return;
-            SharedMapManager.Instance.SpawnMapInstanceServerRpc(mapElements.ToArray());            
-        }
-    }
-
-    public void OnMapClearRequest()
-    {
-        UIManager.Instance.OnOpenDialog("Notice", "Are you sure you want to clear the map?", "Continue", "mapclear");
-    }
-
-    public void OnClearMap()
-    {
-        // cleanup dots
-        foreach (var dot in activeDrawDots)
-        {
-            Destroy(dot);
-        }
-
-        // cleanup icons
-        foreach (var icon in activeIcons)
-        {
-            Destroy(icon);
-        }
-
-        activeDrawDots.Clear();
-        activeIcons.Clear();
     }
 
     public void OnEraseLine()
     {
-        if (activeTool != eraserIcon || InputManager.Instance.lookAction.ReadValue<Vector2>() == Vector2.zero) return;
+        if (activeTool != eraserIcon || !activeHoveredDot || !gameObject.activeSelf || InputManager.Instance.lookAction.ReadValue<Vector2>() == Vector2.zero) return;
 
-        if (!activeHoveredDot) return;
-
-        activeDrawDots.Remove(activeHoveredDot);
-        Destroy(activeHoveredDot);
-    }
-
-    private void SetDrawDotRaycastState(bool targetState)
-    {
-        foreach (var dot in activeDrawDots)
+        if (isWorldSpace && !NetworkManager.IsHost && GameManager.Instance.networkState == NetworkState.Online)
         {
-            dot.GetComponent<Image>().raycastTarget = targetState;
+            MapNetworkManager.Instance.DestroyMapElementServerRpc(activeHoveredDot.GetComponent<NetworkObject>().NetworkObjectId);        
+        }
+        else
+        {
+            activeDrawDots.Remove(activeHoveredDot);
+            Destroy(activeHoveredDot);
         }
     }
 
@@ -332,7 +281,25 @@ public class MapManager : MonoBehaviour
         targetTool.GetComponent<UIElement>().OnElementSelect();
     }
 
-    public void SetHoveredDot(GameObject targetDot) 
+    private void SetDrawDotRaycastState(bool targetState)
+    {
+        foreach (Transform child in mapComponents.transform)
+        {
+            if (child.name.Contains("Dot"))
+            {
+                child.GetComponent<Image>().raycastTarget = targetState;                
+            }
+        }
+    }
+
+    public void SetupDrawDotEventTriggers(GameObject targetDot)
+    {
+        // add pointer enter event to allowed detecting existance
+        targetDot.AddComponent<EventTrigger>();
+        UIManager.Instance.AddEventTrigger(targetDot.GetComponent<EventTrigger>(), EventTriggerType.PointerEnter, SetHoveredDrawDot, targetDot);
+    }
+
+    private void SetHoveredDrawDot(GameObject targetDot) 
     {
         activeHoveredDot = targetDot;
         if (InputManager.Instance.primaryAction.ReadValue<float>() != 0)
@@ -341,35 +308,93 @@ public class MapManager : MonoBehaviour
         }
     }
 
-    public void SetMapPage(GameObject pageObject)
+    public void OnMapClearRequest()
     {
-        activeMapPage = pageObject;
+        UIManager.Instance.OnOpenDialog("Notice", "Are you sure you want to clear the map?", "Continue", isWorldSpace ? "sharedmapclear" : "mapclear");
+    }
 
-        ownViewPage.SetActive(false);
-        individualViewPage.SetActive(false);
-        sharedViewPage.SetActive(false);
-        pageObject.SetActive(true);
+    public void OnClearMap()
+    {
+        if (GameManager.Instance.networkState == NetworkState.Online && isWorldSpace)
+        {
+            MapNetworkManager.Instance.ClearMapServerRpc();
+        }
+        else
+        {
+            // cleanup dots
+            activeDrawDots.ForEach(d => Destroy(d));
+            activeDrawDots.Clear();
 
-        ownViewButton.GetComponent<UIElement>().OnElementDeSelect();
-        individualViewButton.GetComponent<UIElement>().OnElementDeSelect();
-        sharedViewButton.GetComponent<UIElement>().OnElementDeSelect();
-        if (pageObject == ownViewPage)
-        {
-            ownViewButton.GetComponent<UIElement>().OnElementSelect();
-            bool isEditable = !saveIcon.transform.GetChild(0).gameObject.activeSelf;
-            iconPile.SetActive(isEditable);
-            toolBar.gameObject.SetActive(isEditable);
+            // cleanup icons
+            activeIcons.ForEach(i => Destroy(i));
+            activeIcons.Clear();
         }
-        else if (pageObject == individualViewPage)
+    }
+
+    public void OnMapToggleReady()
+    {
+        bool isMapready = iconPile.activeSelf;
+        toolBar.SetActive(!isMapready);
+        iconPile.SetActive(!isMapready);
+        SetActiveTool(!isMapready ? pencilIcon : null);
+
+        // handle behaviour based on map type
+        if (isWorldSpace)
         {
-            individualViewButton.GetComponent<UIElement>().OnElementSelect();
-            mapObjectP0.SetActive(true);
-            mapObjectP1.SetActive(true);
-            mapObjectP2.SetActive(true);
+            saveIcon.SetActive(!isMapready);
+
+            // conditionally send ready state
+            if (GameManager.Instance.networkState == NetworkState.Online)
+            {
+                MapNetworkManager.Instance.OnSharedMapReadyClientRpc();
+            }
         }
-        else if (pageObject == sharedViewPage)
+        else 
         {
-            sharedViewButton.GetComponent<UIElement>().OnElementSelect();
+            saveIcon.transform.GetChild(0).gameObject.SetActive(isMapready);
+            saveIcon.transform.GetChild(1).gameObject.SetActive(!isMapready);
+
+            // conditionally send ready state
+            if (GameManager.Instance.networkState == NetworkState.Online)
+            {
+                GameManager.Instance.SetPlayerMapStateServerRpc(isMapready);
+            }
+            else OnSendMapData();
+        }
+    }
+
+    public void OnDisableMapUI()
+    {
+        SetActiveTool(null);
+        saveIcon.SetActive(false);
+        toolBar.SetActive(false);
+        iconPile.SetActive(false);
+    }
+
+    public void OnSendMapData()
+    {
+        InventoryManager.Instance.sharedViewButton.GetComponent<UIElement>().OnElementEnable();
+        InventoryManager.Instance.OnJournalDisable();
+
+        List<MapElementData> mapElements = new List<MapElementData>();
+        foreach (var icon in activeDrawDots)
+        {
+            if (icon == null) continue; // NOTE: These checks should prevent failed map data sending
+            mapElements.Add(new MapElementData{iconPrefab = "DrawDot", iconSprite = "DrawDot", iconPosition = icon.transform.localPosition});
+        }
+        foreach (var icon in activeIcons)
+        {
+            if (icon == null) continue;
+            mapElements.Add(new MapElementData{iconPrefab = "MapIcon", iconSprite = icon.name, iconPosition = icon.transform.localPosition});
+        }
+
+        if (GameManager.Instance.networkState == NetworkState.Online)
+        {
+            OnDisableMapUI();
+
+            // prevent sending empty data
+            if (mapElements.Count == 0) return;
+            MapNetworkManager.Instance.SpawnMapInstanceServerRpc(mapElements.ToArray());            
         }
     }
 
@@ -377,8 +402,6 @@ public class MapManager : MonoBehaviour
     public void OnDisablePlacement() => enablePlacement = false;
     public void OnEnableDiscard() => enableDiscard = true;
     public void OnDisableDiscard() => enableDiscard = false;
-    public bool FetchSharedViewState() => sharedViewButton.GetComponent<UIElement>().isEnabled;
-    public bool FetchIndividualViewState() => individualViewButton.GetComponent<UIElement>().isEnabled;
 }
 
 public struct MapElementData : INetworkSerializable

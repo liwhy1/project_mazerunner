@@ -10,7 +10,6 @@ public class InputManager : MonoBehaviour
 
     [Header("Input Data")]
     private InputSystem inputSystem;
-    public Vector3 pointerPosition;
     private InputAction pauseAction;
     private InputAction inventoryAction;
     public InputAction moveAction;
@@ -55,12 +54,6 @@ public class InputManager : MonoBehaviour
 
     private void OnEnable() => inputSystem.Enable();
     private void OnDisable() => inputSystem.Disable();
-
-    private void Update()
-    {
-        // track pointer position
-        pointerPosition = Pointer.current.position.ReadValue();
-    }
 
     public bool IsPointerOverUI()
     {
@@ -165,4 +158,10 @@ public class InputManager : MonoBehaviour
         }
     }
 
+    public Vector3 GetPointerWorldPositon()
+    {
+        Vector3 worldPosition = Pointer.current.position.ReadValue();
+        worldPosition.z = GameManager.Instance.mapCamera.nearClipPlane + 1f;
+        return GameManager.Instance.mapCamera.ScreenToWorldPoint(worldPosition);
+    }
 }

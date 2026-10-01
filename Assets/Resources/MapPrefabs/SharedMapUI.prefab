@@ -94,8 +94,8 @@ MonoBehaviour:
     callback:
       m_PersistentCalls:
         m_Calls:
-        - m_Target: {fileID: 2823722697475839636}
-          m_TargetAssemblyTypeName: SharedMapManager, Assembly-CSharp
+        - m_Target: {fileID: 4838438145455928245}
+          m_TargetAssemblyTypeName: MapManagerExt, Assembly-CSharp
           m_MethodName: OnDrawLine
           m_Mode: 1
           m_Arguments:
@@ -110,8 +110,8 @@ MonoBehaviour:
     callback:
       m_PersistentCalls:
         m_Calls:
-        - m_Target: {fileID: 2823722697475839636}
-          m_TargetAssemblyTypeName: SharedMapManager, Assembly-CSharp
+        - m_Target: {fileID: 4838438145455928245}
+          m_TargetAssemblyTypeName: MapManagerExt, Assembly-CSharp
           m_MethodName: OnDisablePlacement
           m_Mode: 1
           m_Arguments:
@@ -126,8 +126,8 @@ MonoBehaviour:
     callback:
       m_PersistentCalls:
         m_Calls:
-        - m_Target: {fileID: 2823722697475839636}
-          m_TargetAssemblyTypeName: SharedMapManager, Assembly-CSharp
+        - m_Target: {fileID: 4838438145455928245}
+          m_TargetAssemblyTypeName: MapManagerExt, Assembly-CSharp
           m_MethodName: OnEnablePlacement
           m_Mode: 1
           m_Arguments:
@@ -173,7 +173,7 @@ GameObject:
   - component: {fileID: 1368767425257632686}
   - component: {fileID: 1741203845351981584}
   m_Layer: 5
-  m_Name: SpritePile
+  m_Name: IconPile
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -253,8 +253,8 @@ MonoBehaviour:
     callback:
       m_PersistentCalls:
         m_Calls:
-        - m_Target: {fileID: 2823722697475839636}
-          m_TargetAssemblyTypeName: SharedMapManager, Assembly-CSharp
+        - m_Target: {fileID: 4838438145455928245}
+          m_TargetAssemblyTypeName: MapManager, Assembly-CSharp
           m_MethodName: OnEnableDiscard
           m_Mode: 1
           m_Arguments:
@@ -269,8 +269,8 @@ MonoBehaviour:
     callback:
       m_PersistentCalls:
         m_Calls:
-        - m_Target: {fileID: 2823722697475839636}
-          m_TargetAssemblyTypeName: SharedMapManager, Assembly-CSharp
+        - m_Target: {fileID: 4838438145455928245}
+          m_TargetAssemblyTypeName: MapManager, Assembly-CSharp
           m_MethodName: OnDisableDiscard
           m_Mode: 1
           m_Arguments:
@@ -318,7 +318,8 @@ GameObject:
   - component: {fileID: 1236748488512554569}
   - component: {fileID: 2767205654804382649}
   - component: {fileID: 8667952909280713039}
-  - component: {fileID: 2823722697475839636}
+  - component: {fileID: 4838438145455928245}
+  - component: {fileID: 1649216927543487084}
   m_Layer: 5
   m_Name: SharedMapUI
   m_TagString: Untagged
@@ -440,7 +441,7 @@ MonoBehaviour:
   AutoObjectParentSync: 1
   SyncOwnerTransformWhenParented: 1
   AllowOwnerToParent: 0
---- !u!114 &2823722697475839636
+--- !u!114 &4838438145455928245
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -449,14 +450,17 @@ MonoBehaviour:
   m_GameObject: {fileID: 1801697020777382791}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d4e88baf13bae8e46afa77326375bb00, type: 3}
+  m_Script: {fileID: 11500000, guid: a9727a7c56922174aa65836eafacb802, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SharedMapManager
+  m_EditorClassIdentifier: Assembly-CSharp::MapManagerExt
   ShowTopMostFoldoutHeaderGroup: 1
-  isMapActive: 0
+  mapComponents: {fileID: 1801697020777382791}
+  mapSprites: []
   iconPile: {fileID: 1413736821858039157}
+  savedElementPosition: {x: 0, y: 0, z: 0}
   enablePlacement: 0
   enableDiscard: 0
+  isWorldSpace: 1
   activeHoveredDot: {fileID: 0}
   toolBar: {fileID: 5374140364636734484}
   activeTool: {fileID: 0}
@@ -464,6 +468,19 @@ MonoBehaviour:
   eraserIcon: {fileID: 1891955770454260676}
   trashIcon: {fileID: 4384073868056516937}
   saveIcon: {fileID: 2713155996191187014}
+--- !u!114 &1649216927543487084
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1801697020777382791}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c816ae421919b9a4eae5821ec2e90587, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MapNetworkManager
+  ShowTopMostFoldoutHeaderGroup: 1
 --- !u!1 &5151992680522504840
 GameObject:
   m_ObjectHideFlags: 0
@@ -758,14 +775,14 @@ PrefabInstance:
     - target: {fileID: 2086946289739451685, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
       propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 2823722697475839636}
+      objectReference: {fileID: 4838438145455928245}
     - target: {fileID: 2086946289739451685, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
       propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
       value: SetActiveTool
       objectReference: {fileID: 0}
     - target: {fileID: 2086946289739451685, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
       propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
-      value: SharedMapManager, Assembly-CSharp
+      value: MapManagerExt, Assembly-CSharp
       objectReference: {fileID: 0}
     - target: {fileID: 2086946289739451685, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
       propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgument
@@ -905,14 +922,14 @@ PrefabInstance:
     - target: {fileID: 2086946289739451685, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
       propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 2823722697475839636}
+      objectReference: {fileID: 4838438145455928245}
     - target: {fileID: 2086946289739451685, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
       propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
       value: SetActiveTool
       objectReference: {fileID: 0}
     - target: {fileID: 2086946289739451685, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
       propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
-      value: SharedMapManager, Assembly-CSharp
+      value: MapManagerExt, Assembly-CSharp
       objectReference: {fileID: 0}
     - target: {fileID: 2086946289739451685, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
       propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgument
@@ -1064,14 +1081,14 @@ PrefabInstance:
     - target: {fileID: 2086946289739451685, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
       propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 2823722697475839636}
+      objectReference: {fileID: 4838438145455928245}
     - target: {fileID: 2086946289739451685, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
       propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
       value: OnMapToggleReady
       objectReference: {fileID: 0}
     - target: {fileID: 2086946289739451685, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
       propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
-      value: SharedMapManager, Assembly-CSharp
+      value: MapManagerExt, Assembly-CSharp
       objectReference: {fileID: 0}
     - target: {fileID: 2086946289739451685, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
       propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgument
@@ -1219,14 +1236,14 @@ PrefabInstance:
     - target: {fileID: 2086946289739451685, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
       propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 2823722697475839636}
+      objectReference: {fileID: 4838438145455928245}
     - target: {fileID: 2086946289739451685, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
       propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
       value: OnMapClearRequest
       objectReference: {fileID: 0}
     - target: {fileID: 2086946289739451685, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
       propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
-      value: SharedMapManager, Assembly-CSharp
+      value: MapManagerExt, Assembly-CSharp
       objectReference: {fileID: 0}
     - target: {fileID: 2086946289739451685, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
       propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgument

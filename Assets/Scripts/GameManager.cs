@@ -122,7 +122,7 @@ public class GameManager : NetworkBehaviour
 
         isPaused = false;
         playerViewCamera.gameObject.SetActive(false);
-        SharedMapManager.Instance.gameObject.GetComponent<Canvas>().worldCamera = mapCamera;
+        MapManager.SharedInstance.gameObject.GetComponent<Canvas>().worldCamera = mapCamera;
         InventoryManager.Instance.OnSetupStory();
 
         if (!isMaster) 
@@ -166,7 +166,7 @@ public class GameManager : NetworkBehaviour
             }
 
             // spawn shared map if it doesn't exist already
-            if (!SharedMapManager.Instance)
+            if (!MapManager.SharedInstance)
             {
                 SpawnSharedMap(clientId);
             }          
@@ -273,7 +273,7 @@ public class GameManager : NetworkBehaviour
     public void SpawnPlayer(ulong clientId)
     {
         Debug.Log("GameManager: Spawning player for: " + clientId);
-        GameObject playerObject = Instantiate(Resources.Load<GameObject>("GameComponents/Player"), Vector3.one, Quaternion.identity);
+        GameObject playerObject = Instantiate(Resources.Load<GameObject>("GameComponents/Player"), new Vector3(0f, 100f, 0f), Quaternion.identity);
 
         if (networkState != NetworkState.Offline)
         {
@@ -286,8 +286,8 @@ public class GameManager : NetworkBehaviour
         Debug.Log("GameManager: Spawning SharedMap for: " + clientId);
         GameObject mapObject = Instantiate(Resources.Load<GameObject>("MapPrefabs/SharedMapUI"), Vector3.zero, Quaternion.identity);
         mapObject.GetComponent<Canvas>().worldCamera = mapCamera;
-        mapObject.transform.position = new Vector3(0f, -100f, 0f);
-        mapCamera.transform.position = new Vector3(0f, -100f, 0f);
+        mapObject.transform.position = Vector3.zero;
+        mapCamera.transform.position = Vector3.zero;
         if (networkState != NetworkState.Offline)
         {
             mapObject.GetComponent<NetworkObject>().Spawn();
@@ -339,7 +339,7 @@ public class GameManager : NetworkBehaviour
         {
             Debug.Log("GameManager: All individual maps ready");
             if (isMaster) MenuManager.Instance.OnMasterSharedMapEnabled();
-            SharedMapManager.Instance.OnSendMapInsanceClientRpc();
+            MapNetworkManager.Instance.SendMapInstanceClientRpc();
         }
     }
 
@@ -347,21 +347,21 @@ public class GameManager : NetworkBehaviour
     public void SyncPlayerMapStateServerRpc()
     {
         // send a map sync rpc for joined clients, if shared map state is availible
-        if (MapManager.Instance.FetchSharedViewState())
+        if (InventoryManager.Instance.FetchSharedViewState())
         {
-            SharedMapManager.Instance.OnSendMapInsanceClientRpc();
+            MapNetworkManager.Instance.SendMapInstanceClientRpc();
 
             // sync shared map element data
-            foreach (Transform element in SharedMapManager.Instance.transform)
+            foreach (Transform element in MapManager.Instance.transform)
             {
                 if (element.GetComponent<NetworkObject>())
                 {
-                    SharedMapManager.Instance.SetMapElementDataClientRpc(element.GetComponent<NetworkObject>().NetworkObjectId, element.name);
+                    MapNetworkManager.Instance.SetMapElementDataClientRpc(element.GetComponent<NetworkObject>().NetworkObjectId, element.name);
                 }
             }
         }
 
-        if (MapManager.Instance.FetchIndividualViewState())
+        if (InventoryManager.Instance.FetchIndividualViewState())
         {
             SetMapIndividualButtonStatusClientRpc();
         }
@@ -370,7 +370,7 @@ public class GameManager : NetworkBehaviour
     [ClientRpc]
     public void SetMapIndividualButtonStatusClientRpc()
     {
-        MapManager.Instance.individualViewButton.GetComponent<UIElement>().OnElementEnable();
+        InventoryManager.Instance.individualViewButton.GetComponent<UIElement>().OnElementEnable();
     }
 
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]

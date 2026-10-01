@@ -26,6 +26,18 @@ public class InventoryManager : MonoBehaviour
     [SerializeField] private GameObject journalPage1Layout;
     [SerializeField] private GameObject journalPage2Layout;
 
+    [Header("Map Data")]
+    public GameObject mapObjectP0;
+    public GameObject mapObjectP1;
+    public GameObject mapObjectP2;
+    public GameObject ownViewButton;
+    public GameObject sharedViewButton;
+    public GameObject individualViewButton;
+    public GameObject ownViewPage;
+    public GameObject sharedViewPage;
+    public GameObject individualViewPage;
+    public GameObject activeMapPage;
+
     private void Awake()
     {
         Instance = this;
@@ -34,9 +46,9 @@ public class InventoryManager : MonoBehaviour
     private void Update()
     {
         pageBackground.SetActive(PlayerController.Instance && PlayerController.Instance.playerCamera.activeSelf);
-        if (!GameManager.Instance.isMaster) GameManager.Instance.mapCamera.gameObject.SetActive(isInventoryActive && MapManager.Instance.gameObject.activeSelf && MapManager.Instance.activeMapPage == MapManager.Instance.sharedViewPage);
+        if (!GameManager.Instance.isMaster) GameManager.Instance.mapCamera.gameObject.SetActive(isInventoryActive && mapObject.activeSelf && activeMapPage == sharedViewPage);
         else GameManager.Instance.mapCamera.gameObject.SetActive(true);
-        if (SharedMapManager.Instance) SharedMapManager.Instance.GetComponent<GraphicRaycaster>().enabled = isInventoryActive && MapManager.Instance.gameObject.activeSelf && MapManager.Instance.activeMapPage == MapManager.Instance.sharedViewPage;
+        if (MapManager.SharedInstance) MapManager.SharedInstance.GetComponent<GraphicRaycaster>().enabled = isInventoryActive && mapObject.activeSelf && activeMapPage == sharedViewPage;
     }
 
     public void OnSetup()
@@ -45,7 +57,10 @@ public class InventoryManager : MonoBehaviour
         isInventoryActive = false;
 
         // setup map
-        mapObject.GetComponent<MapManager>().OnSetup();
+        ownViewPage.GetComponent<MapManager>().OnSetup();
+        sharedViewButton.GetComponent<UIElement>().OnElementDisable();
+        individualViewButton.GetComponent<UIElement>().OnElementDisable();
+        activeMapPage = ownViewPage;
 
         // reset inventory
         ResetInventoryState();
@@ -84,8 +99,8 @@ public class InventoryManager : MonoBehaviour
         string activeStory = GameManager.Instance.networkState == NetworkState.Online ? GameManager.Instance.activeStory.Value.ToString() : "Prototype1";
 
         // setup map
-        GameObject mapBackground = MapManager.Instance.ownViewPage.transform.Find("Background").gameObject;
-        GameObject sharedMapBackground = SharedMapManager.Instance.transform.Find("Background").gameObject;
+        GameObject mapBackground = ownViewPage.transform.Find("Background").gameObject;
+        GameObject sharedMapBackground = MapManager.SharedInstance.transform.Find("Background").gameObject;
         Sprite mapSprite = Resources.Load<Sprite>("Information/" + activeStory + "/MapSprite");
         mapBackground.GetComponent<Image>().sprite = mapSprite;
         sharedMapBackground.GetComponent<Image>().sprite = mapSprite;
@@ -155,8 +170,43 @@ public class InventoryManager : MonoBehaviour
     {
         mapObject.SetActive(true);
         buttonLayout.gameObject.SetActive(false);
-        MapManager.Instance.SetMapPage(MapManager.Instance.activeMapPage);
+        SetMapPage(activeMapPage);
     }
+
+    public void SetMapPage(GameObject pageObject)
+    {
+        activeMapPage = pageObject;
+
+        ownViewPage.SetActive(false);
+        individualViewPage.SetActive(false);
+        sharedViewPage.SetActive(false);
+        pageObject.SetActive(true);
+
+        ownViewButton.GetComponent<UIElement>().OnElementDeSelect();
+        individualViewButton.GetComponent<UIElement>().OnElementDeSelect();
+        sharedViewButton.GetComponent<UIElement>().OnElementDeSelect();
+        if (pageObject == ownViewPage)
+        {
+            ownViewButton.GetComponent<UIElement>().OnElementSelect();
+            bool isEditable = !MapManager.Instance.saveIcon.transform.GetChild(0).gameObject.activeSelf;
+            MapManager.Instance.iconPile.SetActive(isEditable);
+            MapManager.Instance.toolBar.gameObject.SetActive(isEditable);
+        }
+        else if (pageObject == individualViewPage)
+        {
+            individualViewButton.GetComponent<UIElement>().OnElementSelect();
+            mapObjectP0.SetActive(true);
+            mapObjectP1.SetActive(true);
+            mapObjectP2.SetActive(true);
+        }
+        else if (pageObject == sharedViewPage)
+        {
+            sharedViewButton.GetComponent<UIElement>().OnElementSelect();
+        }
+    }
+
+    public bool FetchSharedViewState() => sharedViewButton.GetComponent<UIElement>().isEnabled;
+    public bool FetchIndividualViewState() => individualViewButton.GetComponent<UIElement>().isEnabled;
 
     public void OnToggleNote() => noteObject.SetActive(!noteObject.activeSelf);
 

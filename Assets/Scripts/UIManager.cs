@@ -214,7 +214,7 @@ public class UIManager : NetworkBehaviour
     {
         // TODO: this is hardcoded, has hacks and is unnecessarily complex (but it works)
         minimapIcon.transform.localScale = new Vector3(.7f, .7f, .7f);
-        foreach (Transform icon in SharedMapManager.Instance.transform)
+        foreach (Transform icon in MapManager.SharedInstance.transform)
         {
             // prevent mirroring drawdots
             if (!icon.GetComponent<NetworkObject>() || icon.name.Contains("Dot")) continue;
@@ -334,7 +334,7 @@ public class UIManager : NetworkBehaviour
                 MapManager.Instance.OnClearMap();
                 break;
             case "sharedmapclear":
-                SharedMapManager.Instance.OnClearMap();
+                MapManager.SharedInstance.OnClearMap();
                 break;
         }
         OnCloseDialog();
