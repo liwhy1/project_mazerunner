@@ -373,7 +373,7 @@ public class MapManager : NetworkBehaviour
 
     public void OnSendMapData()
     {
-        InventoryManager.Instance.sharedViewButton.GetComponent<UIElement>().OnElementEnable();
+        InventoryManager.Instance.OnEnableSharedView();
         InventoryManager.Instance.OnJournalDisable();
 
         List<MapElementData> mapElements = new List<MapElementData>();

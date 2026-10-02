@@ -25,7 +25,7 @@ public class MapNetworkManager : NetworkBehaviour
         MapManager.SharedInstance.OnDisableMapUI();
         UIManager.Instance.MirrorSharedmaptoMinimap();
         InventoryManager.Instance.OnJournalEnable();
-        InventoryManager.Instance.individualViewButton.GetComponent<UIElement>().OnElementEnable();
+        InventoryManager.Instance.OnEnableIndividualView();
     }
 
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
@@ -95,7 +95,7 @@ public class MapNetworkManager : NetworkBehaviour
     [ClientRpc]
     public void SpawnMapInstanceClientRpc(int persistentId, string playerName, MapElementData[] mapElements)
     {
-        GameObject targetMap = persistentId == 0 ? InventoryManager.Instance.mapObjectP0 : persistentId == 1 ? InventoryManager.Instance.mapObjectP1 : InventoryManager.Instance.mapObjectP2;
+        GameObject targetMap = InventoryManager.Instance.FetchMapObjectById(persistentId);
         targetMap.transform.Find("Title").GetComponent<TMP_Text>().text = playerName;
 
         Debug.Log("SMM: Spawning map objects for player: " + playerName);

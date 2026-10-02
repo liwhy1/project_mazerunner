@@ -370,7 +370,7 @@ public class GameManager : NetworkBehaviour
     [ClientRpc]
     public void SetMapIndividualButtonStatusClientRpc()
     {
-        InventoryManager.Instance.individualViewButton.GetComponent<UIElement>().OnElementEnable();
+        InventoryManager.Instance.OnEnableIndividualView();
     }
 
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
