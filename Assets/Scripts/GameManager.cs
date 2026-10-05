@@ -7,12 +7,10 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 
-public enum NetworkState {None, Offline, Online};
 public class GameManager : NetworkBehaviour
 {
     public static GameManager Instance;
     public bool isPaused;
-    public NetworkState networkState;
     public List<PlayerData> playerList = new List<PlayerData>();
     public bool isMaster;
     public bool isMasterGameStarted;
@@ -72,7 +70,6 @@ public class GameManager : NetworkBehaviour
     {
         Instance = this;
         isPaused = true;
-        networkState = NetworkState.None;
         PlayerPrefs.DeleteAll();
         PlayerPrefs.Save();
 
@@ -101,7 +98,6 @@ public class GameManager : NetworkBehaviour
 
     public void OnLobbyConnect()
     {
-        networkState = NetworkState.Online;
         MenuManager.Instance.OnLobbyConnect();
         InventoryManager.Instance.OnSetup();
         if (isLobbyStarted.Value) MenuManager.Instance.OnLobbyStart();
@@ -118,7 +114,7 @@ public class GameManager : NetworkBehaviour
     public void OnLobbyStart()
     {
         // set gamestate
-        if (networkState == NetworkState.Online && !isMaster) SetPlayerGameStateServerRpc(true);
+        if (!isMaster) SetPlayerGameStateServerRpc(true);
 
         isPaused = false;
         playerViewCamera.gameObject.SetActive(false);
@@ -275,10 +271,7 @@ public class GameManager : NetworkBehaviour
         Debug.Log("GameManager: Spawning player for: " + clientId);
         GameObject playerObject = Instantiate(Resources.Load<GameObject>("GameComponents/Player"));
 
-        if (networkState != NetworkState.Offline)
-        {
-            playerObject.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientId);
-        }
+        playerObject.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientId);
     }
 
     public void SpawnSharedMap(ulong clientId)
@@ -288,10 +281,7 @@ public class GameManager : NetworkBehaviour
         mapObject.GetComponent<Canvas>().worldCamera = mapCamera;
         mapObject.transform.position = new Vector3(0f, 100f, 0f);
         mapCamera.transform.position = mapObject.transform.position;
-        if (networkState != NetworkState.Offline)
-        {
-            mapObject.GetComponent<NetworkObject>().Spawn();
-        }
+        mapObject.GetComponent<NetworkObject>().Spawn();
     }
 
     public void RefreshPlayerList()
@@ -368,14 +358,7 @@ public class GameManager : NetworkBehaviour
     {
         if (!PlayerController.Instance) return isMasterGameStarted;
         
-        if (networkState == NetworkState.Offline)
-        {
-            return true;
-        }
-        else
-        {
-            return PlayerController.Instance.GetComponent<PlayerData>().IsGameStarted.Value;
-        }
+        return PlayerController.Instance.GetComponent<PlayerData>().IsGameStarted.Value;
     }
 
     public PlayerData FetchPlayerDataById(ulong playerId)

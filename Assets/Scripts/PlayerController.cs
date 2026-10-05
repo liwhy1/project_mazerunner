@@ -37,15 +37,6 @@ public class PlayerController : NetworkBehaviour
     private Material savedMaterial;
     private GameObject savedObject;
 
-    private void Start()
-    {
-        // only run this in offline mode
-        if (GameManager.Instance.networkState == NetworkState.Offline)
-        {
-            OnSetup();            
-        }
-    }
-
     public override void OnNetworkSpawn()
     {
         // setup client player
@@ -81,7 +72,8 @@ public class PlayerController : NetworkBehaviour
 
     private void FixedUpdate()
     {
-        if (!IsOwner && GameManager.Instance.networkState != NetworkState.Offline) return;
+        if (!IsOwner) return;
+
         // handle movement
         MovementHandler();
 
@@ -107,7 +99,7 @@ public class PlayerController : NetworkBehaviour
         // make the nameplate face the camera
         transform.Find("NameCanvas").rotation = Quaternion.Euler(90f, 0f, 0f);
 
-        if (!IsOwner && GameManager.Instance.networkState != NetworkState.Offline) return;
+        if (!IsOwner) return;
 
         // handle camera
         CameraHandler();
@@ -237,7 +229,7 @@ public class PlayerController : NetworkBehaviour
 
     public void OnMove(Vector3 targetPosition)
     {
-        if (!IsOwner && GameManager.Instance.networkState != NetworkState.Offline) return;
+        if (!IsOwner) return;
         if (GameManager.Instance.isPaused || InventoryManager.Instance.isInventoryActive || UIManager.Instance.activeDialog) return;
 
         // reset agent conditionally
@@ -260,7 +252,7 @@ public class PlayerController : NetworkBehaviour
 
     public void SetPlayerPosition(Vector3 targetPosition)
     {
-        if (!IsOwner && GameManager.Instance.networkState != NetworkState.Offline) return;
+        if (!IsOwner) return;
         playerRigidbody.interpolation = RigidbodyInterpolation.None;
         playerRigidbody.isKinematic = false;
         playerAgent.updatePosition = false;
@@ -283,7 +275,7 @@ public class PlayerController : NetworkBehaviour
 
     public void OnJump()
     {
-        if (!IsOwner && GameManager.Instance.networkState == NetworkState.Online) return;
+        if (!IsOwner) return;
         if (GameManager.Instance.isPaused || !isGrounded || !enableMovement || playerRigidbody.isKinematic || InventoryManager.Instance.isInventoryActive) return;
 
         playerAnimator.SetBool("isJumping", true);

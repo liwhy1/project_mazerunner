@@ -113,7 +113,7 @@ public class UIManager : NetworkBehaviour
         if (currentSelectedObject != lastSelectedObject)
         {
             // prevent deselecting on click in the menu
-            if (currentSelectedObject == null && GameManager.Instance.networkState == NetworkState.None) 
+            if (currentSelectedObject == null && GameManager.Instance.isLobbyStarted.Value) 
             {
                 currentSelectedObject = lastSelectedObject;
                 eventSystem.SetSelectedGameObject(currentSelectedObject);

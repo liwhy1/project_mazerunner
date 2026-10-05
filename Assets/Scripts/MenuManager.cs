@@ -15,7 +15,6 @@ public class MenuManager : NetworkBehaviour
     [SerializeField] private GameObject menuObject;
     [SerializeField] private GameObject hostButton;
     [SerializeField] private GameObject joinButton;
-    [SerializeField] private GameObject offlineButton;
     [SerializeField] private GameObject settingsButton;
 
     [Header("Host Data")]
@@ -94,8 +93,6 @@ public class MenuManager : NetworkBehaviour
         UIManager.Instance.AddEventTrigger(hostButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnHostGame);
         UIManager.Instance.AddEventTrigger(joinButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnJoinGame);
         UIManager.Instance.AddEventTrigger(joinButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnJoinGame);
-        UIManager.Instance.AddEventTrigger(offlineButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnOfflineGame);
-        UIManager.Instance.AddEventTrigger(offlineButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnOfflineGame);
         UIManager.Instance.AddEventTrigger(settingsButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, UIManager.Instance.OnOpenSettings);
         UIManager.Instance.AddEventTrigger(settingsButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, UIManager.Instance.OnOpenSettings);
 
@@ -165,7 +162,7 @@ public class MenuManager : NetworkBehaviour
         PlayerController.Instance.SetPlayerSkinData(currentData);
 
         // let the server confirm the new data
-        if (GameManager.Instance.networkState == NetworkState.Online) GameManager.Instance.SetPlayerSkinDataServerRpc(currentData);
+        GameManager.Instance.SetPlayerSkinDataServerRpc(currentData);
     }
 
     public void DecreasePlayerSkinValue(string targetValue)
@@ -182,13 +179,13 @@ public class MenuManager : NetworkBehaviour
         PlayerController.Instance.SetPlayerSkinData(currentData);
 
         // let the server confirm the new data
-        if (GameManager.Instance.networkState == NetworkState.Online) GameManager.Instance.SetPlayerSkinDataServerRpc(currentData);
+        GameManager.Instance.SetPlayerSkinDataServerRpc(currentData);
     }
 
     private void OnPlayerModeSelectorChanged(string newValue)
     {
         hostPlayerNameInput.gameObject.SetActive(newValue == "Player");
-        UIManager.Instance.eventSystem.SetSelectedGameObject(newValue == "Player" ? hostPlayerNameInput.gameObject : startHostButton);
+        UIManager.Instance.eventSystem.SetSelectedGameObject(hostPlayerNameInput.gameObject);
     }
 
     private void OnStartHost()
@@ -222,35 +219,6 @@ public class MenuManager : NetworkBehaviour
         ResetUIState();
         hostObject.SetActive(true);
         UIManager.Instance.eventSystem.SetSelectedGameObject(hostPlayerNameInput.gameObject);
-    }
-
-    private void OnOfflineGame()
-    {
-        // set gamestate to offline
-        GameManager.Instance.networkState = NetworkState.Offline;
-
-        // trigger offline player spawn
-        GameManager.Instance.SpawnPlayer(0);
-
-        // trigger offline sharedmap spawn
-        GameManager.Instance.SpawnSharedMap(0);
-
-        // setup story dropdown
-        SetupStorySelector();
-
-        // set active ui element
-        //UIManager.Instance.eventSystem.SetSelectedGameObject(storyDropdown);
-
-        // setup inventory
-        InventoryManager.Instance.OnSetup();
-
-        playerView.SetActive(true);
-        finishButton.SetActive(false);
-        lobbyObject.SetActive(true);
-        lobbyJoinCodeText.gameObject.SetActive(false);
-        lobbyPlayerListText.gameObject.SetActive(false);
-        UIManager.Instance.pauseJoinCodeText.gameObject.SetActive(false);
-        UIManager.Instance.pausePlayerListText.gameObject.SetActive(false);
     }
 
     public void OnLobbyConnect()

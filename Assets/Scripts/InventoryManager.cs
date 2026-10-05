@@ -16,7 +16,6 @@ public class InventoryManager : MonoBehaviour
     [SerializeField] private GameObject mapObject;
     [SerializeField] private GameObject noteObject;
     [SerializeField] private GameObject editorObject;
-    [SerializeField] private GameObject editorIconObject;
 
     [Header("Journal Data")]
     [SerializeField] private ScrollRect journalPageView;
@@ -70,7 +69,6 @@ public class InventoryManager : MonoBehaviour
         noteObject.transform.parent.gameObject.SetActive(true);
         noteObject.SetActive(false);
         editorObject.SetActive(false);
-        editorIconObject.SetActive(false);
     }
 
     public void OnToggleInventory()
@@ -82,7 +80,6 @@ public class InventoryManager : MonoBehaviour
         UIManager.Instance.inventoryIcon.gameObject.SetActive(!isInventoryActive);
         UIManager.Instance.pauseIcon.gameObject.SetActive(!isInventoryActive);
         UIManager.Instance.minimapObject.SetActive(!isInventoryActive);
-        editorIconObject.SetActive(GameManager.Instance.networkState == NetworkState.Offline);
     }
 
     public void OnOpenJournal()
@@ -93,7 +90,7 @@ public class InventoryManager : MonoBehaviour
 
     public void OnSetupStory()
     {
-        string activeStory = GameManager.Instance.networkState == NetworkState.Online ? GameManager.Instance.activeStory.Value.ToString() : "Prototype1";
+        string activeStory = GameManager.Instance.activeStory.Value.ToString();
 
         // setup map
         GameObject mapBackground = mapOwnViewPage.transform.Find("Background").gameObject;
@@ -115,8 +112,8 @@ public class InventoryManager : MonoBehaviour
 
     private void GenerateJournalPage(GameObject targetView, int targetPage)
     {
-        string activeStory = GameManager.Instance.networkState == NetworkState.Online ? GameManager.Instance.activeStory.Value.ToString() : "Prototype1";
-        int persistentId = GameManager.Instance.networkState == NetworkState.Online ? GameManager.Instance.FetchPersistentPlayerId() : 0;
+        string activeStory = GameManager.Instance.activeStory.Value.ToString();
+        int persistentId = GameManager.Instance.FetchPersistentPlayerId();
         string textTargetPath = "Information/" + activeStory + "/info" + persistentId.ToString();
         string imageTargetPath = "Information/" + activeStory + "/image" + persistentId.ToString();
 

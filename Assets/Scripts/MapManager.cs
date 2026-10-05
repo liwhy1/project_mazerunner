@@ -60,9 +60,9 @@ public class MapManager : NetworkBehaviour
         // set active map tool
         SetActiveTool(pencilIcon);
 
-        if (isWorldSpace && GameManager.Instance.networkState != NetworkState.Offline && !NetworkManager.IsHost)
+        // conditionally disable save icon
+        if (isWorldSpace && !NetworkManager.IsHost)
         {
-            // conditionally disable save icon
             saveIcon.SetActive(false);
         }
     }
@@ -206,7 +206,7 @@ public class MapManager : NetworkBehaviour
         if (!activeIcons.Contains(targetElement)) activeIcons.Add(targetElement);
 
         // spawn networkobject if the element was pulled from the pile
-        if (savedElementPosition == Vector3.zero && GameManager.Instance.networkState == NetworkState.Online && isWorldSpace)
+        if (savedElementPosition == Vector3.zero && isWorldSpace)
         {
             MapNetworkManager.Instance.SpawnMapElementServerRpc("SharedMapIcon", targetElement.name, targetElement.transform.localPosition);
             Destroy(targetElement);
@@ -238,11 +238,8 @@ public class MapManager : NetworkBehaviour
         if (isWorldSpace)
         {
             newDot.GetComponent<RectTransform>().sizeDelta = new Vector3(.02f, 0.02f);
-            if (GameManager.Instance.networkState == NetworkState.Online)
-            {
-                MapNetworkManager.Instance.SpawnMapElementServerRpc("SharedDrawDot", "DrawDot", newDot.transform.localPosition);
-                Destroy(newDot);            
-            }
+            MapNetworkManager.Instance.SpawnMapElementServerRpc("SharedDrawDot", "DrawDot", newDot.transform.localPosition);
+            Destroy(newDot);
         }
     }
 
@@ -250,7 +247,7 @@ public class MapManager : NetworkBehaviour
     {
         if (activeTool != eraserIcon || !activeHoveredDot || !gameObject.activeSelf || InputManager.Instance.lookAction.ReadValue<Vector2>() == Vector2.zero) return;
 
-        if (isWorldSpace && !NetworkManager.IsHost && GameManager.Instance.networkState == NetworkState.Online)
+        if (isWorldSpace && !NetworkManager.IsHost)
         {
             MapNetworkManager.Instance.DestroyMapElementServerRpc(activeHoveredDot.GetComponent<NetworkObject>().NetworkObjectId);        
         }
@@ -312,7 +309,7 @@ public class MapManager : NetworkBehaviour
 
     public void OnClearMap()
     {
-        if (GameManager.Instance.networkState == NetworkState.Online && isWorldSpace)
+        if (isWorldSpace)
         {
             MapNetworkManager.Instance.ClearMapServerRpc();
         }
@@ -340,23 +337,16 @@ public class MapManager : NetworkBehaviour
         {
             saveIcon.SetActive(!isMapready);
 
-            // conditionally send ready state
-            if (GameManager.Instance.networkState == NetworkState.Online)
-            {
-                MapNetworkManager.Instance.SetMapStateServerRpc(MapState.Individual);
-            }
+            // send ready state
+            MapNetworkManager.Instance.SetMapStateServerRpc(MapState.Individual);
         }
         else 
         {
             saveIcon.transform.GetChild(0).gameObject.SetActive(isMapready);
             saveIcon.transform.GetChild(1).gameObject.SetActive(!isMapready);
 
-            // conditionally send ready state
-            if (GameManager.Instance.networkState == NetworkState.Online)
-            {
-                MapNetworkManager.Instance.SetPlayerMapStateServerRpc(isMapready);
-            }
-            else OnSendMapData();
+            // send ready state
+            MapNetworkManager.Instance.SetPlayerMapStateServerRpc(isMapready);
         }
     }
 
@@ -382,12 +372,9 @@ public class MapManager : NetworkBehaviour
             mapElements.Add(new MapElementData{iconPrefab = "MapIcon", iconSprite = icon.name, iconPosition = icon.transform.localPosition});
         }
 
-        if (GameManager.Instance.networkState == NetworkState.Online)
-        {
-            // prevent sending empty data
-            if (mapElements.Count == 0) return;
-            MapNetworkManager.Instance.SpawnMapInstanceServerRpc(mapElements.ToArray());            
-        }
+        // prevent sending empty data
+        if (mapElements.Count == 0) return;
+        MapNetworkManager.Instance.SpawnMapInstanceServerRpc(mapElements.ToArray());            
     }
 
     public void OnEnablePlacement() => enablePlacement = true;
