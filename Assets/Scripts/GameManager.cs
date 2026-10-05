@@ -326,54 +326,6 @@ public class GameManager : NetworkBehaviour
     }
 
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
-    public void SetPlayerMapStateServerRpc(bool targetState, RpcParams rpcParams = default)
-    {
-        FetchPlayerDataById(rpcParams.Receive.SenderClientId).IsMapReady.Value = targetState;
-    }
-
-    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
-    public void CheckLobbyMapStateServerRpc()
-    {
-        MenuManager.Instance.SetMasterGameStateText("Individual mapping\n" + playerList.Count(p => p.IsMapReady.Value == true) + "/" + playerList.Count);
-        if (playerList.All(p => p.IsMapReady.Value == true))
-        {
-            Debug.Log("GameManager: All individual maps ready");
-            if (isMaster) MenuManager.Instance.OnMasterSharedMapEnabled();
-            MapNetworkManager.Instance.SendMapInstanceClientRpc();
-        }
-    }
-
-    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
-    public void SyncPlayerMapStateServerRpc()
-    {
-        // send a map sync rpc for joined clients, if shared map state is availible
-        if (InventoryManager.Instance.FetchSharedViewState())
-        {
-            MapNetworkManager.Instance.SendMapInstanceClientRpc();
-
-            // sync shared map element data
-            foreach (Transform element in MapManager.Instance.transform)
-            {
-                if (element.GetComponent<NetworkObject>())
-                {
-                    MapNetworkManager.Instance.SetMapElementDataClientRpc(element.GetComponent<NetworkObject>().NetworkObjectId, element.name);
-                }
-            }
-        }
-
-        if (InventoryManager.Instance.FetchIndividualViewState())
-        {
-            SetMapIndividualButtonStatusClientRpc();
-        }
-    }
-
-    [ClientRpc]
-    public void SetMapIndividualButtonStatusClientRpc()
-    {
-        InventoryManager.Instance.OnEnableIndividualView();
-    }
-
-    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
     public void SetPlayerPersistentIdServerRpc(ulong playerId)
     {
         int targetId = 0;

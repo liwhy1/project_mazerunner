@@ -38,7 +38,7 @@ public class PlayerData : NetworkBehaviour
     private void OnMapReadyStateChanged(bool oldValue, bool newValue)
     {
         if (!IsOwner) return;
-        GameManager.Instance.CheckLobbyMapStateServerRpc();
+        MapNetworkManager.Instance.CheckLobbyMapStateServerRpc();
     }
 
     private void OnSkinIdChanged(SkinData oldValue, SkinData newValue)

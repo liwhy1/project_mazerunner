@@ -193,6 +193,7 @@ public class UIManager : NetworkBehaviour
 
         foreach (var player in GameManager.Instance.playerList)
         {
+            if (!player) continue;
             int playerId = player.PersistentPlayerId.Value;
             GameObject playerIcon = minimapPlayerIcons.FirstOrDefault(i => i.name == "playerIcon_" + playerId);
             if (playerIcon)

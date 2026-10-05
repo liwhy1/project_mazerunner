@@ -20,6 +20,7 @@ public class MapManager : NetworkBehaviour
     [SerializeField] private Vector3 savedElementPosition;
     [SerializeField] private bool enablePlacement;
     [SerializeField] private bool enableDiscard;
+    [Tooltip("If enabled, networked behaviour will be applied.")]
     [SerializeField] private bool isWorldSpace;
 
     [Header("Draw Data")]
@@ -34,10 +35,7 @@ public class MapManager : NetworkBehaviour
     [SerializeField] private GameObject trashIcon;
     public GameObject saveIcon;
 
-    private void Awake()
-    {
-        if (isWorldSpace) OnSetup();
-    }
+    public override void OnNetworkSpawn() => OnSetup();
 
     public void OnSetup()
     {
@@ -50,6 +48,7 @@ public class MapManager : NetworkBehaviour
         {
             Debug.Log("MapManager: Settings up");
             Instance = this;
+            if (MapManager.SharedInstance) MapNetworkManager.Instance.OnMapStateChanged(MapState.Null, MapNetworkManager.Instance.mapState.Value);
         }
 
         // load map icons
@@ -65,9 +64,6 @@ public class MapManager : NetworkBehaviour
         {
             // conditionally disable save icon
             saveIcon.SetActive(false);
-
-            // sync map state
-            GameManager.Instance.SyncPlayerMapStateServerRpc();            
         }
     }
 
@@ -283,6 +279,7 @@ public class MapManager : NetworkBehaviour
 
     private void SetDrawDotRaycastState(bool targetState)
     {
+        if (!mapComponents) return;
         foreach (Transform child in mapComponents.transform)
         {
             if (child.name.Contains("Dot"))
@@ -346,7 +343,7 @@ public class MapManager : NetworkBehaviour
             // conditionally send ready state
             if (GameManager.Instance.networkState == NetworkState.Online)
             {
-                MapNetworkManager.Instance.OnSharedMapReadyClientRpc();
+                MapNetworkManager.Instance.SetMapStateServerRpc(MapState.Individual);
             }
         }
         else 
@@ -357,7 +354,7 @@ public class MapManager : NetworkBehaviour
             // conditionally send ready state
             if (GameManager.Instance.networkState == NetworkState.Online)
             {
-                GameManager.Instance.SetPlayerMapStateServerRpc(isMapready);
+                MapNetworkManager.Instance.SetPlayerMapStateServerRpc(isMapready);
             }
             else OnSendMapData();
         }
@@ -373,9 +370,6 @@ public class MapManager : NetworkBehaviour
 
     public void OnSendMapData()
     {
-        InventoryManager.Instance.OnEnableSharedView();
-        InventoryManager.Instance.OnJournalDisable();
-
         List<MapElementData> mapElements = new List<MapElementData>();
         foreach (var icon in activeDrawDots)
         {
@@ -390,8 +384,6 @@ public class MapManager : NetworkBehaviour
 
         if (GameManager.Instance.networkState == NetworkState.Online)
         {
-            OnDisableMapUI();
-
             // prevent sending empty data
             if (mapElements.Count == 0) return;
             MapNetworkManager.Instance.SpawnMapInstanceServerRpc(mapElements.ToArray());            

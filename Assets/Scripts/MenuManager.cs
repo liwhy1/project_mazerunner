@@ -80,6 +80,7 @@ public class MenuManager : NetworkBehaviour
         joinObject.SetActive(false);
         menuObject.SetActive(false);
         lobbyObject.SetActive(false);
+        UIManager.Instance.loadingIcon.SetActive(false);
         hostPlayerNameInput.text = "";
         joinPlayerNameInput.text = "";
         joinCodeInput.text = "";
@@ -147,7 +148,7 @@ public class MenuManager : NetworkBehaviour
         // update selector
         storySelector.selectorItems.Clear();
         storySelector.selectorItems = storyNames;
-        storySelector.OnUpdateSelection(storyNames.IndexOf(storyNames.Last()));
+        storySelector.OnUpdateSelection(storySelector.selectorItems.Count - 1);
     }
 
     public void IncreasePlayerSkinValue(string targetValue)
@@ -308,7 +309,7 @@ public class MenuManager : NetworkBehaviour
     public void OnMasterSharedMapReady()
     {
         SetMasterGameStateText("Explore map");
-        MapNetworkManager.Instance.OnSharedMapReadyClientRpc();
+        MapNetworkManager.Instance.SetMapStateServerRpc(MapState.Individual);
         finishButton.SetActive(false);
     }
 
