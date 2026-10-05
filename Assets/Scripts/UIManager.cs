@@ -339,6 +339,12 @@ public class UIManager : NetworkBehaviour
             case "sharedmapclear":
                 MapManager.SharedInstance.OnClearMap();
                 break;
+            case "openeditor":
+                MenuManager.Instance.ResetUIState();
+                GameManager.Instance.isPaused = false;
+                InventoryManager.Instance.OnToggleInventory();
+                InventoryManager.Instance.OnOpenEditor();
+                break;
         }
         OnCloseDialog();
     }

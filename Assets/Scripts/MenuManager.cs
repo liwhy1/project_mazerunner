@@ -16,6 +16,7 @@ public class MenuManager : NetworkBehaviour
     [SerializeField] private GameObject hostButton;
     [SerializeField] private GameObject joinButton;
     [SerializeField] private GameObject settingsButton;
+    [SerializeField] private GameObject editorButton;
 
     [Header("Host Data")]
     [SerializeField] private GameObject hostObject;
@@ -95,6 +96,8 @@ public class MenuManager : NetworkBehaviour
         UIManager.Instance.AddEventTrigger(joinButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnJoinGame);
         UIManager.Instance.AddEventTrigger(settingsButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, UIManager.Instance.OnOpenSettings);
         UIManager.Instance.AddEventTrigger(settingsButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, UIManager.Instance.OnOpenSettings);
+        UIManager.Instance.AddEventTrigger(editorButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnOpenEditor);
+        UIManager.Instance.AddEventTrigger(editorButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, UIManager.Instance.OnOpenSettings);
 
         // host
         UIManager.Instance.AddEventTrigger(startHostButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnStartHost);
@@ -198,6 +201,11 @@ public class MenuManager : NetworkBehaviour
         {
             GameManager.Instance.OnStartMaster();
         }
+    }
+
+    private void OnOpenEditor()
+    {
+        UIManager.Instance.OnOpenDialog("Notice", "Would you like to open the map editor?", "Continue", "openeditor");
     }
 
     public void OnOpenMenu()
