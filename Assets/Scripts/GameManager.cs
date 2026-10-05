@@ -286,8 +286,8 @@ public class GameManager : NetworkBehaviour
         Debug.Log("GameManager: Spawning SharedMap for: " + clientId);
         GameObject mapObject = Instantiate(Resources.Load<GameObject>("MapPrefabs/SharedMapUI"), Vector3.zero, Quaternion.identity);
         mapObject.GetComponent<Canvas>().worldCamera = mapCamera;
-        mapObject.transform.position = Vector3.zero;
-        mapCamera.transform.position = Vector3.zero;
+        mapObject.transform.position = new Vector3(0f, 100f, 0f);
+        mapCamera.transform.position = new Vector3(0f, 100f, 0f);
         if (networkState != NetworkState.Offline)
         {
             mapObject.GetComponent<NetworkObject>().Spawn();
