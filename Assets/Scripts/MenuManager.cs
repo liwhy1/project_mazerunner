@@ -188,6 +188,7 @@ public class MenuManager : NetworkBehaviour
     private void OnPlayerModeSelectorChanged(string newValue)
     {
         hostPlayerNameInput.gameObject.SetActive(newValue == "Player");
+        UIManager.Instance.eventSystem.SetSelectedGameObject(newValue == "Player" ? hostPlayerNameInput.gameObject : startHostButton);
     }
 
     private void OnStartHost()
