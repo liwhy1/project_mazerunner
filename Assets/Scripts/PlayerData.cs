@@ -56,6 +56,7 @@ public class PlayerData : NetworkBehaviour
     private void OnReadyStateChanged(bool oldValue, bool newValue)
     {
         GameManager.Instance.UpdatePlayerRenderStateRpc();
+        AudioManager.Instance.OnGameStarted();
     }
 
     private void OnPlayerNameChanged(FixedString64Bytes oldName, FixedString64Bytes newName)

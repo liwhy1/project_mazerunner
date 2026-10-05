@@ -1,3 +1,4 @@
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Audio;
 
@@ -5,9 +6,13 @@ public class AudioManager : MonoBehaviour
 {
     public static AudioManager Instance;
     [SerializeField] private AudioMixer audioMixer;
-    private AudioSource audioSource;
+    private AudioSource uiAudioSource;
+    private bool IsGameStarted;
 
     [Header("Environment")]
+    [SerializeField] private AudioSource environmentAudioSource;
+    [SerializeField] private AudioSource riverAudioSource;
+    [SerializeField] private GameObject riverObject;
     [SerializeField] private AudioClip riverSound;
     [SerializeField] private AudioClip footstepSound;
 
@@ -21,7 +26,7 @@ public class AudioManager : MonoBehaviour
     private void Start()
     {
         Instance = this;
-        audioSource = GetComponent<AudioSource>();
+        uiAudioSource = GetComponent<AudioSource>();
     }
 
     private void Update()
@@ -29,27 +34,38 @@ public class AudioManager : MonoBehaviour
         UpdateRiverSound();
     }
 
+    public void OnGameStarted()
+    {
+        IsGameStarted = true;
+
+        // setup environment sound
+        environmentAudioSource = FindObjectsByType<AudioSource>().FirstOrDefault(o => o.name.Contains("Environment Source")).GetComponent<AudioSource>();
+        environmentAudioSource?.Play();
+
+        // setup river sound
+        riverObject = GameManager.Instance.terrainObject.transform.parent.Find("River").gameObject;
+        riverAudioSource = riverObject.GetComponentInChildren<AudioSource>();
+        riverAudioSource?.PlayOneShot(riverSound);
+    }
+
     private void UpdateRiverSound()
     {
-        if (!PlayerController.Instance) return;
-        GameObject riverObject = GameManager.Instance.terrainObject.transform.parent.Find("River").gameObject;
-        AudioSource riverSource = riverObject.GetComponent<AudioSource>();
-        if (!riverSource.isPlaying) riverSource.PlayOneShot(riverSound);
+        if (!IsGameStarted) return;
         MeshCollider riverCollider = riverObject.transform.Find("ConvexRiver").GetComponent<MeshCollider>();
 
         Vector3 closestPoint = riverCollider.ClosestPoint(PlayerController.Instance.transform.position);
         float currentDistance = Vector3.Distance(PlayerController.Instance.transform.position, closestPoint);
 
-        riverSource.volume = Mathf.InverseLerp(6f, 0f, currentDistance);
+        riverAudioSource.volume = Mathf.InverseLerp(6f, 0f, currentDistance);
     }
 
     private void PlaySoundClip(AudioClip targetClip, bool randomPitch = true)
     {
-        audioSource.pitch = randomPitch ? Random.Range(.5f, 1f) : 1f;
-        audioSource.PlayOneShot(targetClip);
+        uiAudioSource.pitch = randomPitch ? Random.Range(.5f, 1f) : 1f;
+        uiAudioSource.PlayOneShot(targetClip);
     }
 
-    public bool IsPlaying() { return audioSource.isPlaying; }
+    public bool IsPlaying() { return uiAudioSource.isPlaying; }
     public void SetMixerGroupVolume(string targetGroup, float targetVolume) => audioMixer.SetFloat(targetGroup, targetVolume);
 
     public void OnDialogOpen() => PlaySoundClip(dialogOpenSound);
