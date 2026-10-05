@@ -319,7 +319,7 @@ public class MenuManager : NetworkBehaviour
         SetMasterGameStateText("Shared mapping");
         finishButton.SetActive(true);
         GameManager.Instance.mapCamera.gameObject.SetActive(true);
-        GameManager.Instance.mapCamera.transform.position = new Vector3(0.33f, -100f, 0.34f);
+        GameManager.Instance.mapCamera.transform.position = new Vector3(0.33f, GameManager.Instance.mapCamera.transform.position.y, 0.34f);
         GameManager.Instance.mapCamera.targetTexture = (RenderTexture)sharedMapView.GetComponent<RawImage>().texture;
         sharedMapView.SetActive(true);
     }

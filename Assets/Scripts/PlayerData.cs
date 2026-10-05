@@ -56,6 +56,7 @@ public class PlayerData : NetworkBehaviour
     private void OnReadyStateChanged(bool oldValue, bool newValue)
     {
         GameManager.Instance.UpdatePlayerRenderStateRpc();
+        if (!IsOwner) return;
         AudioManager.Instance.OnGameStarted();
     }
 

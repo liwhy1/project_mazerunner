@@ -66,7 +66,7 @@ public class MapNetworkManager : NetworkBehaviour
     }
 
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
-    public void SyncMapDataServerRpc(RpcParams rpcParams = default)
+    public void SyncMapDataServerRpc()
     {
         if (mapState.Value == MapState.Own) return;
 

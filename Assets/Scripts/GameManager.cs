@@ -273,7 +273,7 @@ public class GameManager : NetworkBehaviour
     public void SpawnPlayer(ulong clientId)
     {
         Debug.Log("GameManager: Spawning player for: " + clientId);
-        GameObject playerObject = Instantiate(Resources.Load<GameObject>("GameComponents/Player"), new Vector3(0f, 100f, 0f), Quaternion.identity);
+        GameObject playerObject = Instantiate(Resources.Load<GameObject>("GameComponents/Player"));
 
         if (networkState != NetworkState.Offline)
         {
@@ -284,10 +284,10 @@ public class GameManager : NetworkBehaviour
     public void SpawnSharedMap(ulong clientId)
     {
         Debug.Log("GameManager: Spawning SharedMap for: " + clientId);
-        GameObject mapObject = Instantiate(Resources.Load<GameObject>("MapPrefabs/SharedMapUI"), Vector3.zero, Quaternion.identity);
+        GameObject mapObject = Instantiate(Resources.Load<GameObject>("MapPrefabs/SharedMapUI"));
         mapObject.GetComponent<Canvas>().worldCamera = mapCamera;
         mapObject.transform.position = new Vector3(0f, 100f, 0f);
-        mapCamera.transform.position = new Vector3(0f, 100f, 0f);
+        mapCamera.transform.position = mapObject.transform.position;
         if (networkState != NetworkState.Offline)
         {
             mapObject.GetComponent<NetworkObject>().Spawn();

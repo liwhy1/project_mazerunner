@@ -75,6 +75,8 @@ public class PlayerController : NetworkBehaviour
         GameManager.Instance.playerViewCamera.transform.SetParent(transform);
         GameManager.Instance.playerViewCamera.transform.localPosition = Vector3.zero + Vector3.forward;
         GameManager.Instance.playerViewCamera.transform.LookAt(transform);
+
+        SetPlayerPosition(new Vector3(0f, 100f, 0f));
     }
 
     private void FixedUpdate()
