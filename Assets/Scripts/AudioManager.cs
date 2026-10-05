@@ -51,7 +51,8 @@ public class AudioManager : MonoBehaviour
     private void UpdateRiverSound()
     {
         if (!IsGameStarted || !riverObject) return;
-        MeshCollider riverCollider = riverObject.transform.Find("ConvexRiver").GetComponent<MeshCollider>();
+        MeshCollider riverCollider = riverObject.transform.Find("ConvexRiver")?.GetComponent<MeshCollider>();
+        if (!riverCollider) return;
 
         Vector3 closestPoint = riverCollider.ClosestPoint(PlayerController.Instance.transform.position);
         float currentDistance = Vector3.Distance(PlayerController.Instance.transform.position, closestPoint);
