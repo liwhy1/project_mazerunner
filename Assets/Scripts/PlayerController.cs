@@ -55,7 +55,6 @@ public class PlayerController : NetworkBehaviour
     {
         Instance = this;
         playerRigidbody = GetComponent<Rigidbody>();
-        playerRigidbody.isKinematic = true;
         playerAgent = GetComponent<NavMeshAgent>();
         enableMovement = true;
         enableCamera = true;
@@ -67,7 +66,7 @@ public class PlayerController : NetworkBehaviour
         GameManager.Instance.playerViewCamera.transform.localPosition = Vector3.zero + Vector3.forward;
         GameManager.Instance.playerViewCamera.transform.LookAt(transform);
 
-        SetPlayerPosition(new Vector3(0f, 100f, 0f));
+        SetPlayerPosition(new Vector3(0f, 100f, 0f), true);
     }
 
     private void FixedUpdate()
@@ -86,12 +85,14 @@ public class PlayerController : NetworkBehaviour
         // handle camera obstructions
         CameraObstructionHandler();
 
+        // handle animations
+        AnimationHandler();
+
         // toggle camera based on shared map view activity
         playerCamera.gameObject.SetActive(!(InventoryManager.Instance.isInventoryActive && (GameManager.Instance.mapCamera.gameObject.activeSelf || (EditorManager.Instance && EditorManager.Instance.editorMapInstance && EditorManager.Instance.editorMapInstance.activeSelf))));
 
         // set player animation state
         isAgentNavigating = !(!playerAgent.pathPending && (!playerAgent.hasPath || playerAgent.velocity.sqrMagnitude == 0f));
-        playerAnimator.SetBool("isRunning", !InventoryManager.Instance.isInventoryActive && !GameManager.Instance.isPaused && (isPlayerMoving || isAgentNavigating));
     }
 
     private void LateUpdate()
@@ -105,6 +106,18 @@ public class PlayerController : NetworkBehaviour
         CameraHandler();
     }
 
+    private void AnimationHandler()
+    {
+        // falling state
+        playerAnimator.SetBool("isGrounded", playerRigidbody.isKinematic ? true : isGrounded);
+
+        // running state
+        playerAnimator.SetBool("isRunning", !InventoryManager.Instance.isInventoryActive && !GameManager.Instance.isPaused && (isPlayerMoving || isAgentNavigating));
+
+        // jump state
+        playerAnimator.SetBool("isJumping", jumpRoutine != null);
+    }
+
     private void GroundCheckHandler()
     {
         CapsuleCollider playerCollider = GetComponent<CapsuleCollider>();
@@ -112,7 +125,6 @@ public class PlayerController : NetworkBehaviour
 
         Collider[] hits = Physics.OverlapBox(checkCenter, new Vector3(0.4f, 0.05f, 0.4f), Quaternion.identity, Physics.AllLayers, QueryTriggerInteraction.Ignore);
         isGrounded = hits.Any(h => h.transform != transform);
-        playerAnimator.SetBool("isGrounded", playerRigidbody.isKinematic ? true : isGrounded);
     }
 
     private void CameraObstructionHandler()
@@ -250,11 +262,11 @@ public class PlayerController : NetworkBehaviour
         playerAgent.SetDestination(targetPosition);
     }
 
-    public void SetPlayerPosition(Vector3 targetPosition)
+    public void SetPlayerPosition(Vector3 targetPosition, bool kinematicState = false)
     {
         if (!IsOwner) return;
         playerRigidbody.interpolation = RigidbodyInterpolation.None;
-        playerRigidbody.isKinematic = false;
+        playerRigidbody.isKinematic = kinematicState;
         playerAgent.updatePosition = false;
         playerAgent.updateRotation = false;
         playerAgent.isStopped = true;
@@ -278,7 +290,6 @@ public class PlayerController : NetworkBehaviour
         if (!IsOwner) return;
         if (GameManager.Instance.isPaused || !isGrounded || !enableMovement || playerRigidbody.isKinematic || InventoryManager.Instance.isInventoryActive) return;
 
-        playerAnimator.SetBool("isJumping", true);
         playerRigidbody.linearVelocity = gameObject.transform.up * jumpStrength;
 
         if (jumpRoutine == null) jumpRoutine = StartCoroutine(JumpHandler());
@@ -294,7 +305,6 @@ public class PlayerController : NetworkBehaviour
             currentTime += .1f;
             yield return new WaitForSeconds(.1f);
         }
-        playerAnimator.SetBool("isJumping", false);
         jumpRoutine = null;
     }
 
