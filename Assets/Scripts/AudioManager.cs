@@ -39,7 +39,7 @@ public class AudioManager : MonoBehaviour
         IsGameStarted = true;
 
         // setup environment sound
-        environmentAudioSource = FindObjectsByType<AudioSource>().FirstOrDefault(o => o.name.Contains("Environment Source")).GetComponent<AudioSource>();
+        environmentAudioSource = FindObjectsByType<AudioSource>().FirstOrDefault(o => o.name.Contains("Environment Source"))?.GetComponent<AudioSource>();
         environmentAudioSource?.Play();
 
         // setup river sound

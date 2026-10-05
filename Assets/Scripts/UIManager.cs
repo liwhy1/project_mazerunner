@@ -177,6 +177,8 @@ public class UIManager : NetworkBehaviour
 
     private void UpdateMinimapPosition()
     {
+        if (!GameManager.Instance.terrainObject) return;
+
         // setup vars
         GameObject terrainObject = GameManager.Instance.terrainObject;
         MeshRenderer renderer = terrainObject.GetComponent<MeshRenderer>();

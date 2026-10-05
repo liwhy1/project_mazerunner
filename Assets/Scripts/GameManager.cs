@@ -1,6 +1,8 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.AI.Navigation;
 using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
@@ -113,35 +115,74 @@ public class GameManager : NetworkBehaviour
 
     public void OnLobbyStart()
     {
-        // set gamestate
-        if (!isMaster) SetPlayerGameStateServerRpc(true);
-
         isPaused = false;
         playerViewCamera.gameObject.SetActive(false);
         MapManager.SharedInstance.gameObject.GetComponent<Canvas>().worldCamera = mapCamera;
         InventoryManager.Instance.OnSetupStory();
 
-        if (!isMaster) 
-        {
-            mainCamera.SetActive(false);
-
-            // reset ui
-            UIManager.Instance.ResetUIState();
-            MenuManager.Instance.ResetUIState();
-
-            // tutorial dialog
-            string targetContent = "<b>Player movement:</b>\n(WASD) / (Point & Click)\n<b>Camera height control:</b>\n(Mouse Wheel) / (UI Plus & Minus icon)";
-            UIManager.Instance.OnOpenDialog("Tutorial", targetContent, "");
-
-            // move player to map
-            PlayerController.Instance.SetPlayerPosition(playerSpawnPosition.transform.position + Vector3.forward * FetchPersistentPlayerId());
-        }
+        if (!isMaster) OnLoadMap(activeStory.Value.ToString());
         else isMasterGameStarted = true;
 
         if (NetworkManager.IsHost)
         {
             isLobbyStarted.Value = true;
         }
+    }
+
+    private void OnLoadMap(string sceneName) => StartCoroutine(AsynchronousLevelLoad(sceneName));
+
+    private IEnumerator AsynchronousLevelLoad(string sceneName)
+    {
+        UIManager.Instance.loadingIcon.SetActive(true);
+        Time.timeScale = 1f;
+        yield return new WaitForSeconds(1f);
+
+        AsyncOperation ao = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
+        ao.allowSceneActivation = false;
+        Debug.Log("GameManager: Loading level " + sceneName);
+        while (!ao.isDone)
+        {
+            if (ao.progress == 0.9f)
+            {
+                ao.allowSceneActivation = true;
+            }
+            yield return null;
+        }
+        OnMapLoaded();
+    }
+
+    private void OnMapLoaded()
+    {
+        // assign scene vars
+        // TODO: rewrite this shit
+        foreach (GameObject rootObject in SceneManager.GetSceneByName(activeStory.Value.ToString()).GetRootGameObjects())
+        {
+            if (rootObject.GetComponent<Camera>()) rootObject.SetActive(false);
+            if (rootObject.name.Contains("Level")) 
+            {
+                rootObject.transform.eulerAngles = new Vector3(0f, -90f, 0f);
+                terrainObject = rootObject.transform.Find("Terrain").Find("Inner terrain").gameObject;
+                playerSpawnPosition = rootObject.transform.Find("Terrain objects").Find("Starting point").gameObject;
+            }
+        }
+
+        // build navmesh
+        FindAnyObjectByType<NavMeshSurface>().BuildNavMesh();
+
+        // move player to map
+        PlayerController.Instance.SetPlayerPosition(playerSpawnPosition.transform.position + Vector3.forward * FetchPersistentPlayerId());
+
+        // tutorial dialog
+        string targetContent = "<b>Player movement:</b>\n(WASD) / (Point & Click)\n<b>Camera height control:</b>\n(Mouse Wheel) / (UI Plus & Minus icon)";
+        UIManager.Instance.OnOpenDialog("Tutorial", targetContent, "");
+
+        // reset ui
+        mainCamera.SetActive(false);
+        UIManager.Instance.ResetUIState();
+        MenuManager.Instance.ResetUIState();
+
+        // set gamestate
+        SetPlayerGameStateServerRpc(true);
     }
 
     private void OnClientConnected(ulong clientId)
