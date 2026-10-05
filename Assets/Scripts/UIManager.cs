@@ -27,8 +27,8 @@ public class UIManager : NetworkBehaviour
     [SerializeField] private GameObject settingsBackButton;
 
     [Header("HUD Data")]
-    [SerializeField] private Image pauseIcon;
-    [SerializeField] private Image inventoryIcon;
+    public Image pauseIcon;
+    public Image inventoryIcon;
     public Image cameraZoomInIcon;
     public Image cameraZoomOutIcon;
     public GameObject loadingIcon;
@@ -274,6 +274,8 @@ public class UIManager : NetworkBehaviour
     {
         //eventSystem.SetSelectedGameObject(resumeButton);
         pauseObject.SetActive(!pauseObject.activeSelf);
+        inventoryIcon.gameObject.SetActive(!pauseObject.activeSelf && !InventoryManager.Instance.isInventoryActive);
+        pauseIcon.gameObject.SetActive(!pauseObject.activeSelf && !InventoryManager.Instance.isInventoryActive);
     }
 
     public void OnRefreshPlayerList()

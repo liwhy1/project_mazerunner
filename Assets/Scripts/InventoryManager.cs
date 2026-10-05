@@ -79,6 +79,8 @@ public class InventoryManager : MonoBehaviour
         inventoryObject.SetActive(isInventoryActive);
         UIManager.Instance.cameraZoomInIcon.gameObject.SetActive(!isInventoryActive);
         UIManager.Instance.cameraZoomOutIcon.gameObject.SetActive(!isInventoryActive);
+        UIManager.Instance.inventoryIcon.gameObject.SetActive(!isInventoryActive);
+        UIManager.Instance.pauseIcon.gameObject.SetActive(!isInventoryActive);
         UIManager.Instance.minimapObject.SetActive(!isInventoryActive);
         editorIconObject.SetActive(GameManager.Instance.networkState == NetworkState.Offline);
     }
