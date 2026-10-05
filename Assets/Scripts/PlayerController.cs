@@ -97,7 +97,7 @@ public class PlayerController : NetworkBehaviour
 
         // set player animation state
         isAgentNavigating = !(!playerAgent.pathPending && (!playerAgent.hasPath || playerAgent.velocity.sqrMagnitude == 0f));
-        playerAnimator.SetBool("isRunning", isPlayerMoving || isAgentNavigating);
+        playerAnimator.SetBool("isRunning", !InventoryManager.Instance.isInventoryActive && !GameManager.Instance.isPaused && (isPlayerMoving || isAgentNavigating));
     }
 
     private void LateUpdate()
