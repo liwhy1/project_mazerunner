@@ -44,6 +44,7 @@ public class MenuManager : NetworkBehaviour
     [SerializeField] private GameObject finishButton;
     public GameObject sharedMapView;
     [SerializeField] private GameObject timerObject;
+    public GameObject individualMapsObject;
 
     [Header("Player Customisation Data")]
     [SerializeField] private GameObject playerView;
@@ -239,6 +240,7 @@ public class MenuManager : NetworkBehaviour
         playerView.SetActive(!GameManager.Instance.isMaster);
         gameStateText.gameObject.SetActive(GameManager.Instance.isMaster);
         gameStateText.text = "";
+        individualMapsObject.SetActive(false);
         waitingOnHostText.gameObject.SetActive(!NetworkManager.IsHost);
         storySelector.gameObject.SetActive(NetworkManager.IsHost);
         startButton.SetActive(NetworkManager.IsHost);
@@ -287,7 +289,10 @@ public class MenuManager : NetworkBehaviour
     {
         SetMasterGameStateText("Explore map");
         MapNetworkManager.Instance.SetMapStateServerRpc(MapState.Individual);
+        sharedMapView.SetActive(false);
         finishButton.SetActive(false);
+        individualMapsObject.SetActive(true);
+        timerObject.SetActive(false);
     }
 
     public void OnMasterSharedMapEnabled()

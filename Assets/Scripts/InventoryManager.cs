@@ -214,7 +214,11 @@ public class InventoryManager : MonoBehaviour
 
     public void OnJournalDisable() => buttonLayout.transform.Find("JournalIcon").GetComponent<UIElement>().OnElementDisable();
     public void OnJournalEnable() => buttonLayout.transform.Find("JournalIcon").GetComponent<UIElement>().OnElementEnable();
-    public GameObject FetchMapObjectById(int targetId) { return mapIndividualViewPage.transform.Find("MapP" + targetId).gameObject; }
+    public GameObject FetchMapObjectById(int targetId) 
+    {
+        if (GameManager.Instance.isMaster) return MenuManager.Instance.individualMapsObject.transform.Find("MapP" + targetId).gameObject;
+        else return mapIndividualViewPage.transform.Find("MapP" + targetId).gameObject;
+    }
     public void OnToggleSharedView(bool targetState) 
     {
         if (targetState) mapSharedViewButton.GetComponent<UIElement>().OnElementEnable();
