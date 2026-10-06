@@ -170,6 +170,9 @@ public class GameManager : NetworkBehaviour
         // build navmesh
         FindAnyObjectByType<NavMeshSurface>().BuildNavMesh();
 
+        // hide start platform
+        FindAnyObjectByType<NavMeshSurface>().GetComponent<Renderer>().enabled = false;
+
         // move player to map
         PlayerController.Instance.SetPlayerPosition(playerSpawnPosition.transform.position + Vector3.up + Vector3.forward * FetchPersistentPlayerId());
 
