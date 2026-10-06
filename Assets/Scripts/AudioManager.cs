@@ -71,7 +71,7 @@ public class AudioManager : MonoBehaviour
 
     public void OnDialogOpen() => PlaySoundClip(dialogOpenSound);
     public void OnDialogClose() => PlaySoundClip(dialogCloseSound);
-    public void OnButtonClick() => PlaySoundClip(buttonClickSound);
+    public void OnButtonClick() => PlaySoundClip(buttonClickSound, false);
     public void OnElementPlace() => PlaySoundClip(elementPlaceSound);
     public void OnFootstep() => PlaySoundClip(footstepSound);
     public void OnDraw() => PlaySoundClip(pencilDrawSound, true);
