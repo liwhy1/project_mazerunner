@@ -269,8 +269,11 @@ public class PlayerController : NetworkBehaviour
         playerRigidbody.isKinematic = kinematicState;
         playerAgent.updatePosition = false;
         playerAgent.updateRotation = false;
-        playerAgent.isStopped = true;
-        playerAgent.ResetPath();
+        if (playerAgent.isOnNavMesh)
+        {
+            playerAgent.isStopped = true;
+            playerAgent.ResetPath();
+        }
         gameObject.transform.position = targetPosition;
     }
 

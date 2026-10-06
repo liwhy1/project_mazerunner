@@ -160,7 +160,7 @@ public class GameManager : NetworkBehaviour
             if (rootObject.GetComponent<Camera>()) rootObject.SetActive(false);
             if (rootObject.name.Contains("Level")) 
             {
-                rootObject.transform.eulerAngles = new Vector3(0f, -90f, 0f);
+                rootObject.transform.eulerAngles = new Vector3(0f, -180f, 0f);
                 terrainObject = rootObject.transform.Find("Terrain").Find("Inner terrain").gameObject;
                 playerSpawnPosition = rootObject.transform.Find("Terrain objects").Find("Starting point").gameObject;
             }
@@ -220,7 +220,6 @@ public class GameManager : NetworkBehaviour
     {
         Debug.Log("GameManager: Starting game as Master");
         isMaster = true;
-        terrainObject.transform.parent.gameObject.SetActive(false);
         OnStartHost();
     }
 
