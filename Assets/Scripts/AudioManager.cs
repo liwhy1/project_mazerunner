@@ -50,7 +50,7 @@ public class AudioManager : MonoBehaviour
 
     private void UpdateRiverSound()
     {
-        if (!IsGameStarted || !riverObject) return;
+        if (!IsGameStarted || !riverObject || !PlayerController.Instance) return;
         MeshCollider riverCollider = riverObject.transform.Find("ConvexRiver")?.GetComponent<MeshCollider>();
         if (!riverCollider) return;
 
