@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
@@ -12,6 +13,8 @@ public class MapManager : NetworkBehaviour
     public static MapManager Instance;
     public static MapManager SharedInstance;
     public GameObject mapComponents;
+    public Dictionary<ulong, GameObject> pendingPlacements = new();
+    private ulong nextPlacementRequestId = 0;
 
     [Header("Icon Data")]
     private List<GameObject> activeIcons = new List<GameObject>();
@@ -208,8 +211,9 @@ public class MapManager : NetworkBehaviour
         // spawn networkobject if the element was pulled from the pile
         if (savedElementPosition == Vector3.zero && isWorldSpace)
         {
-            MapNetworkManager.Instance.SpawnMapElementServerRpc("SharedMapIcon", targetElement.name, targetElement.transform.localPosition);
-            Destroy(targetElement);
+            ulong requestId = nextPlacementRequestId++;
+            pendingPlacements.Add(requestId, targetElement);
+            MapNetworkManager.Instance.SpawnMapElementServerRpc(requestId, "SharedMapIcon", targetElement.name, targetElement.transform.localPosition);
         }
     }
 
@@ -238,9 +242,19 @@ public class MapManager : NetworkBehaviour
         if (isWorldSpace)
         {
             newDot.GetComponent<RectTransform>().sizeDelta = new Vector3(.02f, 0.02f);
-            MapNetworkManager.Instance.SpawnMapElementServerRpc("SharedDrawDot", "DrawDot", newDot.transform.localPosition);
-            Destroy(newDot);
+            ulong requestId = nextPlacementRequestId++;
+            pendingPlacements.Add(requestId, newDot);
+            MapNetworkManager.Instance.SpawnMapElementServerRpc(requestId, "SharedDrawDot", "DrawDot", newDot.transform.localPosition);
         }
+    }
+
+    public IEnumerator ElementReplaceRoutine(GameObject oldElement, GameObject newElement)
+    {
+        yield return new WaitForSeconds(.7f);
+        newElement.transform.Find("Sprite")?.gameObject.SetActive(true);
+        if (newElement.GetComponent<Image>()) newElement.GetComponent<Image>().enabled = true;
+        pendingPlacements.Remove(pendingPlacements.FirstOrDefault(p => p.Value == oldElement).Key);
+        Destroy(oldElement);
     }
 
     public void OnEraseLine()

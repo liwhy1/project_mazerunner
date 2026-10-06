@@ -74,7 +74,7 @@ public class MapNetworkManager : NetworkBehaviour
         foreach (Transform element in MapManager.SharedInstance.transform)
         {
             if (!element.GetComponent<NetworkObject>()) continue;
-            SetMapElementDataClientRpc(element.GetComponent<NetworkObject>().NetworkObjectId, element.name);
+            SetMapElementDataClientRpc(0, element.GetComponent<NetworkObject>().NetworkObjectId, element.name);
         }
         // sync individual view data
         // NOTE: This assumes the player limit is 3
@@ -95,24 +95,27 @@ public class MapNetworkManager : NetworkBehaviour
     }
 
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
-    public void SpawnMapElementServerRpc(string iconPrefab, string iconSprite, Vector3 iconPosition)
+    public void SpawnMapElementServerRpc(ulong requestId, string iconPrefab, string iconSprite, Vector3 iconPosition)
     {
         Debug.Log("MNM: Spawning new object with type: " + iconPrefab);
         GameObject newObject = Instantiate(Resources.Load<GameObject>("MapPrefabs/" + iconPrefab), MapManager.SharedInstance.transform.position, Quaternion.identity);
+
         newObject.name = iconSprite;
         newObject.GetComponent<NetworkObject>().Spawn();
         newObject.transform.SetParent(MapManager.SharedInstance.transform, false);
         newObject.transform.localPosition = new Vector3(iconPosition.x, iconPosition.y, 1f);
 
         ulong objectId = newObject.GetComponent<NetworkObject>().NetworkObjectId;
-        SetMapElementDataClientRpc(objectId, iconSprite);
+        SetMapElementDataClientRpc(requestId, objectId, iconSprite);
     }
 
     [ClientRpc]
-    public void SetMapElementDataClientRpc(ulong targetElement, string targetSprite)
+    public void SetMapElementDataClientRpc(ulong requestId, ulong targetElement, string targetSprite)
     {
         if (NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(targetElement, out NetworkObject targetObject))
         {
+                    targetObject.transform.Find("Sprite")?.gameObject.SetActive(false);
+        if (targetObject.GetComponent<Image>()) targetObject.GetComponent<Image>().enabled = false;
             targetObject.name = targetSprite;
             if (targetSprite == "DrawDot") 
             {
@@ -126,6 +129,9 @@ public class MapNetworkManager : NetworkBehaviour
                 targetObject.transform.Find("Name").gameObject.SetActive(false);
                 MapManager.SharedInstance.SetupElementTriggers(targetObject.gameObject);
             }
+
+            var pendingObject = MapManager.SharedInstance.pendingPlacements.FirstOrDefault(p => p.Key == requestId);
+            if (pendingObject.Value) StartCoroutine(MapManager.SharedInstance.ElementReplaceRoutine(pendingObject.Value, targetObject.gameObject));
         }
     }
 
