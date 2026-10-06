@@ -148,7 +148,7 @@ public class PlayerController : NetworkBehaviour
 
             // apply new mat with transparent shader
             Material clonedMaterial = new Material(savedMaterial);
-            clonedMaterial.shader = Shader.Find("Custom/TransparentLit");
+            clonedMaterial.shader = GameManager.Instance.transparentShader;
             savedObject.GetComponent<Renderer>().material = clonedMaterial;
         }
     }

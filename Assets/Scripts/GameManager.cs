@@ -28,6 +28,7 @@ public class GameManager : NetworkBehaviour
     public Camera playerViewCamera;
     public GameObject playerSpawnPosition;
     public GameObject terrainObject;
+    public Shader transparentShader;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void Initialize()
@@ -170,7 +171,7 @@ public class GameManager : NetworkBehaviour
         FindAnyObjectByType<NavMeshSurface>().BuildNavMesh();
 
         // move player to map
-        PlayerController.Instance.SetPlayerPosition(playerSpawnPosition.transform.position + Vector3.forward * FetchPersistentPlayerId());
+        PlayerController.Instance.SetPlayerPosition(playerSpawnPosition.transform.position + Vector3.up + Vector3.forward * FetchPersistentPlayerId());
 
         // tutorial dialog
         string targetContent = "<b>Player movement:</b>\n(WASD) / (Point & Click)\n<b>Camera height control:</b>\n(Mouse Wheel) / (UI Plus & Minus icon)";
