@@ -114,8 +114,12 @@ public class MapNetworkManager : NetworkBehaviour
     {
         if (NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(targetElement, out NetworkObject targetObject))
         {
-                    targetObject.transform.Find("Sprite")?.gameObject.SetActive(false);
-        if (targetObject.GetComponent<Image>()) targetObject.GetComponent<Image>().enabled = false;
+            var pendingObject = MapManager.SharedInstance.pendingPlacements.FirstOrDefault(p => p.Key == requestId);
+            if (pendingObject.Value != null) 
+            {
+                targetObject.transform.Find("Sprite")?.gameObject.SetActive(false);
+                if (targetObject.GetComponent<Image>()) targetObject.GetComponent<Image>().enabled = false;
+            }
             targetObject.name = targetSprite;
             if (targetSprite == "DrawDot") 
             {
@@ -130,7 +134,6 @@ public class MapNetworkManager : NetworkBehaviour
                 MapManager.SharedInstance.SetupElementTriggers(targetObject.gameObject);
             }
 
-            var pendingObject = MapManager.SharedInstance.pendingPlacements.FirstOrDefault(p => p.Key == requestId);
             if (pendingObject.Value) StartCoroutine(MapManager.SharedInstance.ElementReplaceRoutine(pendingObject.Value, targetObject.gameObject));
         }
     }

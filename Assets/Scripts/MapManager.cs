@@ -250,7 +250,13 @@ public class MapManager : NetworkBehaviour
 
     public IEnumerator ElementReplaceRoutine(GameObject oldElement, GameObject newElement)
     {
-        yield return new WaitForSeconds(.7f);
+        float timeCounter = 0f;
+        while (newElement.transform.localPosition.z != 1) 
+        {
+            timeCounter += .1f;
+            yield return new WaitForSeconds(.1f);
+            if (timeCounter > 2f) break;
+        }
         newElement.transform.Find("Sprite")?.gameObject.SetActive(true);
         if (newElement.GetComponent<Image>()) newElement.GetComponent<Image>().enabled = true;
         pendingPlacements.Remove(pendingPlacements.FirstOrDefault(p => p.Value == oldElement).Key);
