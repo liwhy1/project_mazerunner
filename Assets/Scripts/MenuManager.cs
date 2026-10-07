@@ -259,6 +259,7 @@ public class MenuManager : NetworkBehaviour
         startButton.SetActive(!GameManager.Instance.isMaster);
         timerObject.SetActive(GameManager.Instance.isMaster);
         storySelector.gameObject.SetActive(false);
+        startButton.SetActive(false);
         waitingOnHostText.gameObject.SetActive(false);
         SetMasterGameStateText("Individual mapping\n" + GameManager.Instance.playerList.Count(p => p.IsMapReady.Value == true) + "/" + GameManager.Instance.playerList.Count);
     }
