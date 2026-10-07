@@ -106,7 +106,14 @@ public class InputManager : MonoBehaviour
             Ray ray = PlayerController.Instance.playerCamera.GetComponent<Camera>().ScreenPointToRay(Pointer.current.position.ReadValue());
             if (Physics.Raycast(ray, out RaycastHit hit))
             {
-                PlayerController.Instance.OnMove(hit.point);
+                if (hit.collider.GetComponent<ChainliftController>())
+                {
+                    hit.collider.GetComponent<ChainliftController>().OnMoveLift();
+                }
+                else
+                {
+                    PlayerController.Instance.OnMove(hit.point);                    
+                }
             }
         }
         else if (EditorManager.Instance && InventoryManager.Instance.isInventoryActive)
