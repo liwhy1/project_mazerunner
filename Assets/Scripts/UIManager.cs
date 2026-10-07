@@ -361,6 +361,9 @@ public class UIManager : NetworkBehaviour
                 InventoryManager.Instance.OnToggleInventory();
                 InventoryManager.Instance.OnOpenEditor();
                 break;
+            case "selfdisconnect":
+                GameManager.Instance.OnDisconnectClient();
+                break;
         }
         OnCloseDialog();
     }

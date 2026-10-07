@@ -84,14 +84,9 @@ public class GameManager : NetworkBehaviour
 
     public override void OnDestroy()
     {
-        // networkmanager usually dies before this, keep it just in case
-        try
-        {
-            NetworkManager.OnClientConnectedCallback -= OnClientConnected;
-            NetworkManager.OnClientDisconnectCallback -= OnClientDisconnected;
-            isLobbyStarted.OnValueChanged -= OnLobbyStartValueChanged;
-        }
-        catch {}
+        NetworkManager.OnClientConnectedCallback -= OnClientConnected;
+        NetworkManager.OnClientDisconnectCallback -= OnClientDisconnected;
+        isLobbyStarted.OnValueChanged -= OnLobbyStartValueChanged;
     }
 
     public void OnNameChanged(string inputText)
@@ -222,7 +217,7 @@ public class GameManager : NetworkBehaviour
     private void OnClientDisconnected(ulong clientId)
     {
         if (!IsSpawned || !NetworkManager.IsListening || !NetworkManager.IsConnectedClient) return;
-        PlayerLeftClientRpc(clientId);
+        PlayerLeftRpc(clientId);
     }
 
     public void OnStartMaster()
@@ -272,7 +267,7 @@ public class GameManager : NetworkBehaviour
         if (!await RelayManager.Instance.JoinHost(joinCode))
         {
             Debug.Log("GameManager: Failed to join game.");
-            UIManager.Instance.OnOpenDialog("Notice", "Failed to joing game!", "");
+            UIManager.Instance.OnOpenDialog("Notice", "Failed to join game!", "");
             UIManager.Instance.loadingIcon.SetActive(false);
             return;
         }
@@ -283,7 +278,7 @@ public class GameManager : NetworkBehaviour
         // notify clients on the disconnect intent of the host
         if (NetworkManager.IsHost)
         {
-            PlayerLeftClientRpc(NetworkManager.LocalClientId);
+            PlayerLeftRpc(NetworkManager.LocalClientId);
         }
 
         try
@@ -299,15 +294,15 @@ public class GameManager : NetworkBehaviour
         SceneManager.LoadScene(1);
     }
 
-    [ClientRpc]
-    private void PlayerLeftClientRpc(ulong clientId)
+    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+    private void PlayerLeftRpc(ulong clientId)
     {
         Debug.Log("GameManager: Client disconnected: " + clientId);
 
-        // host disconnect & self kick
-        if (!NetworkManager.IsHost && (clientId == NetworkManager.ServerClientId || clientId == NetworkManager.LocalClientId))
+        // host disconnect
+        if (!NetworkManager.IsHost && (clientId == NetworkManager.ServerClientId || clientId == NetworkManager.LocalClientId) || FetchPlayerDataById(clientId)?.PersistentPlayerId.Value == 0)
         {
-            OnDisconnectClient();
+            UIManager.Instance.OnOpenDialog("Notice", "Connection to the game host has been lost. Would you like to return to the main menu?", "Continue", "selfdisconnect");
             return;
         }
 
