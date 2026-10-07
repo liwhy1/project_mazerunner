@@ -6,6 +6,7 @@ using UnityEngine.EventSystems;
 using System.Linq;
 using UnityEngine.Events;
 using System.Collections.Generic;
+using System.Collections;
 
 public class UIManager : NetworkBehaviour
 {
@@ -25,6 +26,11 @@ public class UIManager : NetworkBehaviour
     [SerializeField] private Slider uiVolumeSlider;
     [SerializeField] private Slider environmentVolumeSlider;
     [SerializeField] private GameObject settingsBackButton;
+    [SerializeField] private Toggle fpsToggle;
+    [SerializeField] private TMP_Text fpsText;
+    [SerializeField] private float fpsUpdateFrequency = 0.5f;
+    private Coroutine fpsRoutine;
+    private int fpsValue;
 
     [Header("HUD Data")]
     public Image pauseIcon;
@@ -70,6 +76,7 @@ public class UIManager : NetworkBehaviour
         // setup setting trigger
         AddEventTrigger(settingsBackButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnCloseSettings);
         AddEventTrigger(settingsBackButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnCloseSettings);
+        fpsToggle.onValueChanged.AddListener(delegate { OnToggleFpsCounter(); });
         uiVolumeSlider.onValueChanged.AddListener(delegate { AudioManager.Instance.SetMixerGroupVolume("UI", uiVolumeSlider.value); });
         environmentVolumeSlider.onValueChanged.AddListener(delegate { AudioManager.Instance.SetMixerGroupVolume("Environment", environmentVolumeSlider.value); });
 
@@ -364,6 +371,34 @@ public class UIManager : NetworkBehaviour
             AudioManager.Instance.OnDialogClose();
             Destroy(activeDialog);
             activeDialog = null;
+        }
+    }
+
+    private void OnToggleFpsCounter()
+    {
+        if (fpsText.gameObject.activeSelf) StopCoroutine(fpsRoutine);
+        else fpsRoutine = StartCoroutine(FpsRoutine());
+
+        fpsText.gameObject.SetActive(!fpsText.gameObject.activeSelf);
+    }
+
+    private IEnumerator FpsRoutine()
+    {
+        int lastFrameCount;
+        float lastTime;
+        float timeSpan;
+        int frameCount;
+
+        while (true)
+        {
+            lastFrameCount = Time.frameCount;
+            lastTime = Time.realtimeSinceStartup;
+            yield return new WaitForSeconds(fpsUpdateFrequency);
+            timeSpan = Time.realtimeSinceStartup - lastTime;
+            frameCount = Time.frameCount - lastFrameCount;
+
+            fpsValue = Mathf.RoundToInt(frameCount / timeSpan);
+            fpsText.text = fpsValue + " FPS";
         }
     }
 }
