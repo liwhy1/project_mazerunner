@@ -377,10 +377,14 @@ public class UIManager : NetworkBehaviour
 
     private void OnToggleFpsCounter()
     {
-        if (fpsText.gameObject.activeSelf) StopCoroutine(fpsRoutine);
+        if (fpsRoutine != null) 
+        {
+            StopCoroutine(fpsRoutine);
+            fpsRoutine = null;
+        }
         else fpsRoutine = StartCoroutine(FpsRoutine());
 
-        fpsText.gameObject.SetActive(!fpsText.gameObject.activeSelf);
+        fpsText.gameObject.SetActive(fpsRoutine != null);
     }
 
     private IEnumerator FpsRoutine()
