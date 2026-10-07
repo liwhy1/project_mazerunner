@@ -74,8 +74,6 @@ public class GameManager : NetworkBehaviour
     {
         Instance = this;
         isPaused = true;
-        PlayerPrefs.DeleteAll();
-        PlayerPrefs.Save();
 
         NetworkManager.OnClientConnectedCallback += OnClientConnected;
         NetworkManager.OnClientDisconnectCallback += OnClientDisconnected;
@@ -87,12 +85,6 @@ public class GameManager : NetworkBehaviour
         NetworkManager.OnClientConnectedCallback -= OnClientConnected;
         NetworkManager.OnClientDisconnectCallback -= OnClientDisconnected;
         isLobbyStarted.OnValueChanged -= OnLobbyStartValueChanged;
-    }
-
-    public void OnNameChanged(string inputText)
-    {
-        PlayerPrefs.SetString("PlayerName", inputText);
-        PlayerPrefs.Save();
     }
 
     public void OnLobbyConnect()
@@ -229,7 +221,7 @@ public class GameManager : NetworkBehaviour
 
     public async void OnStartHost()
     {
-        if (string.IsNullOrEmpty(PlayerPrefs.GetString("PlayerName")) && !isMaster) 
+        if (string.IsNullOrEmpty(MenuManager.Instance.hostPlayerNameInput.text) && !isMaster) 
         {
             UIManager.Instance.OnOpenDialog("Notice", "Player name can't be empty!", "");
             return;
@@ -251,7 +243,7 @@ public class GameManager : NetworkBehaviour
     {
         string joinCode = MenuManager.Instance.GetJoinCodeInput();
 
-        if (string.IsNullOrEmpty(PlayerPrefs.GetString("PlayerName"))) 
+        if (string.IsNullOrEmpty(MenuManager.Instance.joinPlayerNameInput.text))
         {
             UIManager.Instance.OnOpenDialog("Notice", "Player name can't be empty!", "");
             return;
@@ -308,6 +300,12 @@ public class GameManager : NetworkBehaviour
 
         playerList.RemoveAll(player => player.OwnerClientId == clientId);
         UIManager.Instance.OnRefreshPlayerList();
+    }
+
+    [ClientRpc]
+    public void PlayerKickNotifyClientRpc(ulong clientId)
+    {
+        if (clientId == NetworkManager.LocalClientId) OnDisconnectClient();
     }
 
     public void SpawnPlayer(ulong clientId)

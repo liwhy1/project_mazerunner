@@ -30,7 +30,8 @@ public class PlayerData : NetworkBehaviour
 
         if (IsOwner)
         {
-            SetPlayerNameServerRpc(PlayerPrefs.GetString("PlayerName", "Player"));
+            string targetName = IsHost ? MenuManager.Instance.hostPlayerNameInput.text : MenuManager.Instance.joinPlayerNameInput.text;
+            SetPlayerNameServerRpc(targetName);
             GameManager.Instance.SetPlayerPersistentIdServerRpc(NetworkManager.LocalClientId);
         }
     }

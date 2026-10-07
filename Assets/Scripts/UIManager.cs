@@ -19,7 +19,7 @@ public class UIManager : NetworkBehaviour
     [SerializeField] private GameObject settingsButton;
     [SerializeField] private GameObject pauseQuitButton;
     public TMP_Text pauseJoinCodeText;
-    public TMP_Text pausePlayerListText;
+    public GameObject pausePlayerListObject;
 
     [Header("Settings Data")]
     [SerializeField] private GameObject settingsObject;
@@ -259,10 +259,6 @@ public class UIManager : NetworkBehaviour
 
     public void OnQuitButton()
     {
-        // reset playerprefs
-        PlayerPrefs.DeleteAll();
-        PlayerPrefs.Save();
-
         // destroy spawned player
         if (PlayerController.Instance != null)
         {
@@ -296,15 +292,29 @@ public class UIManager : NetworkBehaviour
 
     public void OnRefreshPlayerList()
     {
-        MenuManager.Instance.lobbyPlayerListText.text = "Players:\n";
-        pausePlayerListText.text = "Players:\n";
+        // cleanup old entries
+        foreach (Transform child in MenuManager.Instance.lobbyPlayerListObject.transform)
+        {
+            if (child.name == "Title") continue;
+            Destroy(child.gameObject);
+        }
+
+        foreach (Transform child in pausePlayerListObject.transform)
+        {
+            if (child.name == "Title") continue;
+            Destroy(child.gameObject);
+        }
+
         foreach (var player in GameManager.Instance.playerList)
         {
-            string targetText = player.PlayerName.Value.ToString();
-            targetText += player.OwnerClientId == NetworkManager.LocalClientId ? " (you)" : "";
-            targetText += player.OwnerClientId == NetworkManager.ServerClientId ? " (host)" : "";
-            MenuManager.Instance.lobbyPlayerListText.text += targetText + "\n";
-            pausePlayerListText.text += targetText + "\n";
+            string targetName = player.PlayerName.Value.ToString();
+            targetName += player.OwnerClientId == NetworkManager.LocalClientId ? " (you)" : "";
+
+            GameObject newEntry = Instantiate(Resources.Load<GameObject>("UIElements/PlayerListEntry"), MenuManager.Instance.lobbyPlayerListObject.transform);
+            newEntry.transform.Find("Name").GetComponent<TMP_Text>().text = targetName;
+            newEntry.transform.Find("KickButton").gameObject.SetActive(IsHost && player.OwnerClientId != NetworkManager.LocalClientId);
+            AddEventTrigger(newEntry.transform.Find("KickButton").GetComponent<EventTrigger>(), EventTriggerType.PointerClick, GameManager.Instance.PlayerKickNotifyClientRpc, player.OwnerClientId);
+            GameObject newPauseEntry = Instantiate(newEntry, pausePlayerListObject.transform);
         }
     }
 

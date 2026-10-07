@@ -20,7 +20,7 @@ public class MenuManager : NetworkBehaviour
 
     [Header("Host Data")]
     [SerializeField] private GameObject hostObject;
-    [SerializeField] private TMP_InputField hostPlayerNameInput;
+    public TMP_InputField hostPlayerNameInput;
     [SerializeField] private UIVerticalSelector playerModeSelector;
     [SerializeField] private GameObject startHostButton;
     [SerializeField] private GameObject hostBackButton;
@@ -30,7 +30,7 @@ public class MenuManager : NetworkBehaviour
     [SerializeField] private GameObject startClientButton;
     [SerializeField] private GameObject joinBackButton;
     [SerializeField] private TMP_InputField joinCodeInput;
-    [SerializeField] private TMP_InputField joinPlayerNameInput;
+    public TMP_InputField joinPlayerNameInput;
 
     [Header("Lobby Data")]
     [SerializeField] private GameObject lobbyObject;
@@ -38,7 +38,7 @@ public class MenuManager : NetworkBehaviour
     [SerializeField] private GameObject lobbyQuitButton;
     [SerializeField] private UIVerticalSelector storySelector;
     public TMP_Text lobbyJoinCodeText;
-    public TMP_Text lobbyPlayerListText;
+    public GameObject lobbyPlayerListObject;
     [SerializeField] private TMP_Text waitingOnHostText;
     [SerializeField] private TMP_Text gameStateText;
     [SerializeField] private GameObject finishButton;
@@ -106,7 +106,6 @@ public class MenuManager : NetworkBehaviour
         UIManager.Instance.AddEventTrigger(hostBackButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnOpenMenu);
         UIManager.Instance.AddEventTrigger(hostBackButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnOpenMenu);
         playerModeSelector.onValueChanged += () => OnPlayerModeSelectorChanged(playerModeSelector.currentSelection);
-        hostPlayerNameInput.onValueChanged.AddListener(delegate { GameManager.Instance.OnNameChanged(hostPlayerNameInput.text); });
         hostPlayerNameInput.onSubmit.AddListener(delegate { GameManager.Instance.OnStartHost(); });
 
         // join
@@ -114,7 +113,6 @@ public class MenuManager : NetworkBehaviour
         UIManager.Instance.AddEventTrigger(startClientButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, GameManager.Instance.OnStartClient);
         UIManager.Instance.AddEventTrigger(joinBackButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, UIManager.Instance.OnQuitButton);
         UIManager.Instance.AddEventTrigger(joinBackButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, UIManager.Instance.OnQuitButton);
-        joinPlayerNameInput.onValueChanged.AddListener(delegate { GameManager.Instance.OnNameChanged(joinPlayerNameInput.text); });
         joinCodeInput.onSubmit.AddListener(delegate { GameManager.Instance.OnStartClient(); });
 
         // lobby
