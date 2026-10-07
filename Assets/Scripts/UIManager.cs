@@ -288,7 +288,8 @@ public class UIManager : NetworkBehaviour
     public void OnPauseToggle()
     {
         //eventSystem.SetSelectedGameObject(resumeButton);
-        pauseObject.SetActive(!pauseObject.activeSelf);
+        pauseObject.SetActive(settingsObject.activeSelf ? false : !pauseObject.activeSelf);
+        settingsObject.SetActive(false);
         inventoryIcon.gameObject.SetActive(!pauseObject.activeSelf && !InventoryManager.Instance.isInventoryActive);
         pauseIcon.gameObject.SetActive(!pauseObject.activeSelf && !InventoryManager.Instance.isInventoryActive);
     }
