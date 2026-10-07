@@ -7,6 +7,7 @@ using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 
 public class GameManager : NetworkBehaviour
@@ -138,17 +139,21 @@ public class GameManager : NetworkBehaviour
         Time.timeScale = 1f;
         yield return new WaitForSeconds(1f);
 
-        AsyncOperation ao = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
-        ao.allowSceneActivation = false;
-        Debug.Log("GameManager: Loading level " + sceneName);
-        while (!ao.isDone)
+        if (IsHost || !FindAnyObjectByType<Volume>())
         {
-            if (ao.progress == 0.9f)
+            AsyncOperation ao = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
+            ao.allowSceneActivation = false;
+            Debug.Log("GameManager: Loading level " + sceneName);
+            while (!ao.isDone)
             {
-                ao.allowSceneActivation = true;
+                if (ao.progress == 0.9f)
+                {
+                    ao.allowSceneActivation = true;
+                }
+                yield return null;
             }
-            yield return null;
         }
+
         OnMapLoaded();
     }
 
