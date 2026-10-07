@@ -112,8 +112,8 @@ public class MenuManager : NetworkBehaviour
         // join
         UIManager.Instance.AddEventTrigger(startClientButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, GameManager.Instance.OnStartClient);
         UIManager.Instance.AddEventTrigger(startClientButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, GameManager.Instance.OnStartClient);
-        UIManager.Instance.AddEventTrigger(joinBackButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnOpenMenu);
-        UIManager.Instance.AddEventTrigger(joinBackButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnOpenMenu);
+        UIManager.Instance.AddEventTrigger(joinBackButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, UIManager.Instance.OnQuitButton);
+        UIManager.Instance.AddEventTrigger(joinBackButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, UIManager.Instance.OnQuitButton);
         joinPlayerNameInput.onValueChanged.AddListener(delegate { GameManager.Instance.OnNameChanged(joinPlayerNameInput.text); });
         joinCodeInput.onSubmit.AddListener(delegate { GameManager.Instance.OnStartClient(); });
 
@@ -123,7 +123,7 @@ public class MenuManager : NetworkBehaviour
         UIManager.Instance.AddEventTrigger(finishButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnMasterSharedMapReady);
         UIManager.Instance.AddEventTrigger(finishButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnMasterSharedMapReady);
         UIManager.Instance.AddEventTrigger(lobbyQuitButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, UIManager.Instance.OnQuitButton);
-        UIManager.Instance.AddEventTrigger(lobbyQuitButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnOpenMenu);
+        UIManager.Instance.AddEventTrigger(lobbyQuitButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, UIManager.Instance.OnQuitButton);
         storySelector.onValueChanged += () => GameManager.Instance.SetActiveStory(storySelector.currentSelection);
 
         // player customisation
