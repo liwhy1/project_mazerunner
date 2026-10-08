@@ -305,6 +305,10 @@ public class UIManager : NetworkBehaviour
             Destroy(child.gameObject);
         }
 
+        // conditionally toggle player list visibility
+        pausePlayerListObject.SetActive(GameManager.Instance.playerList.Count != 0);
+        MenuManager.Instance.lobbyPlayerListObject.SetActive(GameManager.Instance.playerList.Count != 0);
+
         foreach (var player in GameManager.Instance.playerList)
         {
             string targetName = player.PlayerName.Value.ToString();
@@ -315,6 +319,7 @@ public class UIManager : NetworkBehaviour
             newEntry.transform.Find("KickButton").gameObject.SetActive(IsHost && player.OwnerClientId != NetworkManager.LocalClientId);
             AddEventTrigger(newEntry.transform.Find("KickButton").GetComponent<EventTrigger>(), EventTriggerType.PointerClick, GameManager.Instance.PlayerKickNotifyClientRpc, player.OwnerClientId);
             GameObject newPauseEntry = Instantiate(newEntry, pausePlayerListObject.transform);
+            AddEventTrigger(newPauseEntry.transform.Find("KickButton").GetComponent<EventTrigger>(), EventTriggerType.PointerClick, GameManager.Instance.PlayerKickNotifyClientRpc, player.OwnerClientId);
         }
     }
 

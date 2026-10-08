@@ -209,7 +209,43 @@ public class GameManager : NetworkBehaviour
     private void OnClientDisconnected(ulong clientId)
     {
         if (!IsSpawned || !NetworkManager.IsListening || !NetworkManager.IsConnectedClient) return;
-        PlayerLeftRpc(clientId);
+
+        Debug.Log("GameManager: Client disconnected: " + clientId);
+
+        // check for host disconnect
+        if (!NetworkManager.IsHost && !isMaster)
+        {
+            if (clientId == NetworkManager.ServerClientId || FetchPlayerDataById(clientId)?.PersistentPlayerId.Value == 0)
+            {
+                UIManager.Instance.OnOpenDialog("Notice", "Connection to the game host has been lost. Would you like to return to the main menu?", "Continue", "selfdisconnect");
+                return;
+            }
+        }
+
+        // manually remove player from playerlist, since playerdata is still alive at this point
+        playerList.RemoveAll(p => p.OwnerClientId == clientId);
+        UIManager.Instance.OnRefreshPlayerList();
+    }
+
+    public void OnDisconnectClient()
+    {
+        try
+        {
+            NetworkManager.Shutdown();
+        }
+        catch (Exception ex)
+        {
+            Debug.Log("GameManager: Failed to disconnect from session. " + ex);
+            return;
+        }
+
+        SceneManager.LoadScene(1);
+    }
+
+    [ClientRpc]
+    public void PlayerKickNotifyClientRpc(ulong clientId)
+    {
+        if (clientId == NetworkManager.LocalClientId) OnDisconnectClient();
     }
 
     public void OnStartMaster()
@@ -265,49 +301,6 @@ public class GameManager : NetworkBehaviour
         }
     }
 
-    public void OnDisconnectClient()
-    {
-        // notify clients on the disconnect intent of the host
-        if (NetworkManager.IsHost)
-        {
-            PlayerLeftRpc(NetworkManager.LocalClientId);
-        }
-
-        try
-        {
-            NetworkManager.Shutdown();
-        }
-        catch (Exception ex)
-        {
-            Debug.Log("GameManager: Failed to disconnect from session. " + ex);
-            return;
-        }
-
-        SceneManager.LoadScene(1);
-    }
-
-    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
-    private void PlayerLeftRpc(ulong clientId)
-    {
-        Debug.Log("GameManager: Client disconnected: " + clientId);
-
-        // host disconnect
-        if (!NetworkManager.IsHost && (clientId == NetworkManager.ServerClientId || clientId == NetworkManager.LocalClientId) || FetchPlayerDataById(clientId)?.PersistentPlayerId.Value == 0)
-        {
-            UIManager.Instance.OnOpenDialog("Notice", "Connection to the game host has been lost. Would you like to return to the main menu?", "Continue", "selfdisconnect");
-            return;
-        }
-
-        playerList.RemoveAll(player => player.OwnerClientId == clientId);
-        UIManager.Instance.OnRefreshPlayerList();
-    }
-
-    [ClientRpc]
-    public void PlayerKickNotifyClientRpc(ulong clientId)
-    {
-        if (clientId == NetworkManager.LocalClientId) OnDisconnectClient();
-    }
-
     public void SpawnPlayer(ulong clientId)
     {
         Debug.Log("GameManager: Spawning player for: " + clientId);
@@ -329,12 +322,7 @@ public class GameManager : NetworkBehaviour
     public void RefreshPlayerList()
     {
         playerList.Clear();
-        PlayerData[] players = FindObjectsByType<PlayerData>();
-        foreach (PlayerData player in players)
-        {
-            playerList.Add(player);
-        }
-        
+        playerList = FindObjectsByType<PlayerData>().ToList();
         playerList.Sort((a, b) => a.OwnerClientId.CompareTo(b.OwnerClientId));
         UIManager.Instance.OnRefreshPlayerList();
         Debug.Log("GameManager: Player list refreshed");

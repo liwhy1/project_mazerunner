@@ -34,7 +34,7 @@ public class MenuManager : NetworkBehaviour
 
     [Header("Lobby Data")]
     [SerializeField] private GameObject lobbyObject;
-    [SerializeField] private GameObject startButton;
+    [SerializeField] private GameObject lobbyStartButton;
     [SerializeField] private GameObject lobbyQuitButton;
     [SerializeField] private UIVerticalSelector storySelector;
     public TMP_Text lobbyJoinCodeText;
@@ -116,8 +116,8 @@ public class MenuManager : NetworkBehaviour
         joinCodeInput.onSubmit.AddListener(delegate { GameManager.Instance.OnStartClient(); });
 
         // lobby
-        UIManager.Instance.AddEventTrigger(startButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, GameManager.Instance.OnLobbyStart);
-        UIManager.Instance.AddEventTrigger(startButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, GameManager.Instance.OnLobbyStart);
+        UIManager.Instance.AddEventTrigger(lobbyStartButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, GameManager.Instance.OnLobbyStart);
+        UIManager.Instance.AddEventTrigger(lobbyStartButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, GameManager.Instance.OnLobbyStart);
         UIManager.Instance.AddEventTrigger(finishButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnMasterSharedMapReady);
         UIManager.Instance.AddEventTrigger(finishButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnMasterSharedMapReady);
         UIManager.Instance.AddEventTrigger(lobbyQuitButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, UIManager.Instance.OnQuitButton);
@@ -237,11 +237,13 @@ public class MenuManager : NetworkBehaviour
         // conditionally enable elements
         playerView.SetActive(!GameManager.Instance.isMaster);
         gameStateText.gameObject.SetActive(GameManager.Instance.isMaster);
+        lobbyPlayerListObject.SetActive(!GameManager.Instance.isMaster);
+        UIManager.Instance.pausePlayerListObject.SetActive(!GameManager.Instance.isMaster);
         gameStateText.text = "";
         individualMapsObject.SetActive(false);
         waitingOnHostText.gameObject.SetActive(!NetworkManager.IsHost);
         storySelector.gameObject.SetActive(NetworkManager.IsHost);
-        startButton.SetActive(NetworkManager.IsHost);
+        lobbyStartButton.SetActive(NetworkManager.IsHost);
         finishButton.SetActive(false);
         sharedMapView.SetActive(false);
         timerObject.SetActive(false);
@@ -254,10 +256,9 @@ public class MenuManager : NetworkBehaviour
 
     public void OnLobbyStart()
     {
-        startButton.SetActive(!GameManager.Instance.isMaster);
+        lobbyStartButton.SetActive(!GameManager.Instance.isMaster);
         timerObject.SetActive(GameManager.Instance.isMaster);
         storySelector.gameObject.SetActive(false);
-        startButton.SetActive(false);
         waitingOnHostText.gameObject.SetActive(false);
         SetMasterGameStateText("Individual mapping\n" + GameManager.Instance.playerList.Count(p => p.IsMapReady.Value == true) + "/" + GameManager.Instance.playerList.Count);
     }
