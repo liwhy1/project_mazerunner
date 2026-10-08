@@ -160,7 +160,7 @@ public class GameManager : NetworkBehaviour
         FindAnyObjectByType<NavMeshSurface>().GetComponent<Renderer>().enabled = false;
 
         // move player to map
-        PlayerController.Instance.SetPlayerPosition(playerSpawnPosition.transform.position + Vector3.up + Vector3.forward * FetchPersistentPlayerId());
+        RespawnPlayer();
 
         // reset ui
         mainCamera.SetActive(false);
@@ -175,6 +175,11 @@ public class GameManager : NetworkBehaviour
         UpdatePlayerRenderStateRpc();
 
         Debug.Log("GameManager: Map loaded");
+    }
+
+    public void RespawnPlayer()
+    {
+        PlayerController.Instance.SetPlayerPosition(playerSpawnPosition.transform.position + Vector3.up + Vector3.forward * FetchPersistentPlayerId());
     }
 
     private void OnClientConnected(ulong clientId)

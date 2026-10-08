@@ -16,6 +16,7 @@ public class UIManager : NetworkBehaviour
     [Header("Pause Data")]
     [SerializeField] private GameObject pauseObject;
     [SerializeField] public GameObject resumeButton;
+    [SerializeField] public GameObject respawnButton;
     [SerializeField] private GameObject settingsButton;
     [SerializeField] private GameObject pauseQuitButton;
     public TMP_Text pauseJoinCodeText;
@@ -68,6 +69,8 @@ public class UIManager : NetworkBehaviour
         // setup pause triggers
         AddEventTrigger(resumeButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, InputManager.Instance.OnPauseAction);
         AddEventTrigger(resumeButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, InputManager.Instance.OnPauseAction);
+        AddEventTrigger(respawnButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, GameManager.Instance.RespawnPlayer);
+        AddEventTrigger(respawnButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, GameManager.Instance.RespawnPlayer);
         AddEventTrigger(pauseQuitButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnQuitButton);
         AddEventTrigger(pauseQuitButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnQuitButton);
         AddEventTrigger(settingsButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnToggleSettings);
