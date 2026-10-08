@@ -55,10 +55,14 @@ public class MenuManager : NetworkBehaviour
     [SerializeField] private GameObject legArrowLeft;
     [SerializeField] private GameObject legArrowRight;
 
+    private void Awake()
+    {
+        Instance = this;        
+    }
+
     public void OnSetup()
     {
         Debug.Log("MenuManager: Setting up");
-        Instance = this;
 
         // subscribe to events(watch vod)
         SetupUITriggers();
@@ -95,10 +99,10 @@ public class MenuManager : NetworkBehaviour
         UIManager.Instance.AddEventTrigger(hostButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnHostGame);
         UIManager.Instance.AddEventTrigger(joinButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnJoinGame);
         UIManager.Instance.AddEventTrigger(joinButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnJoinGame);
-        UIManager.Instance.AddEventTrigger(settingsButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, UIManager.Instance.OnOpenSettings);
-        UIManager.Instance.AddEventTrigger(settingsButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, UIManager.Instance.OnOpenSettings);
+        UIManager.Instance.AddEventTrigger(settingsButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, UIManager.Instance.OnToggleSettings);
+        UIManager.Instance.AddEventTrigger(settingsButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, UIManager.Instance.OnToggleSettings);
         UIManager.Instance.AddEventTrigger(editorButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnOpenEditor);
-        UIManager.Instance.AddEventTrigger(editorButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, UIManager.Instance.OnOpenSettings);
+        UIManager.Instance.AddEventTrigger(editorButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnOpenEditor);
 
         // host
         UIManager.Instance.AddEventTrigger(startHostButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnStartHost);

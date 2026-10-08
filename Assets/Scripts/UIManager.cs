@@ -70,12 +70,12 @@ public class UIManager : NetworkBehaviour
         AddEventTrigger(resumeButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, InputManager.Instance.OnPauseAction);
         AddEventTrigger(pauseQuitButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnQuitButton);
         AddEventTrigger(pauseQuitButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnQuitButton);
-        AddEventTrigger(settingsButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnOpenSettings);
-        AddEventTrigger(settingsButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnOpenSettings);
+        AddEventTrigger(settingsButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnToggleSettings);
+        AddEventTrigger(settingsButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnToggleSettings);
 
         // setup setting trigger
-        AddEventTrigger(settingsBackButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnCloseSettings);
-        AddEventTrigger(settingsBackButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnCloseSettings);
+        AddEventTrigger(settingsBackButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnToggleSettings);
+        AddEventTrigger(settingsBackButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnToggleSettings);
         fpsToggle.onValueChanged.AddListener(delegate { OnToggleFpsCounter(); });
         uiVolumeSlider.onValueChanged.AddListener(delegate { AudioManager.Instance.SetMixerGroupVolume("UI", uiVolumeSlider.value); });
         environmentVolumeSlider.onValueChanged.AddListener(delegate { AudioManager.Instance.SetMixerGroupVolume("Environment", environmentVolumeSlider.value); });
@@ -87,7 +87,7 @@ public class UIManager : NetworkBehaviour
         AddEventTrigger(cameraZoomOutIcon.GetComponent<EventTrigger>(), EventTriggerType.PointerUp, InputManager.Instance.OnScrollStop);
 
         // setup menumanager
-        GetComponent<MenuManager>().OnSetup();
+        MenuManager.Instance.OnSetup();
     }
 
     private void Update()
@@ -151,25 +151,10 @@ public class UIManager : NetworkBehaviour
         }
     }
 
-    public void OnOpenSettings()
+    public void OnToggleSettings()
     {
-        ResetUIState();
-        MenuManager.Instance.ResetUIState();
-        settingsObject.SetActive(true);
+        settingsObject.SetActive(!settingsObject.activeSelf);
         eventSystem.SetSelectedGameObject(uiVolumeSlider.gameObject);
-    }
-
-    public void OnCloseSettings()
-    {
-        settingsObject.SetActive(false);
-        if (GameManager.Instance.FetchGameStartState())
-        {
-            OnPauseToggle();
-        }
-        else
-        {
-            MenuManager.Instance.OnOpenMenu();
-        }
     }
 
     private void SetupMinimapIcon(int playerId)
@@ -274,11 +259,11 @@ public class UIManager : NetworkBehaviour
         pauseObject.SetActive(false);
         settingsObject.SetActive(false);
         loadingIcon.SetActive(false);
-        inventoryIcon.gameObject.SetActive(true);
-        cameraZoomInIcon.gameObject.SetActive(true);
-        cameraZoomOutIcon.gameObject.SetActive(true);
-        minimapIcon.transform.parent.gameObject.SetActive(true);
-        pauseIcon.gameObject.SetActive(true);
+        inventoryIcon.gameObject.SetActive(GameManager.Instance.isLobbyStarted.Value);
+        cameraZoomInIcon.gameObject.SetActive(GameManager.Instance.isLobbyStarted.Value);
+        cameraZoomOutIcon.gameObject.SetActive(GameManager.Instance.isLobbyStarted.Value);
+        minimapIcon.transform.parent.gameObject.SetActive(GameManager.Instance.isLobbyStarted.Value);
+        pauseIcon.gameObject.SetActive(GameManager.Instance.isLobbyStarted.Value);
     }
 
     public void OnPauseToggle()
