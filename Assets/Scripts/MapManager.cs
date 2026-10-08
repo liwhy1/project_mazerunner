@@ -359,7 +359,7 @@ public class MapManager : NetworkBehaviour
             saveIcon.SetActive(!isMapready);
 
             // send ready state
-            MapNetworkManager.Instance.SetMapStateServerRpc(MapState.Individual);
+            MapNetworkManager.Instance.SetMapStateServerRpc(MapState.Explore);
         }
         else 
         {

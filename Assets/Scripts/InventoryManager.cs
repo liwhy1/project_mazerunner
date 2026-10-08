@@ -9,9 +9,11 @@ public class InventoryManager : MonoBehaviour
 
     [Header("Inventory Data")]
     public bool isInventoryActive;
-    [SerializeField] private GameObject inventoryObject;
+    public GameObject inventoryObject;
     public GameObject pageBackground;
     public GameObject buttonLayout;
+    public GameObject backButton;
+    public bool isLocked;
     [SerializeField] private GameObject journalObject;
     [SerializeField] private GameObject mapObject;
     [SerializeField] private GameObject noteObject;
@@ -60,7 +62,7 @@ public class InventoryManager : MonoBehaviour
         ResetInventoryState();
     }
 
-    public void ResetInventoryState()
+    private void ResetInventoryState()
     {
         inventoryObject.SetActive(false);
         buttonLayout.SetActive(true);
@@ -71,8 +73,28 @@ public class InventoryManager : MonoBehaviour
         editorObject.SetActive(false);
     }
 
+    public void OnToggleInventoryLock()
+    {
+        if (isLocked) 
+        {
+            isLocked = false;
+            OnToggleInventory();
+        }
+        else
+        {
+            OnToggleInventory();
+            UIManager.Instance.pauseIcon.gameObject.SetActive(true);
+            isLocked = true;
+        }
+        backButton.SetActive(!isLocked);
+
+        // tutorial dialog
+        if (!isLocked) UIManager.Instance.OnOpenDialog(DialogId.PlayerTutorial);
+    }
+
     public void OnToggleInventory()
     {
+        if (isLocked) return;
         isInventoryActive = !isInventoryActive;
         inventoryObject.SetActive(isInventoryActive);
         UIManager.Instance.cameraZoomInIcon.gameObject.SetActive(!isInventoryActive);

@@ -259,20 +259,19 @@ public class UIManager : NetworkBehaviour
         pauseObject.SetActive(false);
         settingsObject.SetActive(false);
         loadingIcon.SetActive(false);
-        inventoryIcon.gameObject.SetActive(GameManager.Instance.isLobbyStarted.Value);
         cameraZoomInIcon.gameObject.SetActive(GameManager.Instance.isLobbyStarted.Value);
         cameraZoomOutIcon.gameObject.SetActive(GameManager.Instance.isLobbyStarted.Value);
         minimapIcon.transform.parent.gameObject.SetActive(GameManager.Instance.isLobbyStarted.Value);
+        inventoryIcon.gameObject.SetActive(GameManager.Instance.isLobbyStarted.Value);
         pauseIcon.gameObject.SetActive(GameManager.Instance.isLobbyStarted.Value);
     }
 
     public void OnPauseToggle()
     {
-        //eventSystem.SetSelectedGameObject(resumeButton);
         pauseObject.SetActive(settingsObject.activeSelf ? false : !pauseObject.activeSelf);
         settingsObject.SetActive(false);
         inventoryIcon.gameObject.SetActive(!pauseObject.activeSelf && !InventoryManager.Instance.isInventoryActive);
-        pauseIcon.gameObject.SetActive(!pauseObject.activeSelf && !InventoryManager.Instance.isInventoryActive);
+        pauseIcon.gameObject.SetActive(!pauseObject.activeSelf && !InventoryManager.Instance.isInventoryActive || InventoryManager.Instance.isInventoryActive && InventoryManager.Instance.isLocked);
     }
 
     public void OnRefreshPlayerList()

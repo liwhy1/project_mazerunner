@@ -5,7 +5,7 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
 
-public enum MapState {Null, Own, Shared, Individual};
+public enum MapState {Null, Own, Shared, Explore, Individual};
 public class MapNetworkManager : NetworkBehaviour
 {
     public static MapNetworkManager Instance;
@@ -34,12 +34,17 @@ public class MapNetworkManager : NetworkBehaviour
             InventoryManager.Instance.OnJournalDisable();
             if (oldValue != MapState.Null) MapManager.Instance.OnSendMapData();
         }
-        else if (newValue == MapState.Individual)
+        else if (newValue == MapState.Explore)
         {
             MapManager.Instance?.OnDisableMapUI();
             MapManager.SharedInstance.OnDisableMapUI();
             UIManager.Instance.MirrorSharedmaptoMinimap();
             InventoryManager.Instance.OnToggleSharedView(true);
+            InventoryManager.Instance.OnToggleInventoryLock();
+
+        }
+        else if (newValue == MapState.Individual)
+        {
             InventoryManager.Instance.OnToggleIndividualView(true);
             InventoryManager.Instance.OnJournalEnable();
         }

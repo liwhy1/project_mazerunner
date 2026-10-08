@@ -162,19 +162,19 @@ public class GameManager : NetworkBehaviour
         // move player to map
         PlayerController.Instance.SetPlayerPosition(playerSpawnPosition.transform.position + Vector3.up + Vector3.forward * FetchPersistentPlayerId());
 
-        // tutorial dialog
-        UIManager.Instance.OnOpenDialog(DialogId.PlayerTutorial);
-
         // reset ui
         mainCamera.SetActive(false);
         UIManager.Instance.ResetUIState();
         MenuManager.Instance.ResetUIState();
+        InventoryManager.Instance.OnToggleInventoryLock();
 
         // start game audio
         AudioManager.Instance.OnGameStarted();
 
         // update player render states
         UpdatePlayerRenderStateRpc();
+
+        Debug.Log("GameManager: Map loaded");
     }
 
     private void OnClientConnected(ulong clientId)

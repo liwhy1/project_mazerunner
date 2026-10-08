@@ -327,10 +327,10 @@ public class MenuManager : NetworkBehaviour
     public void OnMasterSharedMapReady()
     {
         SetMasterGameStateText("Explore map");
-        MapNetworkManager.Instance.SetMapStateServerRpc(MapState.Individual);
-        lobbySharedMapView.SetActive(false);
+        MapNetworkManager.Instance.SetMapStateServerRpc(MapState.Explore);
+        lobbySharedMapView.SetActive(true);
         lobbyFinishButton.SetActive(false);
-        individualMapsObject.SetActive(true);
+        individualMapsObject.SetActive(false);
         timerObject.SetActive(false);
     }
 
