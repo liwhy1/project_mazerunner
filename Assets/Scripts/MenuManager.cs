@@ -34,20 +34,20 @@ public class MenuManager : NetworkBehaviour
 
     [Header("Lobby Data")]
     [SerializeField] private GameObject lobbyObject;
-    [SerializeField] private GameObject lobbyStartButton;
+    [SerializeField] private GameObject lobbyReadyButton;
     [SerializeField] private GameObject lobbyQuitButton;
-    [SerializeField] private UIVerticalSelector storySelector;
+    [SerializeField] private UIVerticalSelector lobbyStorySelector;
     public TMP_Text lobbyJoinCodeText;
     public GameObject lobbyPlayerListObject;
-    [SerializeField] private TMP_Text waitingOnHostText;
+    [SerializeField] private TMP_Text lobbyWaitingText;
     [SerializeField] private TMP_Text gameStateText;
-    [SerializeField] private GameObject finishButton;
-    public GameObject sharedMapView;
+    [SerializeField] private GameObject lobbyFinishButton;
+    public GameObject lobbySharedMapView;
     [SerializeField] private GameObject timerObject;
     public GameObject individualMapsObject;
 
     [Header("Player Customisation Data")]
-    [SerializeField] private GameObject playerView;
+    [SerializeField] private GameObject lobbyPlayerView;
     [SerializeField] private GameObject headArrowLeft;
     [SerializeField] private GameObject headArrowRight;
     [SerializeField] private GameObject bodyArrowLeft;
@@ -120,13 +120,13 @@ public class MenuManager : NetworkBehaviour
         joinCodeInput.onSubmit.AddListener(delegate { GameManager.Instance.OnStartClient(); });
 
         // lobby
-        UIManager.Instance.AddEventTrigger(lobbyStartButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, GameManager.Instance.OnLobbyStart);
-        UIManager.Instance.AddEventTrigger(lobbyStartButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, GameManager.Instance.OnLobbyStart);
-        UIManager.Instance.AddEventTrigger(finishButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnMasterSharedMapReady);
-        UIManager.Instance.AddEventTrigger(finishButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnMasterSharedMapReady);
+        UIManager.Instance.AddEventTrigger(lobbyReadyButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnLobbyToggleReady);
+        UIManager.Instance.AddEventTrigger(lobbyReadyButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnLobbyToggleReady);
+        UIManager.Instance.AddEventTrigger(lobbyFinishButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnMasterSharedMapReady);
+        UIManager.Instance.AddEventTrigger(lobbyFinishButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnMasterSharedMapReady);
         UIManager.Instance.AddEventTrigger(lobbyQuitButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, UIManager.Instance.OnQuitButton);
         UIManager.Instance.AddEventTrigger(lobbyQuitButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, UIManager.Instance.OnQuitButton);
-        storySelector.onValueChanged += () => GameManager.Instance.SetActiveStory(storySelector.currentSelection);
+        lobbyStorySelector.onValueChanged += () => GameManager.Instance.SetActiveStory(lobbyStorySelector.currentSelection);
 
         // player customisation
         UIManager.Instance.AddEventTrigger(headArrowLeft.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, DecreasePlayerSkinValue, "hair");
@@ -137,7 +137,7 @@ public class MenuManager : NetworkBehaviour
         UIManager.Instance.AddEventTrigger(legArrowRight.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, IncreasePlayerSkinValue, "gender");
     }
 
-    private void SetupStorySelector()
+    private void SetupLobbyStorySelector()
     {
         // fetch available stories
         var storyFolders = Resources.LoadAll<Texture2D>("Information");
@@ -149,9 +149,9 @@ public class MenuManager : NetworkBehaviour
         }
 
         // update selector
-        storySelector.selectorItems.Clear();
-        storySelector.selectorItems = storyNames;
-        storySelector.OnUpdateSelection(storySelector.selectorItems.Count - 1);
+        lobbyStorySelector.selectorItems.Clear();
+        lobbyStorySelector.selectorItems = storyNames;
+        lobbyStorySelector.OnUpdateSelection(lobbyStorySelector.selectorItems.Count - 1);
     }
 
     public void IncreasePlayerSkinValue(string targetValue)
@@ -239,31 +239,66 @@ public class MenuManager : NetworkBehaviour
         UIManager.Instance.loadingIcon.SetActive(false);
 
         // conditionally enable elements
-        playerView.SetActive(!GameManager.Instance.isMaster);
+        lobbyPlayerView.SetActive(!GameManager.Instance.isMaster);
+        lobbyWaitingText.gameObject.SetActive(true);
+        lobbyStorySelector.gameObject.SetActive(NetworkManager.IsHost);
+        lobbyReadyButton.SetActive(true);
+        lobbyReadyButton.transform.Find("Text").GetComponent<TMP_Text>().text = GameManager.Instance.isMaster ? "Start" : "Ready";
+        lobbySharedMapView.SetActive(false);
+        lobbyWaitingText.text = "";
+        gameStateText.text = "";
         gameStateText.gameObject.SetActive(GameManager.Instance.isMaster);
         lobbyPlayerListObject.SetActive(!GameManager.Instance.isMaster);
         UIManager.Instance.pausePlayerListObject.SetActive(!GameManager.Instance.isMaster);
-        gameStateText.text = "";
         individualMapsObject.SetActive(false);
-        waitingOnHostText.gameObject.SetActive(!NetworkManager.IsHost);
-        storySelector.gameObject.SetActive(NetworkManager.IsHost);
-        lobbyStartButton.SetActive(NetworkManager.IsHost);
-        finishButton.SetActive(false);
-        sharedMapView.SetActive(false);
+        lobbyFinishButton.SetActive(false);
         timerObject.SetActive(false);
-        //UIManager.Instance.eventSystem.SetSelectedGameObject(NetworkManager.IsHost ? storyDropdown : lobbyQuitButton);
+
+        // set join code
         SetJoinCode(string.IsNullOrEmpty(joinCodeInput.text) ? GameManager.Instance.joinCode.Value.ToString() : joinCodeInput.text);
 
         // setup story dropdown
-        SetupStorySelector();
+        SetupLobbyStorySelector();
+
+        // update lobby ready state
+        UpdateLobbyReadyState();
+    }
+
+    public void OnLobbyToggleReady()
+    {
+        // TODO: not any of this
+        if (GameManager.Instance.isLobbyStarted.Value == true) GameManager.Instance.OnLobbyStart();
+
+        TMP_Text targetText = lobbyReadyButton.transform.Find("Text").GetComponent<TMP_Text>();
+        bool currentState = targetText.text == "Ready" ? false : true;
+
+        targetText.text = targetText.text == "Ready" ? "Unready" : "Ready";
+        foreach (Transform child in lobbyPlayerView.transform) 
+        { 
+            if (!currentState) child.GetComponent<UIElement>().OnElementDisable(); 
+            else child.GetComponent<UIElement>().OnElementEnable(); 
+        }
+
+        if (GameManager.Instance.isMaster) GameManager.Instance.OnLobbyStart();
+        else GameManager.Instance.SetLobbyReadyStateServerRpc(!currentState);
+    }
+
+    public void UpdateLobbyReadyState()
+    {
+        if (GameManager.Instance.isLobbyStarted.Value) return;
+        lobbyWaitingText.text = "Waiting for players to ready up! ";
+        lobbyWaitingText.text += GameManager.Instance.playerList.Count(p => p.IsLobbyReady.Value == true) + "/" + GameManager.Instance.playerList.Count;
     }
 
     public void OnLobbyStart()
     {
-        lobbyStartButton.SetActive(!GameManager.Instance.isMaster);
+        lobbyReadyButton.SetActive(false);
+        lobbyStorySelector.gameObject.SetActive(false);
+        lobbyWaitingText.text = GameManager.Instance.isMaster ? "" : "Starting Game!";
+        foreach (Transform child in lobbyPlayerView.transform) { child.GetComponent<UIElement>().OnElementDisable(); }
+
+        // master
         timerObject.SetActive(GameManager.Instance.isMaster);
-        storySelector.gameObject.SetActive(false);
-        waitingOnHostText.gameObject.SetActive(false);
         SetMasterGameStateText("Individual mapping\n" + GameManager.Instance.playerList.Count(p => p.IsMapReady.Value == true) + "/" + GameManager.Instance.playerList.Count);
     }
 
@@ -293,8 +328,8 @@ public class MenuManager : NetworkBehaviour
     {
         SetMasterGameStateText("Explore map");
         MapNetworkManager.Instance.SetMapStateServerRpc(MapState.Individual);
-        sharedMapView.SetActive(false);
-        finishButton.SetActive(false);
+        lobbySharedMapView.SetActive(false);
+        lobbyFinishButton.SetActive(false);
         individualMapsObject.SetActive(true);
         timerObject.SetActive(false);
     }
@@ -302,10 +337,10 @@ public class MenuManager : NetworkBehaviour
     public void OnMasterSharedMapEnabled()
     {
         SetMasterGameStateText("Shared mapping");
-        finishButton.SetActive(true);
+        lobbyFinishButton.SetActive(true);
         GameManager.Instance.mapCamera.gameObject.SetActive(true);
         GameManager.Instance.mapCamera.transform.position = new Vector3(0.33f, GameManager.Instance.mapCamera.transform.position.y, 0.34f);
-        GameManager.Instance.mapCamera.targetTexture = (RenderTexture)sharedMapView.GetComponent<RawImage>().texture;
-        sharedMapView.SetActive(true);
+        GameManager.Instance.mapCamera.targetTexture = (RenderTexture)lobbySharedMapView.GetComponent<RawImage>().texture;
+        lobbySharedMapView.SetActive(true);
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +14,7 @@ public class MapManager : NetworkBehaviour
     public static MapManager Instance;
     public static MapManager SharedInstance;
     public GameObject mapComponents;
-    public Dictionary<ulong, GameObject> pendingPlacements = new();
+    [NonSerialized] public Dictionary<ulong, GameObject> pendingPlacements = new();
     private ulong nextPlacementRequestId = 0;
 
     [Header("Icon Data")]

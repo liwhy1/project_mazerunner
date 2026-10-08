@@ -159,7 +159,7 @@ public class UIManager : NetworkBehaviour
 
     private void SetupMinimapIcon(int playerId)
     {
-        Transform targetParent = GameManager.Instance.isMaster ? MenuManager.Instance.sharedMapView.transform : minimapIcon.transform.parent;
+        Transform targetParent = GameManager.Instance.isMaster ? MenuManager.Instance.lobbySharedMapView.transform : minimapIcon.transform.parent;
         GameObject newIcon = Instantiate(Resources.Load<GameObject>("MapPrefabs/PlayerIcon"), Vector3.zero, Quaternion.identity, targetParent);
         if (GameManager.Instance.isMaster) newIcon.transform.localScale = new Vector3(.5f, .5f, .5f);
         newIcon.name = "playerIcon_" + playerId;
@@ -207,7 +207,7 @@ public class UIManager : NetworkBehaviour
                 playerIconRect.gameObject.SetActive(true);
                 playerIconRect.anchoredPosition = new Vector2(Mathf.Lerp(minimapRect.rect.xMin, minimapRect.rect.xMax, normalizedX), Mathf.Lerp(minimapRect.rect.yMin, minimapRect.rect.yMax, normalizedY));                
             }
-            else if (player.IsGameStarted.Value) SetupMinimapIcon(playerId);
+            else if (player.IsLobbyReady.Value) SetupMinimapIcon(playerId);
         }
     }
 

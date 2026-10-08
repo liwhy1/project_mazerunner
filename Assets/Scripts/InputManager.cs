@@ -74,7 +74,7 @@ public class InputManager : MonoBehaviour
 
     public void OnPauseAction()
     {
-        if (!GameManager.Instance.FetchGameStartState()) return;
+        if (!GameManager.Instance.isLobbyStarted.Value) return;
 
         GameManager.Instance.isPaused = !GameManager.Instance.isPaused;
         UIManager.Instance.OnPauseToggle();

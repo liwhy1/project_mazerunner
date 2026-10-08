@@ -91,31 +91,25 @@ public class GameManager : NetworkBehaviour
     {
         MenuManager.Instance.OnLobbyConnect();
         InventoryManager.Instance.OnSetup();
-        if (isLobbyStarted.Value) MenuManager.Instance.OnLobbyStart();
+        FindObjectsByType<AudioListener>().All(o => o.GetComponent<AudioListener>().enabled = o.GetComponent<AudioManager>() != null);
     }
 
     public void OnLobbyStartValueChanged(bool oldValue, bool newValue)
     {
-        if (newValue)
-        {
-            MenuManager.Instance.OnLobbyStart();
-        }
+        if (newValue) OnLobbyStart();
     }
 
     public void OnLobbyStart()
     {
         isPaused = false;
+        if (isMaster) isLobbyStarted.Value = true;
+        MenuManager.Instance.OnLobbyStart();
         playerViewCamera.gameObject.SetActive(false);
         MapManager.SharedInstance.gameObject.GetComponent<Canvas>().worldCamera = mapCamera;
         InventoryManager.Instance.OnSetupStory();
 
         if (!isMaster) OnLoadMap(activeStory.Value.ToString());
         else isMasterGameStarted = true;
-
-        if (NetworkManager.IsHost)
-        {
-            isLobbyStarted.Value = true;
-        }
     }
 
     private void OnLoadMap(string sceneName) => StartCoroutine(AsynchronousLevelLoad(sceneName));
@@ -176,8 +170,11 @@ public class GameManager : NetworkBehaviour
         UIManager.Instance.ResetUIState();
         MenuManager.Instance.ResetUIState();
 
-        // set gamestate
-        SetPlayerGameStateServerRpc(true);
+        // start game audio
+        AudioManager.Instance.OnGameStarted();
+
+        // update player render states
+        UpdatePlayerRenderStateRpc();
     }
 
     private void OnClientConnected(ulong clientId)
@@ -224,6 +221,10 @@ public class GameManager : NetworkBehaviour
         // manually remove player from playerlist, since playerdata is still alive at this point
         playerList.RemoveAll(p => p.OwnerClientId == clientId);
         UIManager.Instance.OnRefreshPlayerList();
+
+        // update lobby ready state
+        MenuManager.Instance.UpdateLobbyReadyState();
+        CheckLobbyReadyStateServerRpc();
     }
 
     public void OnDisconnectClient()
@@ -334,12 +335,11 @@ public class GameManager : NetworkBehaviour
         foreach (var player in playerList)
         {
             bool isOwner = player.OwnerClientId == NetworkManager.LocalClientId;
-            bool shouldRenderPlayer = !isOwner && player.IsGameStarted.Value && FetchPlayerDataById(NetworkManager.LocalClientId).IsGameStarted.Value;
-            bool shouldRenderName = isOwner || (!isOwner && player.IsGameStarted.Value && FetchPlayerDataById(NetworkManager.LocalClientId).IsGameStarted.Value);
-            player.transform.Find("NameCanvas").gameObject.SetActive(shouldRenderPlayer);
+            bool shouldRenderObject = isLobbyStarted.Value && FetchPlayerDataById(NetworkManager.LocalClientId).IsLobbyReady.Value;
+            player.transform.Find("NameCanvas").gameObject.SetActive(!isOwner && shouldRenderObject);
             foreach (Transform child in player.transform.Find("Model").transform)
             {
-                if (child.GetComponent<Renderer>()) child.GetComponent<Renderer>().enabled = shouldRenderName;
+                if (child.GetComponent<Renderer>()) child.GetComponent<Renderer>().enabled = isOwner || (!isOwner && shouldRenderObject);
             }            
         }
     }
@@ -367,9 +367,19 @@ public class GameManager : NetworkBehaviour
     }
 
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
-    public void SetPlayerGameStateServerRpc(bool targetState, RpcParams rpcParams = default)
+    public void SetLobbyReadyStateServerRpc(bool targetState, RpcParams rpcParams = default)
     {
-        FetchPlayerDataById(rpcParams.Receive.SenderClientId).IsGameStarted.Value = targetState;
+        FetchPlayerDataById(rpcParams.Receive.SenderClientId).IsLobbyReady.Value = targetState;
+    }
+
+    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+    public void CheckLobbyReadyStateServerRpc()
+    {
+        if (playerList.Count > 0 && playerList.All(p => p.IsLobbyReady.Value == true))
+        {
+            Debug.Log("GameManager: All lobby players ready");
+            if (!isMaster) isLobbyStarted.Value = true;
+        }
     }
 
     public ulong FetchLocalClientId()
@@ -381,13 +391,6 @@ public class GameManager : NetworkBehaviour
     {
         if (!PlayerController.Instance) return -1; // NOTE: This should only be the case on master player
         return PlayerController.Instance.GetComponent<PlayerData>().PersistentPlayerId.Value;
-    }
-
-    public bool FetchGameStartState()
-    {
-        if (!PlayerController.Instance) return isMasterGameStarted;
-        
-        return PlayerController.Instance.GetComponent<PlayerData>().IsGameStarted.Value;
     }
 
     public PlayerData FetchPlayerDataById(ulong playerId)
