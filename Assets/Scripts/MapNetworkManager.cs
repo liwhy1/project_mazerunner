@@ -46,6 +46,7 @@ public class MapNetworkManager : NetworkBehaviour
         else if (newValue == MapState.Individual)
         {
             InventoryManager.Instance.OnToggleIndividualView(true);
+            InventoryManager.Instance.OnToggleSharedView(true);
             InventoryManager.Instance.OnJournalEnable();
         }
     }

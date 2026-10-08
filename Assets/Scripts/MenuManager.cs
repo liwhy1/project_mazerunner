@@ -122,8 +122,8 @@ public class MenuManager : NetworkBehaviour
         // lobby
         UIManager.Instance.AddEventTrigger(lobbyReadyButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnLobbyToggleReady);
         UIManager.Instance.AddEventTrigger(lobbyReadyButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnLobbyToggleReady);
-        UIManager.Instance.AddEventTrigger(lobbyFinishButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnMasterSharedMapReady);
-        UIManager.Instance.AddEventTrigger(lobbyFinishButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnMasterSharedMapReady);
+        UIManager.Instance.AddEventTrigger(lobbyFinishButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnMasterFinishButton);
+        UIManager.Instance.AddEventTrigger(lobbyFinishButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnMasterFinishButton);
         UIManager.Instance.AddEventTrigger(lobbyQuitButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, UIManager.Instance.OnQuitButton);
         UIManager.Instance.AddEventTrigger(lobbyQuitButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, UIManager.Instance.OnQuitButton);
         lobbyStorySelector.onValueChanged += () => GameManager.Instance.SetActiveStory(lobbyStorySelector.currentSelection);
@@ -285,7 +285,7 @@ public class MenuManager : NetworkBehaviour
 
     public void UpdateLobbyReadyState()
     {
-        if (GameManager.Instance.isLobbyStarted.Value) return;
+        if (GameManager.Instance.isLobbyStarted.Value || GameManager.Instance.playerList.Count == 0) return;
         lobbyWaitingText.text = "Waiting for players to ready up! ";
         lobbyWaitingText.text += GameManager.Instance.playerList.Count(p => p.IsLobbyReady.Value == true) + "/" + GameManager.Instance.playerList.Count;
     }
@@ -324,14 +324,34 @@ public class MenuManager : NetworkBehaviour
         gameStateText.text += targetText;
     }
 
-    public void OnMasterSharedMapReady()
+    private void OnMasterFinishButton()
+    {
+        if (MapNetworkManager.Instance.mapState.Value == MapState.Shared)
+        {
+            OnMasterSharedMapReady();
+        }
+        else
+        {
+            OnMasterEndGame();
+        }
+    }
+
+    private void OnMasterSharedMapReady()
     {
         SetMasterGameStateText("Explore map");
         MapNetworkManager.Instance.SetMapStateServerRpc(MapState.Explore);
         lobbySharedMapView.SetActive(true);
-        lobbyFinishButton.SetActive(false);
-        individualMapsObject.SetActive(false);
+        lobbyFinishButton.transform.Find("Text").GetComponent<TMP_Text>().text = "End Game";
         timerObject.SetActive(false);
+    }
+
+    private void OnMasterEndGame()
+    {
+        SetMasterGameStateText("Game over");
+        lobbySharedMapView.SetActive(false);
+        individualMapsObject.SetActive(true);
+        lobbyFinishButton.SetActive(false);
+        MapNetworkManager.Instance.SetMapStateServerRpc(MapState.Individual);
     }
 
     public void OnMasterSharedMapEnabled()

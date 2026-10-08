@@ -75,6 +75,7 @@ public class InventoryManager : MonoBehaviour
 
     public void OnToggleInventoryLock()
     {
+        if (GameManager.Instance.isMaster) return;
         if (isLocked) 
         {
             isLocked = false;
