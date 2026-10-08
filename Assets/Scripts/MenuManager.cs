@@ -204,7 +204,7 @@ public class MenuManager : NetworkBehaviour
 
     private void OnOpenEditor()
     {
-        UIManager.Instance.OnOpenDialog("Notice", "Would you like to open the map editor?", "Continue", "openeditor");
+        UIManager.Instance.OnOpenDialog(DialogId.EditorOpen);
     }
 
     public void OnOpenMenu()

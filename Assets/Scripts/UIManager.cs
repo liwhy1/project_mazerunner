@@ -323,8 +323,11 @@ public class UIManager : NetworkBehaviour
         }
     }
 
-    public void OnOpenDialog(string titleText, string contentText, string buttonText = "", string targetAction = "")
+    public void OnOpenDialog(DialogId id)
     {
+        var dialogEntry = DialogDatabase.Instance.GetEntry(id);
+        if (dialogEntry == null) return;
+
         // close any active dialogs
         OnCloseDialog();
 
@@ -344,10 +347,10 @@ public class UIManager : NetworkBehaviour
         GameObject mainButton = buttonLayout.transform.Find("MainButton").gameObject;
 
         // setup text
-        dialogTitle.GetComponent<TMP_Text>().text = titleText;
-        dialogText.GetComponent<TMP_Text>().text = contentText;
-        mainButton.SetActive(!string.IsNullOrEmpty(buttonText));
-        mainButton.transform.GetChild(0).GetComponent<TMP_Text>().text = buttonText;
+        dialogTitle.GetComponent<TMP_Text>().text = dialogEntry.title;
+        dialogText.GetComponent<TMP_Text>().text = dialogEntry.text;
+        mainButton.SetActive(!string.IsNullOrEmpty(dialogEntry.button));
+        mainButton.transform.GetChild(0).GetComponent<TMP_Text>().text = dialogEntry.button;
 
         // set ui selected button
         //eventSystem.SetSelectedGameObject(mainButton.activeSelf ? mainButton : closeButton);
@@ -356,8 +359,8 @@ public class UIManager : NetworkBehaviour
         AddEventTrigger(closeButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnCloseDialog);
         AddEventTrigger(closeButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnCloseDialog);
 
-        AddEventTrigger(mainButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, DialogActionHandler, targetAction);
-        AddEventTrigger(mainButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, DialogActionHandler, targetAction);
+        AddEventTrigger(mainButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, DialogActionHandler, dialogEntry.action);
+        AddEventTrigger(mainButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, DialogActionHandler, dialogEntry.action);
     }
 
     private void DialogActionHandler(string targetAction)
@@ -366,9 +369,6 @@ public class UIManager : NetworkBehaviour
         {
             case "mapclear":
                 MapManager.Instance.OnClearMap();
-                break;
-            case "sharedmapclear":
-                MapManager.SharedInstance.OnClearMap();
                 break;
             case "openeditor":
                 MenuManager.Instance.ResetUIState();

@@ -324,7 +324,7 @@ public class MapManager : NetworkBehaviour
 
     public void OnMapClearRequest()
     {
-        UIManager.Instance.OnOpenDialog("Notice", "Are you sure you want to clear the map?", "Continue", isWorldSpace ? "sharedmapclear" : "mapclear");
+        UIManager.Instance.OnOpenDialog(DialogId.MapClear);
     }
 
     public void OnClearMap()

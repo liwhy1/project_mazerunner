@@ -169,8 +169,7 @@ public class GameManager : NetworkBehaviour
         PlayerController.Instance.SetPlayerPosition(playerSpawnPosition.transform.position + Vector3.up + Vector3.forward * FetchPersistentPlayerId());
 
         // tutorial dialog
-        string targetContent = "<b>Player movement:</b>\n(WASD) / (Point & Click)\n<b>Camera height control:</b>\n(Mouse Wheel) / (UI Plus & Minus icon)";
-        UIManager.Instance.OnOpenDialog("Tutorial", targetContent, "");
+        UIManager.Instance.OnOpenDialog(DialogId.PlayerTutorial);
 
         // reset ui
         mainCamera.SetActive(false);
@@ -217,7 +216,7 @@ public class GameManager : NetworkBehaviour
         {
             if (clientId == NetworkManager.ServerClientId || FetchPlayerDataById(clientId)?.PersistentPlayerId.Value == 0)
             {
-                UIManager.Instance.OnOpenDialog("Notice", "Connection to the game host has been lost. Would you like to return to the main menu?", "Continue", "selfdisconnect");
+                UIManager.Instance.OnOpenDialog(DialogId.HostLostConnection);
                 return;
             }
         }
@@ -259,7 +258,7 @@ public class GameManager : NetworkBehaviour
     {
         if (string.IsNullOrEmpty(MenuManager.Instance.hostPlayerNameInput.text) && !isMaster) 
         {
-            UIManager.Instance.OnOpenDialog("Notice", "Player name can't be empty!", "");
+            UIManager.Instance.OnOpenDialog(DialogId.InvalidPlayerName);
             return;
         }
 
@@ -281,13 +280,13 @@ public class GameManager : NetworkBehaviour
 
         if (string.IsNullOrEmpty(MenuManager.Instance.joinPlayerNameInput.text))
         {
-            UIManager.Instance.OnOpenDialog("Notice", "Player name can't be empty!", "");
+            UIManager.Instance.OnOpenDialog(DialogId.InvalidPlayerName);
             return;
         }
 
         if (string.IsNullOrEmpty(joinCode))
         {
-            UIManager.Instance.OnOpenDialog("Notice", "Join code can't be empty!", "");
+            UIManager.Instance.OnOpenDialog(DialogId.InvalidJoinCode);
             return;
         }
 
@@ -295,7 +294,7 @@ public class GameManager : NetworkBehaviour
         if (!await RelayManager.Instance.JoinHost(joinCode))
         {
             Debug.Log("GameManager: Failed to join game.");
-            UIManager.Instance.OnOpenDialog("Notice", "Failed to join game!", "");
+            UIManager.Instance.OnOpenDialog(DialogId.FailedGameJoin);
             UIManager.Instance.loadingIcon.SetActive(false);
             return;
         }

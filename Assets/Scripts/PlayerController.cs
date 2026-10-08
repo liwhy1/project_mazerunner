@@ -54,7 +54,7 @@ public class PlayerController : NetworkBehaviour
     public override void OnNetworkDespawn()
     {
         if (!IsOwner) return;
-        UIManager.Instance.OnOpenDialog("Notice", "Connection to the game host has been lost. Would you like to return to the main menu?", "Continue", "selfdisconnect");
+        UIManager.Instance.OnOpenDialog(DialogId.HostLostConnection);
     }
 
     private void OnSetup()
