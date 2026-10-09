@@ -90,7 +90,7 @@ public class MapNetworkManager : NetworkBehaviour
         foreach (Transform element in MapManager.SharedInstance.mapComponents.transform)
         {
             if (!element.GetComponent<NetworkObject>()) continue;
-            SetMapElementDataClientRpc(0, element.GetComponent<NetworkObject>().NetworkObjectId, element.name);
+            SetMapElementDataClientRpc(0, element.GetComponent<NetworkObject>().NetworkObjectId, element.name, element.transform.localScale);
         }
         // sync individual view data
         // NOTE: This assumes the player limit is 3
@@ -111,7 +111,7 @@ public class MapNetworkManager : NetworkBehaviour
     }
 
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
-    public void SpawnMapElementServerRpc(ulong requestId, string iconPrefab, string iconSprite, Vector3 iconPosition)
+    public void SpawnMapElementServerRpc(ulong requestId, string iconPrefab, string iconSprite, Vector3 iconPosition, Vector3 iconScale)
     {
         Debug.Log("MNM: Spawning new object with type: " + iconPrefab);
         GameObject newObject = Instantiate(Resources.Load<GameObject>("MapPrefabs/" + iconPrefab), MapManager.SharedInstance.transform.position, Quaternion.identity);
@@ -120,13 +120,14 @@ public class MapNetworkManager : NetworkBehaviour
         newObject.GetComponent<NetworkObject>().Spawn();
         newObject.transform.SetParent(MapManager.SharedInstance.mapComponents.transform, false);
         newObject.transform.localPosition = iconPosition;
+        newObject.transform.localScale = iconScale;
 
         ulong objectId = newObject.GetComponent<NetworkObject>().NetworkObjectId;
-        SetMapElementDataClientRpc(requestId, objectId, iconSprite);
+        SetMapElementDataClientRpc(requestId, objectId, iconSprite, iconScale);
     }
 
     [ClientRpc]
-    public void SetMapElementDataClientRpc(ulong requestId, ulong targetElement, string targetSprite)
+    public void SetMapElementDataClientRpc(ulong requestId, ulong targetElement, string targetSprite, Vector3 targetScale)
     {
         if (NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(targetElement, out NetworkObject targetObject))
         {
@@ -136,7 +137,9 @@ public class MapNetworkManager : NetworkBehaviour
                 targetObject.transform.Find("Sprite")?.gameObject.SetActive(false);
                 if (targetObject.GetComponent<Image>()) targetObject.GetComponent<Image>().enabled = false;
             }
+
             targetObject.name = targetSprite;
+            targetObject.transform.localScale = targetScale;
             if (targetSprite == "DrawDot") 
             {
                 targetObject.transform.SetSiblingIndex(MapManager.SharedInstance.iconPile.transform.GetSiblingIndex());
@@ -199,7 +202,7 @@ public class MapNetworkManager : NetworkBehaviour
             }
             newObject.transform.SetParent(targetMap.transform);
             newObject.transform.localPosition = element.iconPosition;
-            newObject.transform.localScale = Vector3.one;
+            newObject.transform.localScale = element.iconScale;
         }
     }
 

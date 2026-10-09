@@ -36,6 +36,7 @@ public class MapManager : NetworkBehaviour
     [SerializeField] private GameObject pencilIcon;
     [SerializeField] private GameObject eraserIcon;
     [SerializeField] private GameObject trashIcon;
+    [SerializeField] private Slider pencilSizeSlider;
     public GameObject saveIcon;
 
     public override void OnNetworkSpawn() => OnSetup();
@@ -230,7 +231,7 @@ public class MapManager : NetworkBehaviour
         {
             ulong requestId = nextPlacementRequestId++;
             pendingPlacements.Add(requestId, targetElement);
-            MapNetworkManager.Instance.SpawnMapElementServerRpc(requestId, "SharedMapIcon", targetElement.name, targetElement.transform.localPosition);
+            MapNetworkManager.Instance.SpawnMapElementServerRpc(requestId, "SharedMapIcon", targetElement.name, targetElement.transform.localPosition, targetElement.transform.localScale);
         }
     }
 
@@ -248,6 +249,7 @@ public class MapManager : NetworkBehaviour
         Vector3 targetPosition = Pointer.current.position.ReadValue();
         GameObject objectPrefab = Resources.Load<GameObject>("MapPrefabs/" + (isNetworked ? "SharedDrawDot" : "DrawDot"));
         GameObject newDot = Instantiate(objectPrefab, targetPosition, Quaternion.identity, mapComponents.transform);
+        newDot.transform.localScale = new Vector3(pencilSizeSlider.value, pencilSizeSlider.value, pencilSizeSlider.value);
         newDot.transform.SetSiblingIndex(0);
         newDot.SetActive(true);
 
@@ -263,7 +265,7 @@ public class MapManager : NetworkBehaviour
         {
             ulong requestId = nextPlacementRequestId++;
             pendingPlacements.Add(requestId, newDot);
-            MapNetworkManager.Instance.SpawnMapElementServerRpc(requestId, "SharedDrawDot", "DrawDot", newDot.transform.localPosition);
+            MapNetworkManager.Instance.SpawnMapElementServerRpc(requestId, "SharedDrawDot", "DrawDot", newDot.transform.localPosition, newDot.transform.localScale);
         }
     }
 
@@ -312,6 +314,9 @@ public class MapManager : NetworkBehaviour
 
         if (targetTool == null) return;
         targetTool.GetComponent<UIElement>().OnElementSelect();
+
+        // toggle sliders
+        pencilSizeSlider.gameObject.SetActive(pencilIcon.GetComponent<UIElement>().isSelected);
     }
 
     private void SetDrawDotRaycastState(bool targetState)
@@ -404,12 +409,12 @@ public class MapManager : NetworkBehaviour
         foreach (var icon in activeDrawDots)
         {
             if (icon == null) continue; // NOTE: These checks should prevent failed map data sending
-            mapElements.Add(new MapElementData{iconPrefab = "DrawDot", iconSprite = "DrawDot", iconPosition = icon.transform.localPosition});
+            mapElements.Add(new MapElementData{iconPrefab = "DrawDot", iconSprite = "DrawDot", iconPosition = icon.transform.localPosition, iconScale = icon.transform.localScale});
         }
         foreach (var icon in activeIcons)
         {
             if (icon == null) continue;
-            mapElements.Add(new MapElementData{iconPrefab = "MapIcon", iconSprite = icon.name, iconPosition = icon.transform.localPosition});
+            mapElements.Add(new MapElementData{iconPrefab = "MapIcon", iconSprite = icon.name, iconPosition = icon.transform.localPosition, iconScale = icon.transform.localScale});
         }
 
         // prevent sending empty data
@@ -428,6 +433,7 @@ public struct MapElementData : INetworkSerializable
     public string iconPrefab;
     public string iconSprite;
     public Vector3 iconPosition;
+    public Vector3 iconScale;
 
     public void NetworkSerialize<T>(BufferSerializer<T> serializer)
         where T : IReaderWriter
@@ -435,5 +441,6 @@ public struct MapElementData : INetworkSerializable
         serializer.SerializeValue(ref iconPrefab);
         serializer.SerializeValue(ref iconSprite);
         serializer.SerializeValue(ref iconPosition);
+        serializer.SerializeValue(ref iconScale);
     }
 }
