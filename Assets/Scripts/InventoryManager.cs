@@ -36,7 +36,7 @@ public class InventoryManager : MonoBehaviour
     public GameObject mapIndividualViewPage;
     public GameObject activeMapPage;
 
-    private void Awake()
+    private void Start()
     {
         Instance = this;
         isLocked = GameManager.Instance.isMaster;

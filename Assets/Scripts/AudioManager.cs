@@ -10,7 +10,7 @@ public class AudioManager : MonoBehaviour
     private bool IsGameStarted;
 
     [Header("Environment")]
-    [SerializeField] private AudioSource environmentAudioSource;
+    public AudioSource environmentAudioSource;
     [SerializeField] private AudioSource riverAudioSource;
     [SerializeField] private GameObject riverObject;
     [SerializeField] private AudioClip riverSound;
@@ -39,7 +39,6 @@ public class AudioManager : MonoBehaviour
         IsGameStarted = true;
 
         // setup environment sound
-        environmentAudioSource = FindObjectsByType<AudioSource>().FirstOrDefault(o => o.name.Contains("Environment Source"))?.GetComponent<AudioSource>();
         environmentAudioSource?.Play();
 
         // setup river sound

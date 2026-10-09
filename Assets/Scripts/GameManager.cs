@@ -7,7 +7,6 @@ using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 
 public class GameManager : NetworkBehaviour
@@ -29,6 +28,7 @@ public class GameManager : NetworkBehaviour
     public GameObject playerSpawnPosition;
     public GameObject terrainObject;
     public Shader transparentShader;
+    [SerializeField] private GameObject navMeshObject;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void Initialize()
@@ -118,11 +118,11 @@ public class GameManager : NetworkBehaviour
         Time.timeScale = 1f;
         yield return new WaitForSeconds(1f);
 
-        if (IsHost || !FindAnyObjectByType<Volume>())
+        if (IsHost || !terrainObject)
         {
+            Debug.Log("GameManager: Loading level " + sceneName);
             AsyncOperation ao = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
             ao.allowSceneActivation = false;
-            Debug.Log("GameManager: Loading level " + sceneName);
             while (!ao.isDone)
             {
                 if (ao.progress == 0.9f)
@@ -140,22 +140,25 @@ public class GameManager : NetworkBehaviour
     {
         // assign scene vars
         // TODO: rewrite this shit
-        foreach (GameObject rootObject in SceneManager.GetSceneByName(activeStory.Value.ToString()).GetRootGameObjects())
+        Scene loadedScene = SceneManager.GetSceneByName(activeStory.Value.ToString());
+        loadedScene = SceneManager.GetActiveScene() == loadedScene ? loadedScene : SceneManager.GetActiveScene();
+        foreach (GameObject rootObject in loadedScene.GetRootGameObjects())
         {
             if (rootObject.GetComponent<Camera>()) rootObject.SetActive(false);
-            if (rootObject.name.Contains("Level")) 
+            if (rootObject.name.Contains("Level"))
             {
                 rootObject.transform.eulerAngles = new Vector3(0f, -180f, 0f);
                 terrainObject = rootObject.transform.Find("Terrain").Find("Inner terrain").gameObject;
                 playerSpawnPosition = rootObject.transform.Find("Terrain objects").Find("Starting point").gameObject;
+                AudioManager.Instance.environmentAudioSource = rootObject.transform.Find("World Settings").GetComponentInChildren<AudioSource>().transform.GetComponent<AudioSource>();
             }
         }
 
         // build navmesh
-        FindAnyObjectByType<NavMeshSurface>().BuildNavMesh();
+        navMeshObject.GetComponent<NavMeshSurface>().BuildNavMesh();
 
         // hide start platform
-        FindAnyObjectByType<NavMeshSurface>().GetComponent<Renderer>().enabled = false;
+        navMeshObject.GetComponent<NavMeshSurface>().GetComponent<Renderer>().enabled = false;
 
         // move player to map
         RespawnPlayer();
