@@ -25,7 +25,6 @@ public class GameManager : NetworkBehaviour
 
     [Header("Reference data")]
     [SerializeField] private GameObject mainCamera;
-    public Camera mapCamera;
     public Camera playerViewCamera;
     public GameObject playerSpawnPosition;
     public GameObject terrainObject;
@@ -105,7 +104,6 @@ public class GameManager : NetworkBehaviour
         if (isMaster) isLobbyStarted.Value = true;
         MenuManager.Instance.OnLobbyStart();
         playerViewCamera.gameObject.SetActive(false);
-        MapManager.SharedInstance.gameObject.GetComponent<Canvas>().worldCamera = mapCamera;
         InventoryManager.Instance.OnSetupStory();
 
         if (!isMaster) OnLoadMap(activeStory.Value.ToString());
@@ -168,9 +166,6 @@ public class GameManager : NetworkBehaviour
         MenuManager.Instance.ResetUIState();
         InventoryManager.Instance.OnToggleInventoryLock();
 
-        // start game audio
-        AudioManager.Instance.OnGameStarted();
-
         // update player render states
         UpdatePlayerRenderStateRpc();
 
@@ -186,7 +181,7 @@ public class GameManager : NetworkBehaviour
     {
         Debug.Log("GameManager: Client connected: " + clientId);
 
-        if (NetworkManager.IsHost)
+        if (IsHost)
         {
             if (isMaster && NetworkManager.LocalClientId == clientId)
             {
@@ -202,7 +197,7 @@ public class GameManager : NetworkBehaviour
             // spawn shared map if it doesn't exist already
             if (!MapManager.SharedInstance)
             {
-                SpawnSharedMap(clientId);
+                SpawnSharedMap();
             }          
         }
     }
@@ -214,7 +209,7 @@ public class GameManager : NetworkBehaviour
         Debug.Log("GameManager: Client disconnected: " + clientId);
 
         // check for host disconnect
-        if (!NetworkManager.IsHost && !isMaster)
+        if (!IsHost && !isMaster)
         {
             if (clientId == NetworkManager.ServerClientId || FetchPlayerDataById(clientId)?.PersistentPlayerId.Value == 0)
             {
@@ -314,13 +309,10 @@ public class GameManager : NetworkBehaviour
         playerObject.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientId);
     }
 
-    public void SpawnSharedMap(ulong clientId)
+    public void SpawnSharedMap()
     {
-        Debug.Log("GameManager: Spawning SharedMap for: " + clientId);
-        GameObject mapObject = Instantiate(Resources.Load<GameObject>("MapPrefabs/SharedMapUI"));
-        mapObject.GetComponent<Canvas>().worldCamera = mapCamera;
-        mapObject.transform.position = new Vector3(0f, 100f, 0f);
-        mapCamera.transform.position = mapObject.transform.position;
+        Debug.Log("GameManager: Spawning SharedMap");
+        GameObject mapObject = Instantiate(Resources.Load<GameObject>("MapPrefabs/SharedMapUI"), Vector3.zero, Quaternion.identity);
         mapObject.GetComponent<NetworkObject>().Spawn();
     }
 

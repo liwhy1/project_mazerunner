@@ -162,7 +162,7 @@ public class UIManager : NetworkBehaviour
 
     private void SetupMinimapIcon(int playerId)
     {
-        Transform targetParent = GameManager.Instance.isMaster ? MenuManager.Instance.lobbySharedMapView.transform : minimapIcon.transform.parent;
+        Transform targetParent = GameManager.Instance.isMaster ? MapManager.SharedInstance.transform.Find("Background") : minimapIcon.transform.parent;
         GameObject newIcon = Instantiate(Resources.Load<GameObject>("MapPrefabs/PlayerIcon"), Vector3.zero, Quaternion.identity, targetParent);
         if (GameManager.Instance.isMaster) newIcon.transform.localScale = new Vector3(.5f, .5f, .5f);
         newIcon.name = "playerIcon_" + playerId;
@@ -184,7 +184,7 @@ public class UIManager : NetworkBehaviour
         }
         MeshRenderer renderer = GameManager.Instance.terrainObject.GetComponent<MeshRenderer>();
         Bounds bounds = renderer.bounds;
-        RectTransform minimapRect = minimapIcon.GetComponent<RectTransform>();
+        RectTransform minimapRect = GameManager.Instance.isMaster ? MapManager.SharedInstance.transform.Find("Background").GetComponent<RectTransform>() : minimapIcon.GetComponent<RectTransform>();
 
         // check for dead icons
         var deadIcons = minimapPlayerIcons.FindAll(i => GameManager.Instance.playerList.All(p => p.PersistentPlayerId.Value.ToString() != i.name.Split('_')[1]));
@@ -208,9 +208,9 @@ public class UIManager : NetworkBehaviour
                 Color newColor = Color.HSVToRGB(.1f + playerId * .1f, 1f, 1f);
                 playerIconRect.gameObject.GetComponent<Image>().color = newColor;
                 playerIconRect.gameObject.SetActive(true);
-                playerIconRect.anchoredPosition = new Vector2(Mathf.Lerp(minimapRect.rect.xMin, minimapRect.rect.xMax, normalizedX), Mathf.Lerp(minimapRect.rect.yMin, minimapRect.rect.yMax, normalizedY));                
+                playerIconRect.anchoredPosition = new Vector2(Mathf.Lerp(minimapRect.rect.xMin, minimapRect.rect.xMax, normalizedX), Mathf.Lerp(minimapRect.rect.yMin, minimapRect.rect.yMax, normalizedY));
             }
-            else if (player.IsLobbyReady.Value) SetupMinimapIcon(playerId);
+            else SetupMinimapIcon(playerId);
         }
     }
 
@@ -218,18 +218,14 @@ public class UIManager : NetworkBehaviour
     {
         // TODO: this is hardcoded, has hacks and is unnecessarily complex (but it works)
         minimapIcon.transform.localScale = new Vector3(.7f, .7f, .7f);
-        foreach (Transform icon in MapManager.SharedInstance.transform)
+        foreach (Transform icon in MapManager.SharedInstance.mapComponents.transform)
         {
             // prevent mirroring drawdots
             if (!icon.GetComponent<NetworkObject>() || icon.name.Contains("Dot")) continue;
             GameObject newIcon = Instantiate(Resources.Load<GameObject>("MapPrefabs/MapIcon"), minimapIcon.transform.parent);
 
-            // calculate world canvas pos to screen canvas
-            Vector2 screenPosition = GameManager.Instance.mapCamera.WorldToScreenPoint(icon.position);
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(transform.GetComponent<RectTransform>(), screenPosition, null, out Vector2 localPosition);
-
             // apply position with slightly made up offset
-            newIcon.GetComponent<RectTransform>().anchoredPosition = localPosition;
+            newIcon.GetComponent<RectTransform>().anchoredPosition = icon.transform.localPosition;
             newIcon.GetComponent<RectTransform>().anchoredPosition -= new Vector2(300f, 0f);
 
             // anchor hack pt1
@@ -356,6 +352,9 @@ public class UIManager : NetworkBehaviour
         {
             case "mapclear":
                 MapManager.Instance.OnClearMap();
+                break;
+            case "sharedmapclear":
+                MapManager.SharedInstance.OnClearMap();
                 break;
             case "openeditor":
                 MenuManager.Instance.ResetUIState();

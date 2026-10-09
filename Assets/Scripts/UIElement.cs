@@ -86,7 +86,7 @@ public class UIElement : MonoBehaviour
     {
         isEnabled = true;
         GetComponents<EventTrigger>().All(p => p.enabled = true);
-        GetComponent<Image>().color = normalColor;
+        GetComponent<Image>().color = isSelected ? selectColor : normalColor;
         if (transform.Find("Sprite"))
         {
             Color tempColor = transform.Find("Sprite").GetComponent<Image>().color;

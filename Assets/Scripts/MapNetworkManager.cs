@@ -16,6 +16,13 @@ public class MapNetworkManager : NetworkBehaviour
         Instance = this;
         mapState.OnValueChanged += OnMapStateChanged;
         OnMapStateChanged(MapState.Null, mapState.Value);
+
+        if (IsHost)
+        {
+            GameObject newMap = Instantiate(Resources.Load<GameObject>("MapPrefabs/MapObject"));
+            newMap.GetComponent<NetworkObject>()?.Spawn();
+            newMap.transform.SetParent(transform, false);            
+        }
     }
 
     public override void OnNetworkDespawn() => mapState.OnValueChanged -= OnMapStateChanged;
@@ -40,13 +47,16 @@ public class MapNetworkManager : NetworkBehaviour
             MapManager.SharedInstance.OnDisableMapUI();
             UIManager.Instance.MirrorSharedmaptoMinimap();
             InventoryManager.Instance.OnToggleSharedView(true);
+            if (!GameManager.Instance.isMaster) InventoryManager.Instance.SetMapPage(InventoryManager.Instance.mapSharedViewPage);
             InventoryManager.Instance.OnToggleInventoryLock();
-
+            // start game audio
+            if (!GameManager.Instance.isMaster) AudioManager.Instance.OnGameStarted();
         }
         else if (newValue == MapState.Individual)
         {
             InventoryManager.Instance.OnToggleIndividualView(true);
             InventoryManager.Instance.OnToggleSharedView(true);
+            InventoryManager.Instance.SetMapPage(InventoryManager.Instance.mapSharedViewPage);
             InventoryManager.Instance.OnJournalEnable();
         }
     }
@@ -77,7 +87,7 @@ public class MapNetworkManager : NetworkBehaviour
         if (mapState.Value == MapState.Own) return;
 
         // sync shared map element data
-        foreach (Transform element in MapManager.SharedInstance.transform)
+        foreach (Transform element in MapManager.SharedInstance.mapComponents.transform)
         {
             if (!element.GetComponent<NetworkObject>()) continue;
             SetMapElementDataClientRpc(0, element.GetComponent<NetworkObject>().NetworkObjectId, element.name);
@@ -108,8 +118,8 @@ public class MapNetworkManager : NetworkBehaviour
 
         newObject.name = iconSprite;
         newObject.GetComponent<NetworkObject>().Spawn();
-        newObject.transform.SetParent(MapManager.SharedInstance.transform, false);
-        newObject.transform.localPosition = new Vector3(iconPosition.x, iconPosition.y, 1f);
+        newObject.transform.SetParent(MapManager.SharedInstance.mapComponents.transform, false);
+        newObject.transform.localPosition = iconPosition;
 
         ulong objectId = newObject.GetComponent<NetworkObject>().NetworkObjectId;
         SetMapElementDataClientRpc(requestId, objectId, iconSprite);
@@ -158,9 +168,13 @@ public class MapNetworkManager : NetworkBehaviour
     public void ClearMapServerRpc()
     {
         Debug.Log("MNM: Clearing map");
-        foreach (Transform element in transform)
+        foreach (Transform element in MapManager.SharedInstance.mapComponents.transform)
         {
-            element.gameObject.GetComponent<NetworkObject>()?.Despawn();
+            if (element.gameObject.GetComponent<NetworkObject>() && element.gameObject.GetComponent<NetworkObject>().IsSpawned)
+            {
+                element.gameObject.GetComponent<NetworkObject>().Despawn();                
+            }
+            else Destroy(element.gameObject);
         }
     }
 
@@ -185,7 +199,7 @@ public class MapNetworkManager : NetworkBehaviour
             }
             newObject.transform.SetParent(targetMap.transform);
             newObject.transform.localPosition = element.iconPosition;
-            newObject.transform.localScale = new Vector3(1f, 1f, 1f);
+            newObject.transform.localScale = Vector3.one;
         }
     }
 

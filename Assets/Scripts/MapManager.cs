@@ -15,6 +15,7 @@ public class MapManager : NetworkBehaviour
     public static MapManager SharedInstance;
     public GameObject mapComponents;
     [NonSerialized] public Dictionary<ulong, GameObject> pendingPlacements = new();
+    [SerializeField] private bool isNetworked;
     private ulong nextPlacementRequestId = 0;
 
     [Header("Icon Data")]
@@ -24,8 +25,6 @@ public class MapManager : NetworkBehaviour
     [SerializeField] private Vector3 savedElementPosition;
     [SerializeField] private bool enablePlacement;
     [SerializeField] private bool enableDiscard;
-    [Tooltip("If enabled, networked behaviour will be applied.")]
-    [SerializeField] private bool isWorldSpace;
 
     [Header("Draw Data")]
     private List<GameObject> activeDrawDots = new List<GameObject>();
@@ -43,10 +42,17 @@ public class MapManager : NetworkBehaviour
 
     public void OnSetup()
     {
-        if (isWorldSpace)
+        if (isNetworked)
         {
             Debug.Log("SharedMapManager: Settings up");
             SharedInstance = this;
+            if (IsHost)
+            {
+                mapComponents = Instantiate(Resources.Load<GameObject>("MapPrefabs/NewElements"));
+                mapComponents.GetComponent<NetworkObject>()?.Spawn();
+                mapComponents.transform.SetParent(transform);
+            }
+            gameObject.SetActive(false);
         }
         else
         {
@@ -65,10 +71,27 @@ public class MapManager : NetworkBehaviour
         SetActiveTool(pencilIcon);
 
         // conditionally disable save icon
-        if (isWorldSpace && !NetworkManager.IsHost)
+        if (isNetworked && !IsHost)
         {
             saveIcon.SetActive(false);
         }
+
+        // setup triggers
+        SetupMapTriggers();
+    }
+
+    private void SetupMapTriggers()
+    {
+        GameObject mapBackground = transform.Find("Background").gameObject;
+        UIManager.Instance.AddEventTrigger(mapBackground.GetComponent<EventTrigger>(), EventTriggerType.PointerEnter, OnEnablePlacement);
+        UIManager.Instance.AddEventTrigger(mapBackground.GetComponent<EventTrigger>(), EventTriggerType.PointerExit, OnDisablePlacement);
+        UIManager.Instance.AddEventTrigger(mapBackground.GetComponent<EventTrigger>(), EventTriggerType.Drag, OnDrawLine);
+        UIManager.Instance.AddEventTrigger(iconPile.GetComponent<EventTrigger>(), EventTriggerType.PointerEnter, OnEnableDiscard);
+        UIManager.Instance.AddEventTrigger(iconPile.GetComponent<EventTrigger>(), EventTriggerType.PointerExit, OnDisableDiscard);
+        UIManager.Instance.AddEventTrigger(pencilIcon.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, SetActiveTool, pencilIcon);
+        UIManager.Instance.AddEventTrigger(eraserIcon.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, SetActiveTool, eraserIcon);
+        UIManager.Instance.AddEventTrigger(trashIcon.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnMapClearRequest);
+        UIManager.Instance.AddEventTrigger(saveIcon.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnMapToggleReady);
     }
 
     private void InstantiateNewIcon(string targetPrefab, string targetSprite, bool enableTitle, int siblingIndex = -1)
@@ -93,16 +116,6 @@ public class MapManager : NetworkBehaviour
         newIconTitle.gameObject.SetActive(enableTitle);
         newIconTitle.text = targetSprite.Remove(targetSprite.Length - 2, 2);
 
-        // conditionally apply world space transform data
-        if (isWorldSpace && targetPrefab == "MapIcon")
-        {
-            newIcon.transform.localScale = new Vector3(1f, 1f, 1f);
-            newIconSprite.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
-            newIconTitle.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
-            newIconTitle.transform.localPosition = new Vector3(0f, -6.25f, 0f);
-            newIconTitle.GetComponent<RectTransform>().sizeDelta = new Vector3(170f, 40f);            
-        }
-
         // setup triggers
         SetupElementTriggers(newIcon);
     }
@@ -124,6 +137,9 @@ public class MapManager : NetworkBehaviour
     private void OnStartElementDrag(GameObject targetElement)
     {
         if (activeTool == null || !gameObject.activeSelf) return;
+
+        // TODO: not this
+        if (!mapComponents) mapComponents = transform.Find("NewElements(Clone)").gameObject;
 
         // save element position
         savedElementPosition = targetElement.transform.position;
@@ -165,7 +181,7 @@ public class MapManager : NetworkBehaviour
         targetElement.transform.SetAsLastSibling();
 
         // follow mouse position with object
-        Vector3 targetPosition = isWorldSpace ? InputManager.Instance.GetPointerWorldPositon() : Pointer.current.position.ReadValue();
+        Vector3 targetPosition = Pointer.current.position.ReadValue();
         targetElement.transform.position = Vector3.Lerp(targetElement.transform.position, targetPosition, Time.deltaTime * 45f);
     }
 
@@ -210,7 +226,7 @@ public class MapManager : NetworkBehaviour
         if (!activeIcons.Contains(targetElement)) activeIcons.Add(targetElement);
 
         // spawn networkobject if the element was pulled from the pile
-        if (savedElementPosition == Vector3.zero && isWorldSpace)
+        if (savedElementPosition == Vector3.zero && isNetworked)
         {
             ulong requestId = nextPlacementRequestId++;
             pendingPlacements.Add(requestId, targetElement);
@@ -222,14 +238,17 @@ public class MapManager : NetworkBehaviour
     {
         if (activeTool != pencilIcon || !gameObject.activeSelf || !enablePlacement || enableDiscard || InputManager.Instance.lookAction.ReadValue<Vector2>() == Vector2.zero) return;
 
+        // TODO: not this
+        if (!mapComponents) mapComponents = transform.Find("NewElements(Clone)").gameObject;
+
         // conditionally play draw sfx
         if (!AudioManager.Instance.IsPlaying()) AudioManager.Instance.OnDraw();
 
         // instantiate new dot based on mouse position
-        Vector3 targetPosition = isWorldSpace ? InputManager.Instance.GetPointerWorldPositon() : Pointer.current.position.ReadValue();
-        GameObject objectPrefab = Resources.Load<GameObject>("MapPrefabs/" + (isWorldSpace ? "SharedDrawDot" : "DrawDot"));
+        Vector3 targetPosition = Pointer.current.position.ReadValue();
+        GameObject objectPrefab = Resources.Load<GameObject>("MapPrefabs/" + (isNetworked ? "SharedDrawDot" : "DrawDot"));
         GameObject newDot = Instantiate(objectPrefab, targetPosition, Quaternion.identity, mapComponents.transform);
-        newDot.transform.SetSiblingIndex(isWorldSpace ? iconPile.transform.GetSiblingIndex() : 0);
+        newDot.transform.SetSiblingIndex(0);
         newDot.SetActive(true);
 
         // add event trigger
@@ -240,9 +259,8 @@ public class MapManager : NetworkBehaviour
         activeDrawDots.Add(newDot);
 
         // conditionally spawn network object
-        if (isWorldSpace)
+        if (isNetworked)
         {
-            newDot.GetComponent<RectTransform>().sizeDelta = new Vector3(.02f, 0.02f);
             ulong requestId = nextPlacementRequestId++;
             pendingPlacements.Add(requestId, newDot);
             MapNetworkManager.Instance.SpawnMapElementServerRpc(requestId, "SharedDrawDot", "DrawDot", newDot.transform.localPosition);
@@ -256,8 +274,9 @@ public class MapManager : NetworkBehaviour
         {
             timeCounter += .1f;
             yield return new WaitForSeconds(.1f);
-            if (timeCounter > 2f) break;
+            if (timeCounter > 2f || !newElement) break;
         }
+        if (!newElement || !oldElement) yield break;
         newElement.transform.Find("Sprite")?.gameObject.SetActive(true);
         if (newElement.GetComponent<Image>()) newElement.GetComponent<Image>().enabled = true;
         pendingPlacements.Remove(pendingPlacements.FirstOrDefault(p => p.Value == oldElement).Key);
@@ -268,7 +287,7 @@ public class MapManager : NetworkBehaviour
     {
         if (activeTool != eraserIcon || !activeHoveredDot || !gameObject.activeSelf || InputManager.Instance.lookAction.ReadValue<Vector2>() == Vector2.zero) return;
 
-        if (isWorldSpace && !NetworkManager.IsHost)
+        if (isNetworked && !IsHost)
         {
             MapNetworkManager.Instance.DestroyMapElementServerRpc(activeHoveredDot.GetComponent<NetworkObject>().NetworkObjectId);        
         }
@@ -325,12 +344,12 @@ public class MapManager : NetworkBehaviour
 
     public void OnMapClearRequest()
     {
-        UIManager.Instance.OnOpenDialog(DialogId.MapClear);
+        UIManager.Instance.OnOpenDialog(isNetworked ? DialogId.SharedMapClear : DialogId.MapClear);
     }
 
     public void OnClearMap()
     {
-        if (isWorldSpace)
+        if (isNetworked)
         {
             MapNetworkManager.Instance.ClearMapServerRpc();
         }
@@ -354,12 +373,12 @@ public class MapManager : NetworkBehaviour
         SetActiveTool(!isMapready ? pencilIcon : null);
 
         // handle behaviour based on map type
-        if (isWorldSpace)
+        if (isNetworked)
         {
             saveIcon.SetActive(!isMapready);
 
             // send ready state
-            MapNetworkManager.Instance.SetMapStateServerRpc(MapState.Explore);
+            if (!GameManager.Instance.isMaster) MapNetworkManager.Instance.SetMapStateServerRpc(MapState.Explore);
         }
         else 
         {
@@ -367,7 +386,7 @@ public class MapManager : NetworkBehaviour
             saveIcon.transform.GetChild(1).gameObject.SetActive(!isMapready);
 
             // send ready state
-            MapNetworkManager.Instance.SetPlayerMapStateServerRpc(isMapready);
+            if (!GameManager.Instance.isMaster) MapNetworkManager.Instance.SetPlayerMapStateServerRpc(isMapready);
         }
     }
 

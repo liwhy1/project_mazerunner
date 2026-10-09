@@ -9,6 +9,7 @@ public enum DialogId
     InvalidJoinCode,
     FailedGameJoin,
     HostLostConnection,
+    SharedMapClear,
     MapClear,
     PlayerTutorial,
     EditorOpen
@@ -39,6 +40,7 @@ public class DialogDatabase : MonoBehaviour
             new DialogEntry() { id = DialogId.FailedGameJoin,       title = "Notice",   text = "Failed to join game!",                                                                                                      button = "",        action = "" },
             new DialogEntry() { id = DialogId.HostLostConnection,   title = "Notice",   text = "Connection to the game host has been lost. Would you like to return to the main menu?",                                     button = "Yes",     action = "selfdisconnect" },
             new DialogEntry() { id = DialogId.MapClear,             title = "Notice",   text = "Are you sure you want to clear the map?",                                                                                   button = "Yes",     action = "mapclear" },
+            new DialogEntry() { id = DialogId.SharedMapClear,       title = "Notice",   text = "Are you sure you want to clear the map?",                                                                                   button = "Yes",     action = "sharedmapclear" },
             new DialogEntry() { id = DialogId.PlayerTutorial,       title = "Tutorial", text = "<b>Player movement:</b>\n(WASD) / (Point & Click)\n<b>Camera height control:</b>\n(Mouse Wheel) / (UI Plus & Minus icon)",  button = "",        action = "" },
             new DialogEntry() { id = DialogId.EditorOpen,           title = "Notice",   text = "Would you like to open the map editor?",                                                                                    button = "Yes",     action = "openeditor" }
         };

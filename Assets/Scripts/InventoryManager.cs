@@ -32,21 +32,23 @@ public class InventoryManager : MonoBehaviour
     [SerializeField] private GameObject mapSharedViewButton;
     [SerializeField] private GameObject mapIndividualViewButton;
     [SerializeField] private GameObject mapOwnViewPage;
-    [SerializeField] private GameObject mapSharedViewPage;
-    [SerializeField] private GameObject mapIndividualViewPage;
+    public GameObject mapSharedViewPage;
+    public GameObject mapIndividualViewPage;
     public GameObject activeMapPage;
 
     private void Awake()
     {
         Instance = this;
+        isLocked = GameManager.Instance.isMaster;
+
+        // reset inventory
+        ResetInventoryState();
     }
 
     private void Update()
     {
-        pageBackground.SetActive(PlayerController.Instance && PlayerController.Instance.playerCamera.activeSelf);
-        if (!GameManager.Instance.isMaster) GameManager.Instance.mapCamera.gameObject.SetActive(isInventoryActive && mapObject.activeSelf && activeMapPage == mapSharedViewPage);
-        else GameManager.Instance.mapCamera.gameObject.SetActive(true);
-        if (MapManager.SharedInstance) MapManager.SharedInstance.GetComponent<GraphicRaycaster>().enabled = isInventoryActive && mapObject.activeSelf && activeMapPage == mapSharedViewPage;
+        pageBackground.SetActive(MapManager.SharedInstance && !MapManager.SharedInstance.gameObject.activeSelf);
+        if (!GameManager.Instance.isMaster && MapManager.SharedInstance) MapManager.SharedInstance.gameObject.SetActive(isInventoryActive && mapSharedViewPage.activeSelf && mapObject.activeSelf);
     }
 
     public void OnSetup()
@@ -57,9 +59,6 @@ public class InventoryManager : MonoBehaviour
         // setup map
         mapOwnViewPage.GetComponent<MapManager>().OnSetup();
         activeMapPage = mapOwnViewPage;
-
-        // reset inventory
-        ResetInventoryState();
     }
 
     private void ResetInventoryState()
@@ -117,7 +116,7 @@ public class InventoryManager : MonoBehaviour
 
         // setup map
         GameObject mapBackground = mapOwnViewPage.transform.Find("Background").gameObject;
-        GameObject sharedMapBackground = MapManager.SharedInstance.transform.Find("Background").gameObject;
+        GameObject sharedMapBackground = MapManager.SharedInstance.gameObject.transform.Find("Background").gameObject;
         Sprite mapSprite = Resources.Load<Sprite>("Information/" + activeStory + "/MapSprite");
         mapBackground.GetComponent<Image>().sprite = mapSprite;
         sharedMapBackground.GetComponent<Image>().sprite = mapSprite;
@@ -202,6 +201,7 @@ public class InventoryManager : MonoBehaviour
         mapOwnViewButton.GetComponent<UIElement>().OnElementDeSelect();
         mapIndividualViewButton.GetComponent<UIElement>().OnElementDeSelect();
         mapSharedViewButton.GetComponent<UIElement>().OnElementDeSelect();
+        pageBackground.SetActive(true);
         if (pageObject == mapOwnViewPage)
         {
             mapOwnViewButton.GetComponent<UIElement>().OnElementSelect();
@@ -213,6 +213,8 @@ public class InventoryManager : MonoBehaviour
         else if (pageObject == mapSharedViewPage)
         {
             mapSharedViewButton.GetComponent<UIElement>().OnElementSelect();
+            MapManager.SharedInstance.transform.GetChild(0).gameObject.SetActive(true);
+            pageBackground.SetActive(false);
         }
     }
 

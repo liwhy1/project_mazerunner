@@ -62,14 +62,7 @@ public class InputManager : MonoBehaviour
         List<RaycastResult> castResults = new List<RaycastResult>();
         EventSystem.current.RaycastAll(pointerData, castResults);
 
-        // ignore shared map objects
-        foreach (RaycastResult result in castResults)
-        {
-            if (result.module.eventCamera == GameManager.Instance.mapCamera) continue;
-            return true;
-        }
-
-        return false;
+        return castResults.Count > 0;
     }
 
     public void OnPauseAction()
@@ -163,12 +156,5 @@ public class InputManager : MonoBehaviour
         {
             EditorManager.Instance.OnScrollAction(targetValue);
         }
-    }
-
-    public Vector3 GetPointerWorldPositon()
-    {
-        Vector3 worldPosition = Pointer.current.position.ReadValue();
-        worldPosition.z = GameManager.Instance.mapCamera.nearClipPlane + 1f;
-        return GameManager.Instance.mapCamera.ScreenToWorldPoint(worldPosition);
     }
 }
