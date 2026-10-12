@@ -39,7 +39,8 @@ public class AudioManager : MonoBehaviour
         IsGameStarted = true;
 
         // setup environment sound
-        environmentAudioSource?.Play();
+        environmentAudioSource.volume = .7f;
+        environmentAudioSource.Play();
 
         // setup river sound
         riverObject = GameManager.Instance.terrainObject.transform.parent.Find("River").gameObject;
@@ -66,7 +67,7 @@ public class AudioManager : MonoBehaviour
     }
 
     public bool IsPlaying() { return uiAudioSource.isPlaying; }
-    public void SetMixerGroupVolume(string targetGroup, float targetVolume) => audioMixer.SetFloat(targetGroup, targetVolume);
+    public void SetMixerGroupVolume(string targetGroup, float targetVolume) => audioMixer.SetFloat(targetGroup, targetVolume < -40 ? -200 : targetVolume);
 
     public void OnDialogOpen() => PlaySoundClip(dialogOpenSound);
     public void OnDialogClose() => PlaySoundClip(dialogCloseSound);
