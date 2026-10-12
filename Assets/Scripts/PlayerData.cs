@@ -47,6 +47,7 @@ public class PlayerData : NetworkBehaviour
         MenuManager.Instance.UpdateLobbyReadyState();
         if (!IsOwner) return;
         GameManager.Instance.CheckLobbyReadyStateServerRpc();
+        MapNetworkManager.Instance.CheckLobbyMapStateServerRpc();
     }
 
     private void OnSkinIdChanged(SkinData oldValue, SkinData newValue)

@@ -73,7 +73,9 @@ public class MapNetworkManager : NetworkBehaviour
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
     public void CheckLobbyMapStateServerRpc()
     {
-        MenuManager.Instance.SetMasterGameStateText("Individual mapping\n" + GameManager.Instance.playerList.Count(p => p.IsMapReady.Value == true) + "/" + GameManager.Instance.playerList.Count);
+        string targetText = GameManager.Instance.playerList.Count(p => p.IsMapReady.Value == true) + "/" + GameManager.Instance.playerList.Count;
+        MenuManager.Instance.SetMasterGameStateText("Individual mapping\n" + targetText);
+        MapManager.Instance.transform.Find("SaveIcon").Find("ReadyText").GetComponent<TMP_Text>().text = targetText;
         if (GameManager.Instance.playerList.All(p => p.IsMapReady.Value == true))
         {
             Debug.Log("MNM: All individual maps ready");

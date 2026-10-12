@@ -141,7 +141,7 @@ public class GameManager : NetworkBehaviour
         // assign scene vars
         // TODO: rewrite this shit
         Scene loadedScene = SceneManager.GetSceneByName(activeStory.Value.ToString());
-        loadedScene = SceneManager.GetActiveScene() == loadedScene ? loadedScene : SceneManager.GetActiveScene();
+        loadedScene = loadedScene == null ? SceneManager.GetActiveScene() : loadedScene;
         foreach (GameObject rootObject in loadedScene.GetRootGameObjects())
         {
             if (rootObject.GetComponent<Camera>()) rootObject.SetActive(false);
@@ -227,6 +227,7 @@ public class GameManager : NetworkBehaviour
 
         // update lobby ready state
         MenuManager.Instance.UpdateLobbyReadyState();
+        MapNetworkManager.Instance.CheckLobbyMapStateServerRpc();
         CheckLobbyReadyStateServerRpc();
     }
 
