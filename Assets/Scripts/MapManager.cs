@@ -31,6 +31,7 @@ public class MapManager : NetworkBehaviour
     public GameObject activeHoveredDot;
 
     [Header("UI Data")]
+    public GameObject mapBackground;
     public GameObject toolBar;
     [SerializeField] private GameObject activeTool;
     [SerializeField] private GameObject pencilIcon;
@@ -83,7 +84,7 @@ public class MapManager : NetworkBehaviour
 
     private void SetupMapTriggers()
     {
-        GameObject mapBackground = transform.Find("Background").gameObject;
+        mapBackground = transform.Find("Background").gameObject;
         UIManager.Instance.AddEventTrigger(mapBackground.GetComponent<EventTrigger>(), EventTriggerType.PointerEnter, OnEnablePlacement);
         UIManager.Instance.AddEventTrigger(mapBackground.GetComponent<EventTrigger>(), EventTriggerType.PointerExit, OnDisablePlacement);
         UIManager.Instance.AddEventTrigger(mapBackground.GetComponent<EventTrigger>(), EventTriggerType.Drag, OnDrawLine);
@@ -140,7 +141,7 @@ public class MapManager : NetworkBehaviour
         if (activeTool == null || !gameObject.activeSelf) return;
 
         // TODO: not this
-        if (!mapComponents) mapComponents = transform.Find("NewElements(Clone)").gameObject;
+        if (!mapComponents) mapComponents = isNetworked ? transform.Find("NewElements(Clone)").gameObject : transform.Find("NewElements").gameObject;
 
         // save element position
         savedElementPosition = targetElement.transform.position;
@@ -172,6 +173,9 @@ public class MapManager : NetworkBehaviour
 
         // disable drawdot raycast targets
         SetDrawDotRaycastState(false);
+
+        // enable color highlight
+        ToggleColorHighlight(true);
     }
 
     private void OnElementDrag(GameObject targetElement)
@@ -189,6 +193,9 @@ public class MapManager : NetworkBehaviour
     private void OnStopElementDrag(GameObject targetElement)
     {
         if (activeTool == null || !gameObject.activeSelf) return;
+
+        // disable color highlight
+        ToggleColorHighlight(false);
 
         // play place sfx
         AudioManager.Instance.OnElementPlace();
@@ -233,6 +240,14 @@ public class MapManager : NetworkBehaviour
             pendingPlacements.Add(requestId, targetElement);
             MapNetworkManager.Instance.SpawnMapElementServerRpc(requestId, "SharedMapIcon", targetElement.name, targetElement.transform.localPosition, targetElement.transform.localScale);
         }
+    }
+
+    private void ToggleColorHighlight(bool targetState)
+    {
+        Color greenHighlight = new Color(0.8478955f, 1f, 0.7528302f);
+        Color redHighlight = new Color(1f, 0.8207547f, 0.8207547f);
+        mapBackground.GetComponent<Image>().color = targetState ? greenHighlight : Color.white;
+        iconPile.GetComponent<Image>().color = targetState ? redHighlight : Color.white;
     }
 
     public void OnDrawLine()

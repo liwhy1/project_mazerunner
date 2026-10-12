@@ -162,7 +162,7 @@ public class UIManager : NetworkBehaviour
 
     private void SetupMinimapIcon(int playerId)
     {
-        Transform targetParent = GameManager.Instance.isMaster ? MapManager.SharedInstance.transform.Find("Background") : minimapIcon.transform.parent;
+        Transform targetParent = GameManager.Instance.isMaster ? MapManager.SharedInstance.mapBackground.transform : minimapIcon.transform.parent;
         GameObject newIcon = Instantiate(Resources.Load<GameObject>("MapPrefabs/PlayerIcon"), Vector3.zero, Quaternion.identity, targetParent);
         if (GameManager.Instance.isMaster) newIcon.transform.localScale = new Vector3(.5f, .5f, .5f);
         newIcon.name = "playerIcon_" + playerId;
@@ -184,7 +184,7 @@ public class UIManager : NetworkBehaviour
         }
         MeshRenderer renderer = GameManager.Instance.terrainObject.GetComponent<MeshRenderer>();
         Bounds bounds = renderer.bounds;
-        RectTransform minimapRect = GameManager.Instance.isMaster ? MapManager.SharedInstance.transform.Find("Background").GetComponent<RectTransform>() : minimapIcon.GetComponent<RectTransform>();
+        RectTransform minimapRect = GameManager.Instance.isMaster ? MapManager.SharedInstance.mapBackground.GetComponent<RectTransform>() : minimapIcon.GetComponent<RectTransform>();
 
         // check for dead icons
         var deadIcons = minimapPlayerIcons.FindAll(i => GameManager.Instance.playerList.All(p => p.PersistentPlayerId.Value.ToString() != i.name.Split('_')[1]));

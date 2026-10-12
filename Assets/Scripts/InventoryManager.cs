@@ -115,11 +115,9 @@ public class InventoryManager : MonoBehaviour
         string activeStory = GameManager.Instance.activeStory.Value.ToString();
 
         // setup map
-        GameObject mapBackground = mapOwnViewPage.transform.Find("Background").gameObject;
-        GameObject sharedMapBackground = MapManager.SharedInstance.gameObject.transform.Find("Background").gameObject;
         Sprite mapSprite = Resources.Load<Sprite>("Information/" + activeStory + "/MapSprite");
-        mapBackground.GetComponent<Image>().sprite = mapSprite;
-        sharedMapBackground.GetComponent<Image>().sprite = mapSprite;
+        MapManager.Instance.mapBackground.GetComponent<Image>().sprite = mapSprite;
+        MapManager.SharedInstance.mapBackground.GetComponent<Image>().sprite = mapSprite;
 
         // setup journal
         journalPage1Layout.SetActive(true);
