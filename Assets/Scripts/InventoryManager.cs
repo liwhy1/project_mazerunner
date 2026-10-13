@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Text.RegularExpressions;
 using TMPro;
 using UnityEngine;
@@ -31,7 +32,7 @@ public class InventoryManager : MonoBehaviour
     [SerializeField] private GameObject mapOwnViewButton;
     [SerializeField] private GameObject mapSharedViewButton;
     [SerializeField] private GameObject mapIndividualViewButton;
-    [SerializeField] private GameObject mapOwnViewPage;
+    public GameObject mapOwnViewPage;
     public GameObject mapSharedViewPage;
     public GameObject mapIndividualViewPage;
     public GameObject activeMapPage;
@@ -47,8 +48,8 @@ public class InventoryManager : MonoBehaviour
 
     private void Update()
     {
-        pageBackground.SetActive(MapManager.SharedInstance && !MapManager.SharedInstance.gameObject.activeSelf);
         if (!GameManager.Instance.isMaster && MapManager.SharedInstance) MapManager.SharedInstance.gameObject.SetActive(isInventoryActive && mapSharedViewPage.activeSelf && mapObject.activeSelf);
+        inventoryObject.transform.Find("InnerLayer").gameObject.SetActive(MapManager.SharedInstance && !MapManager.SharedInstance.gameObject.activeSelf);
     }
 
     public void OnSetup()
@@ -75,7 +76,7 @@ public class InventoryManager : MonoBehaviour
     public void OnToggleInventoryLock()
     {
         if (GameManager.Instance.isMaster) return;
-        if (isLocked) 
+        if (isLocked)
         {
             isLocked = false;
             OnToggleInventory();
@@ -97,6 +98,9 @@ public class InventoryManager : MonoBehaviour
         if (isLocked) return;
         isInventoryActive = !isInventoryActive;
         inventoryObject.SetActive(isInventoryActive);
+        mapObject.SetActive(true);
+        OnOpenMap();
+        OnOpenJournal();
         UIManager.Instance.cameraZoomInIcon.gameObject.SetActive(!isInventoryActive);
         UIManager.Instance.cameraZoomOutIcon.gameObject.SetActive(!isInventoryActive);
         UIManager.Instance.inventoryIcon.gameObject.SetActive(!isInventoryActive);
@@ -128,6 +132,7 @@ public class InventoryManager : MonoBehaviour
         // generate pages
         GenerateJournalPage(journalPage1Layout, 1);
         GenerateJournalPage(journalPage2Layout, 2);
+        journalPageView.transform.Find("Blocker").gameObject.SetActive(false);
     }
 
     private void GenerateJournalPage(GameObject targetView, int targetPage)
@@ -195,6 +200,7 @@ public class InventoryManager : MonoBehaviour
         mapIndividualViewPage.SetActive(false);
         mapSharedViewPage.SetActive(false);
         pageObject.SetActive(true);
+        journalObject.SetActive(false);
 
         mapOwnViewButton.GetComponent<UIElement>().OnElementDeSelect();
         mapIndividualViewButton.GetComponent<UIElement>().OnElementDeSelect();
@@ -202,17 +208,18 @@ public class InventoryManager : MonoBehaviour
         pageBackground.SetActive(true);
         if (pageObject == mapOwnViewPage)
         {
+            if (MapNetworkManager.Instance?.mapState.Value == MapState.Own) MapManager.Instance?.StartCoroutine(MapManager.Instance?.MapMoveHandler(true));
             mapOwnViewButton.GetComponent<UIElement>().OnElementSelect();
-        }
-        else if (pageObject == mapIndividualViewPage)
-        {
-            mapIndividualViewButton.GetComponent<UIElement>().OnElementSelect();
+            journalObject.SetActive(MapNetworkManager.Instance?.mapState.Value == MapState.Own || MapNetworkManager.Instance?.mapState.Value == MapState.Individual);
         }
         else if (pageObject == mapSharedViewPage)
         {
             mapSharedViewButton.GetComponent<UIElement>().OnElementSelect();
             MapManager.SharedInstance.transform.GetChild(0).gameObject.SetActive(true);
-            pageBackground.SetActive(false);
+        }
+        else if (pageObject == mapIndividualViewPage)
+        {
+            mapIndividualViewButton.GetComponent<UIElement>().OnElementSelect();
         }
     }
 
@@ -220,11 +227,28 @@ public class InventoryManager : MonoBehaviour
 
     public void OnInventoryBack()
     {
+        OnToggleInventory();
+        return;
         buttonLayout.SetActive(true);
         journalObject.SetActive(false);
         mapObject.SetActive(false);
         editorObject.SetActive(false);
         if (EditorManager.Instance) EditorManager.Instance.OnDisableEditor();
+    }
+
+    public void OnMapNavigateDown()
+    {
+        GameObject nextMapPage;
+        if (activeMapPage == mapOwnViewPage)
+        {
+            nextMapPage = mapSharedViewButton.GetComponent<UIElement>().isEnabled ? mapSharedViewPage : activeMapPage;
+        }
+        else if (activeMapPage == mapSharedViewPage)
+        {
+            nextMapPage = mapIndividualViewButton.GetComponent<UIElement>().isEnabled ? mapIndividualViewPage : mapOwnViewPage;
+        }
+        else nextMapPage = mapOwnViewPage;
+        if (activeMapPage != nextMapPage) SetMapPage(nextMapPage);
     }
 
     public void OnOpenEditor()
@@ -235,8 +259,38 @@ public class InventoryManager : MonoBehaviour
         if (EditorManager.Instance) EditorManager.Instance.OnEnableEditor();
     }
 
-    public void OnJournalDisable() => buttonLayout.transform.Find("JournalIcon").GetComponent<UIElement>().OnElementDisable();
-    public void OnJournalEnable() => buttonLayout.transform.Find("JournalIcon").GetComponent<UIElement>().OnElementEnable();
+    public IEnumerator JournalMoveHandler(bool shouldCenter)
+    {
+        yield return new WaitForSeconds(!shouldCenter ? .1f : 0f);
+        Vector3 targetPos = new Vector3(!shouldCenter ? -930f : -1660f, journalObject.transform.localPosition.y, 0f);
+        float time = 0f;
+        while (time < 1f)
+        {
+            time += Time.deltaTime;
+            journalObject.transform.localPosition = Vector3.Lerp(journalObject.transform.localPosition, targetPos, Time.deltaTime * 10f);
+            yield return new WaitForEndOfFrame();
+        }
+    }
+
+    public IEnumerator MapTabMoveHandler(bool shouldCenter)
+    {
+        Vector3 ownTargetPos = new Vector3(!shouldCenter ? 340f : 36f, mapOwnViewButton.transform.localPosition.y, 0f);
+        Vector3 sharedTargetPos = new Vector3(!shouldCenter ? 535f : 230f, mapSharedViewButton.transform.localPosition.y, 0f);
+        Vector3 individualTargetPos = new Vector3(!shouldCenter ? 730f : 425f, mapIndividualViewButton.transform.localPosition.y, 0f);
+
+        float time = 0f;
+        while (time < 1f)
+        {
+            time += Time.deltaTime;
+            mapOwnViewButton.transform.localPosition = Vector3.Lerp(mapOwnViewButton.transform.localPosition, ownTargetPos, Time.deltaTime * 10f);
+            mapSharedViewButton.transform.localPosition = Vector3.Lerp(mapSharedViewButton.transform.localPosition, sharedTargetPos, Time.deltaTime * 10f);
+            mapIndividualViewButton.transform.localPosition = Vector3.Lerp(mapIndividualViewButton.transform.localPosition, individualTargetPos, Time.deltaTime * 10f);
+            yield return new WaitForEndOfFrame();
+        }
+    }
+
+    public void OnJournalDisable() => journalPageView.transform.Find("Blocker").gameObject.SetActive(true);
+    public void OnJournalEnable() => journalPageView.transform.Find("Blocker").gameObject.SetActive(false);
     public GameObject FetchMapObjectById(int targetId) 
     {
         if (GameManager.Instance.isMaster) return MenuManager.Instance.individualMapsObject.transform.Find("MapP" + targetId).gameObject;

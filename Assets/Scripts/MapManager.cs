@@ -25,6 +25,7 @@ public class MapManager : NetworkBehaviour
     [SerializeField] private Vector3 savedElementPosition;
     [SerializeField] private bool enablePlacement;
     [SerializeField] private bool enableDiscard;
+    private bool isPileHovered;
 
     [Header("Draw Data")]
     private List<GameObject> activeDrawDots = new List<GameObject>();
@@ -53,8 +54,10 @@ public class MapManager : NetworkBehaviour
                 mapComponents = Instantiate(Resources.Load<GameObject>("MapPrefabs/NewElements"));
                 mapComponents.GetComponent<NetworkObject>()?.Spawn();
                 mapComponents.transform.SetParent(transform);
+                mapComponents.transform.SetSiblingIndex(iconPile.transform.GetSiblingIndex());
             }
             gameObject.SetActive(false);
+            transform.Find("InnerLayer").localPosition = new Vector3(307f, 0f, 0f);
         }
         else
         {
@@ -82,6 +85,8 @@ public class MapManager : NetworkBehaviour
         SetupMapTriggers();
     }
 
+    private void Update() => PileHoverHandler();
+
     private void SetupMapTriggers()
     {
         mapBackground = transform.Find("Background").gameObject;
@@ -90,6 +95,8 @@ public class MapManager : NetworkBehaviour
         UIManager.Instance.AddEventTrigger(mapBackground.GetComponent<EventTrigger>(), EventTriggerType.Drag, OnDrawLine);
         UIManager.Instance.AddEventTrigger(iconPile.GetComponent<EventTrigger>(), EventTriggerType.PointerEnter, OnEnableDiscard);
         UIManager.Instance.AddEventTrigger(iconPile.GetComponent<EventTrigger>(), EventTriggerType.PointerExit, OnDisableDiscard);
+        UIManager.Instance.AddEventTrigger(iconPile.GetComponent<EventTrigger>(), EventTriggerType.PointerEnter, SetPileHoverState, true);
+        UIManager.Instance.AddEventTrigger(iconPile.GetComponent<EventTrigger>(), EventTriggerType.PointerExit, SetPileHoverState, false);
         UIManager.Instance.AddEventTrigger(pencilIcon.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, SetActiveTool, pencilIcon);
         UIManager.Instance.AddEventTrigger(eraserIcon.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, SetActiveTool, eraserIcon);
         UIManager.Instance.AddEventTrigger(trashIcon.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnMapClearRequest);
@@ -141,7 +148,11 @@ public class MapManager : NetworkBehaviour
         if (activeTool == null || !gameObject.activeSelf) return;
 
         // TODO: not this
-        if (!mapComponents) mapComponents = isNetworked ? transform.Find("NewElements(Clone)").gameObject : transform.Find("NewElements").gameObject;
+        if (!mapComponents) 
+        {
+            mapComponents = isNetworked ? transform.Find("NewElements(Clone)").gameObject : transform.Find("NewElements").gameObject;
+            mapComponents.transform.SetSiblingIndex(iconPile.transform.GetSiblingIndex());
+        }
 
         // save element position
         savedElementPosition = targetElement.transform.position;
@@ -165,8 +176,9 @@ public class MapManager : NetworkBehaviour
             savedElementPosition = Vector3.zero;
         }
 
-        // set target element parent to the map
-        targetElement.transform.SetParent(mapComponents.transform);
+        // set target element to the last child of the object to appear on top of the pile
+        if (!targetElement.GetComponent<NetworkObject>() || IsHost) targetElement.transform.SetParent(transform);
+        else MapNetworkManager.Instance.SetMapElementParentServerRpc(targetElement.GetComponent<NetworkObject>().NetworkObjectId, transform.GetComponent<NetworkObject>().NetworkObjectId);
 
         // disable raycast target to allow detecting hover states under the element
         targetElement.GetComponent<Image>().raycastTarget = false;
@@ -199,6 +211,10 @@ public class MapManager : NetworkBehaviour
 
         // play place sfx
         AudioManager.Instance.OnElementPlace();
+
+        // set target element parent to the components object
+        if (!targetElement.GetComponent<NetworkObject>() || IsHost) targetElement.transform.SetParent(mapComponents.transform);
+        else MapNetworkManager.Instance.SetMapElementParentServerRpc(targetElement.GetComponent<NetworkObject>().NetworkObjectId, mapComponents.transform.GetComponent<NetworkObject>().NetworkObjectId);
 
         // destroy element if its dropped over a discard allowed area
         if (enableDiscard)
@@ -250,12 +266,49 @@ public class MapManager : NetworkBehaviour
         iconPile.GetComponent<Image>().color = targetState ? redHighlight : Color.white;
     }
 
+    private void SetPileHoverState(bool targetState) => isPileHovered = targetState;
+
+    private void PileHoverHandler()
+    {
+        float targetY = !isPileHovered ? -520f : -395f;
+        iconPile.transform.localPosition = Vector3.Lerp(iconPile.transform.localPosition, new Vector3(iconPile.transform.localPosition.x, targetY, iconPile.transform.localPosition.z), Time.deltaTime * 10f);
+    }
+
+    public IEnumerator MapMoveHandler(bool shouldCenter)
+    {
+        StartCoroutine(InventoryManager.Instance.JournalMoveHandler(shouldCenter));
+        yield return new WaitForSeconds(shouldCenter ? .1f : 0f);
+        StartCoroutine(InventoryManager.Instance.MapTabMoveHandler(shouldCenter));
+
+        Vector3 targetPos = new Vector3(shouldCenter ? -307f : 0f, transform.localPosition.y, transform.localPosition.z);
+        Vector3 layerTargetPos = new Vector3(shouldCenter ? 298f : 0f, transform.Find("InnerLayer").localPosition.y, transform.Find("InnerLayer").localPosition.z);
+        float time = 0f;
+        while (time < 1f)
+        {
+            time += Time.deltaTime;
+            transform.localPosition = Vector3.Lerp(transform.localPosition, targetPos, Time.deltaTime * 10f);
+            transform.Find("InnerLayer").localPosition = Vector3.Lerp(transform.Find("InnerLayer").localPosition, layerTargetPos, Time.deltaTime * 10f);
+            
+            yield return new WaitForEndOfFrame();
+        }
+    }
+
+    public IEnumerator MapLoadAnimator()
+    {
+        yield return new WaitForSeconds(2f);
+        StartCoroutine(MapMoveHandler(false));
+    }
+
     public void OnDrawLine()
     {
         if (activeTool != pencilIcon || !gameObject.activeSelf || !enablePlacement || enableDiscard || InputManager.Instance.lookAction.ReadValue<Vector2>() == Vector2.zero) return;
 
         // TODO: not this
-        if (!mapComponents) mapComponents = transform.Find("NewElements(Clone)").gameObject;
+        if (!mapComponents) 
+        {
+            mapComponents = isNetworked ? transform.Find("NewElements(Clone)").gameObject : transform.Find("NewElements").gameObject;
+            mapComponents.transform.SetSiblingIndex(iconPile.transform.GetSiblingIndex());
+        }
 
         // conditionally play draw sfx
         if (!AudioManager.Instance.IsPlaying()) AudioManager.Instance.OnDraw();
@@ -326,11 +379,10 @@ public class MapManager : NetworkBehaviour
         pencilIcon.GetComponent<UIElement>().OnElementDeSelect();
         eraserIcon.GetComponent<UIElement>().OnElementDeSelect();
         trashIcon.GetComponent<UIElement>().OnElementDeSelect();
+        pencilSizeSlider.gameObject.SetActive(false);
 
         if (targetTool == null) return;
         targetTool.GetComponent<UIElement>().OnElementSelect();
-
-        // toggle sliders
         pencilSizeSlider.gameObject.SetActive(pencilIcon.GetComponent<UIElement>().isSelected);
     }
 
@@ -388,9 +440,12 @@ public class MapManager : NetworkBehaviour
     public void OnMapToggleReady()
     {
         bool isMapready = iconPile.activeSelf;
-        toolBar.SetActive(!isMapready);
         iconPile.SetActive(!isMapready);
+        pencilIcon.GetComponent<UIElement>().OnElementToggleEnable(!isMapready);
+        eraserIcon.GetComponent<UIElement>().OnElementToggleEnable(!isMapready);
+        trashIcon.GetComponent<UIElement>().OnElementToggleEnable(!isMapready);
         SetActiveTool(!isMapready ? pencilIcon : null);
+        StartCoroutine(MapMoveHandler(isMapready));
 
         // handle behaviour based on map type
         if (isNetworked)
@@ -413,9 +468,13 @@ public class MapManager : NetworkBehaviour
     public void OnDisableMapUI()
     {
         SetActiveTool(null);
-        saveIcon.SetActive(false);
-        toolBar.SetActive(false);
         iconPile.SetActive(false);
+        saveIcon.SetActive(false);
+        pencilIcon.GetComponent<UIElement>().OnElementDisable();
+        eraserIcon.GetComponent<UIElement>().OnElementDisable();
+        trashIcon.GetComponent<UIElement>().OnElementDisable();
+        if (GameManager.Instance.isMaster) toolBar.SetActive(false);
+        ToggleColorHighlight(false);
     }
 
     public void OnSendMapData()
@@ -435,6 +494,12 @@ public class MapManager : NetworkBehaviour
         // prevent sending empty data
         if (mapElements.Count == 0) return;
         MapNetworkManager.Instance.SpawnMapInstanceServerRpc(mapElements.ToArray());            
+    }
+
+    public void UpdateMapReadyState()
+    {
+        string targetText = GameManager.Instance.playerList.Count(p => p.IsMapReady.Value == true) + "/" + GameManager.Instance.playerList.Count;
+        transform.Find("SaveIcon").Find("ReadyText").GetComponent<TMP_Text>().text = targetText;
     }
 
     public void OnEnablePlacement() => enablePlacement = true;

@@ -123,7 +123,7 @@ public class UIManager : NetworkBehaviour
         if (currentSelectedObject != lastSelectedObject)
         {
             // prevent deselecting on click in the menu
-            if (currentSelectedObject == null && GameManager.Instance.isLobbyStarted.Value) 
+            if (currentSelectedObject == null && !GameManager.Instance.isLobbyStarted.Value) 
             {
                 currentSelectedObject = lastSelectedObject;
                 eventSystem.SetSelectedGameObject(currentSelectedObject);
@@ -144,6 +144,7 @@ public class UIManager : NetworkBehaviour
 
     public void OnNavigationDown()
     {
+        if (InventoryManager.Instance.isInventoryActive) InventoryManager.Instance.OnMapNavigateDown();
         if (!eventSystem.currentSelectedGameObject) return;
         Selectable currentSelectable = eventSystem.currentSelectedGameObject.GetComponent<Selectable>();
         Selectable nextSelectable = currentSelectable.navigation.selectOnDown;
@@ -217,6 +218,7 @@ public class UIManager : NetworkBehaviour
     public void MirrorSharedmaptoMinimap()
     {
         // TODO: this is hardcoded, has hacks and is unnecessarily complex (but it works)
+        if (!MapManager.SharedInstance.mapComponents) return; // NOTE: This can occur if the player never placed a single thing on the shared map
         minimapIcon.transform.localScale = new Vector3(.7f, .7f, .7f);
         foreach (Transform icon in MapManager.SharedInstance.mapComponents.transform)
         {
@@ -333,7 +335,7 @@ public class UIManager : NetworkBehaviour
         dialogTitle.GetComponent<TMP_Text>().text = dialogEntry.title;
         dialogText.GetComponent<TMP_Text>().text = dialogEntry.text;
         mainButton.SetActive(!string.IsNullOrEmpty(dialogEntry.button));
-        mainButton.transform.GetChild(0).GetComponent<TMP_Text>().text = dialogEntry.button;
+        mainButton.transform.Find("Text").GetComponent<TMP_Text>().text = dialogEntry.button;
 
         // set ui selected button
         //eventSystem.SetSelectedGameObject(mainButton.activeSelf ? mainButton : closeButton);

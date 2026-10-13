@@ -7,6 +7,7 @@ using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 
 public class GameManager : NetworkBehaviour
@@ -118,7 +119,7 @@ public class GameManager : NetworkBehaviour
         Time.timeScale = 1f;
         yield return new WaitForSeconds(1f);
 
-        if (IsHost || !terrainObject)
+        if (IsHost || !FindAnyObjectByType<Volume>())
         {
             Debug.Log("GameManager: Loading level " + sceneName);
             AsyncOperation ao = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
@@ -139,7 +140,7 @@ public class GameManager : NetworkBehaviour
     private void OnMapLoaded()
     {
         // assign scene vars
-        // TODO: rewrite this shit
+        // TODO: rewrite this pls
         Scene loadedScene = SceneManager.GetSceneByName(activeStory.Value.ToString());
         loadedScene = loadedScene == null ? SceneManager.GetActiveScene() : loadedScene;
         foreach (GameObject rootObject in loadedScene.GetRootGameObjects())
@@ -150,7 +151,7 @@ public class GameManager : NetworkBehaviour
                 rootObject.transform.eulerAngles = new Vector3(0f, -180f, 0f);
                 terrainObject = rootObject.transform.Find("Terrain").Find("Inner terrain").gameObject;
                 playerSpawnPosition = rootObject.transform.Find("Terrain objects").Find("Starting point").gameObject;
-                AudioManager.Instance.environmentAudioSource = rootObject.transform.Find("World Settings").GetComponentInChildren<AudioSource>().transform.GetComponent<AudioSource>();
+                AudioManager.Instance.environmentAudioSource = rootObject.transform.Find("World Settings").GetComponentInChildren<AudioSource>();
             }
         }
 
@@ -171,6 +172,9 @@ public class GameManager : NetworkBehaviour
 
         // update player render states
         UpdatePlayerRenderStateRpc();
+
+        // animate map
+        StartCoroutine(MapManager.Instance.MapLoadAnimator());
 
         Debug.Log("GameManager: Map loaded");
     }

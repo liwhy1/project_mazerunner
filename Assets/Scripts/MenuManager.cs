@@ -343,7 +343,7 @@ public class MenuManager : NetworkBehaviour
 
     private void OnMasterEndGame()
     {
-        SetMasterGameStateText("Game over");
+        SetMasterGameStateText("Game end");
         MapManager.SharedInstance.gameObject.SetActive(false);
         individualMapsObject.SetActive(true);
         lobbyFinishButton.SetActive(false);
@@ -357,6 +357,6 @@ public class MenuManager : NetworkBehaviour
         MapManager.SharedInstance.gameObject.SetActive(true);
         MapManager.SharedInstance.OnMapToggleReady();
         MapManager.SharedInstance.saveIcon.SetActive(false);
-        MapManager.SharedInstance.transform.Find("PageBackground").gameObject.SetActive(false);
+        MapManager.SharedInstance.transform.Find("InnerLayer").gameObject.SetActive(false);
     }
 }

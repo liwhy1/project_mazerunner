@@ -9,7 +9,9 @@ public class UIElement : MonoBehaviour
     public Color highlightColor = Color.gray;
     public Color selectColor = Color.darkGray;
     public Color disabledColor = Color.white;
-    Vector3 startSize;
+    private Vector3 startSize;
+    private Sprite originalSprite;
+    private Sprite altSprite;
     public bool isElementSetup = false;
     public bool enableBackground = true;
     public bool enableHighlight = true;
@@ -30,6 +32,8 @@ public class UIElement : MonoBehaviour
         selectColor = Color.darkGray;
         disabledColor = Color.white;
         disabledColor.a = .3f;
+        originalSprite = GetComponent<Image>().sprite;
+        altSprite = transform.Find("AltSprite")?.GetComponent<Image>().sprite;
 
         if (!enableBackground) 
         {
@@ -73,6 +77,7 @@ public class UIElement : MonoBehaviour
         if (!isEnabled) return;
         isSelected = true;
         GetComponent<Image>().color = selectColor;
+        if (altSprite) GetComponent<Image>().sprite = altSprite;
     }
 
     public void OnElementDeSelect()
@@ -80,6 +85,7 @@ public class UIElement : MonoBehaviour
         if (!isEnabled) return;
         isSelected = false;
         GetComponent<Image>().color = normalColor;
+        if (altSprite) GetComponent<Image>().sprite = originalSprite;
     }
 
     public void OnElementEnable()
@@ -108,6 +114,12 @@ public class UIElement : MonoBehaviour
             tempColor.a = .3f;
             transform.Find("Sprite").GetComponent<Image>().color = tempColor;
         }
+    }
+
+    public void OnElementToggleEnable(bool targetState)
+    {
+        if (targetState) OnElementEnable();
+        else OnElementDisable();
     }
 
     public void OnElementHighlight() 

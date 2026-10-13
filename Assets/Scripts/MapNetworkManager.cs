@@ -21,7 +21,8 @@ public class MapNetworkManager : NetworkBehaviour
         {
             GameObject newMap = Instantiate(Resources.Load<GameObject>("MapPrefabs/MapObject"));
             newMap.GetComponent<NetworkObject>()?.Spawn();
-            newMap.transform.SetParent(transform, false);            
+            newMap.transform.SetParent(transform, false);
+            newMap.transform.localPosition = new Vector3(-307f, 40f, 0f);
         }
     }
 
@@ -36,6 +37,7 @@ public class MapNetworkManager : NetworkBehaviour
         if (newValue == MapState.Shared)
         {
             if (GameManager.Instance.isMaster) MenuManager.Instance.OnMasterSharedMapEnabled();
+            if (GameManager.Instance.isMaster) MapManager.SharedInstance?.OnDisableMapUI();
             MapManager.Instance?.OnDisableMapUI();
             InventoryManager.Instance.OnToggleSharedView(true);
             InventoryManager.Instance.OnJournalDisable();
@@ -74,12 +76,14 @@ public class MapNetworkManager : NetworkBehaviour
     public void CheckLobbyMapStateServerRpc()
     {
         string targetText = GameManager.Instance.playerList.Count(p => p.IsMapReady.Value == true) + "/" + GameManager.Instance.playerList.Count;
-        MenuManager.Instance.SetMasterGameStateText("Individual mapping\n" + targetText);
-        MapManager.Instance.transform.Find("SaveIcon").Find("ReadyText").GetComponent<TMP_Text>().text = targetText;
-        if (GameManager.Instance.playerList.All(p => p.IsMapReady.Value == true))
+        if (GameManager.Instance.isLobbyStarted.Value) 
         {
-            Debug.Log("MNM: All individual maps ready");
-            SetMapStateServerRpc(MapState.Shared);
+            MenuManager.Instance.SetMasterGameStateText("Individual mapping\n" + targetText);
+            if (GameManager.Instance.playerList.All(p => p.IsMapReady.Value == true))
+            {
+                Debug.Log("MNM: All individual maps ready");
+                SetMapStateServerRpc(MapState.Shared);
+            }
         }
     }
 
@@ -156,6 +160,18 @@ public class MapNetworkManager : NetworkBehaviour
             }
 
             if (pendingObject.Value) StartCoroutine(MapManager.SharedInstance.ElementReplaceRoutine(pendingObject.Value, targetObject.gameObject));
+        }
+    }
+
+    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+    public void SetMapElementParentServerRpc(ulong targetElement, ulong targetParent)
+    {
+        if (NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(targetElement, out NetworkObject targetObject))
+        {
+            if (NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(targetParent, out NetworkObject targetParentObject))
+            {
+                targetObject.transform.SetParent(targetParentObject.transform);                
+            }
         }
     }
 
