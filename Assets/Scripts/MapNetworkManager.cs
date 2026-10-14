@@ -58,7 +58,7 @@ public class MapNetworkManager : NetworkBehaviour
         {
             InventoryManager.Instance.OnToggleIndividualView(true);
             InventoryManager.Instance.OnToggleSharedView(true);
-            InventoryManager.Instance.SetMapPage(InventoryManager.Instance.mapSharedViewPage);
+            InventoryManager.Instance.SetMapPage(InventoryManager.Instance.mapIndividualViewPage);
             InventoryManager.Instance.OnJournalEnable();
         }
     }

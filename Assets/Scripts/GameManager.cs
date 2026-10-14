@@ -22,6 +22,7 @@ public class GameManager : NetworkBehaviour
     public NetworkVariable<FixedString64Bytes> activeStory = new NetworkVariable<FixedString64Bytes>("Prototype3", NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     public NetworkVariable<FixedString64Bytes> joinCode = new NetworkVariable<FixedString64Bytes>("######", NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     public NetworkVariable<bool> isLobbyStarted = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    public NetworkVariable<int> currentTravelCost = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
     [Header("Reference data")]
     [SerializeField] private GameObject mainCamera;
@@ -30,6 +31,10 @@ public class GameManager : NetworkBehaviour
     public GameObject terrainObject;
     public Shader transparentShader;
     [SerializeField] private GameObject navMeshObject;
+    public List<GameObject> visitedLandmarks;
+
+    [Header("Lobby data")]
+    public bool allowLandmarkBacktracking = true;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void Initialize()
@@ -335,6 +340,44 @@ public class GameManager : NetworkBehaviour
         playerList.Sort((a, b) => a.OwnerClientId.CompareTo(b.OwnerClientId));
         UIManager.Instance.OnRefreshPlayerList();
         Debug.Log("GameManager: Player list refreshed");
+    }
+
+    public void OnLandmarkEntered(GameObject targetLandmark)
+    {
+        if (visitedLandmarks.Contains(targetLandmark))
+        {
+            // handle backtracking
+            if (allowLandmarkBacktracking && visitedLandmarks.Count > 1 && visitedLandmarks[visitedLandmarks.Count - 2] == targetLandmark)
+            {
+                int targetCost = visitedLandmarks.Last().GetComponent<LandmarkObject>().travelRelations.FirstOrDefault(t => t.connectedLandmark == targetLandmark).travelCost;
+                currentTravelCost.Value -= targetCost;
+                visitedLandmarks.Remove(visitedLandmarks.Last());
+            }
+        }
+        else
+        {
+            LandmarkData landmarkData = targetLandmark.GetComponent<LandmarkObject>().travelRelations.FirstOrDefault(t => t.connectedLandmark == visitedLandmarks.Last());
+            if (landmarkData != null)
+            {
+                visitedLandmarks.Add(targetLandmark);
+                currentTravelCost.Value += landmarkData.travelCost;
+            }
+            // this should be reserved for the starting landmark
+            else if (targetLandmark.GetComponent<LandmarkObject>().travelRelations.Count == 0)
+            {
+                visitedLandmarks.Add(targetLandmark);
+            }
+        }
+
+        // setup display text
+        string targetText = "Current travel cost: <b>" + currentTravelCost.Value + "</b>\n";
+        foreach (var landmark in visitedLandmarks)
+        {
+            targetText += (visitedLandmarks.IndexOf(landmark) == 0 ? "<b>" : " --> <b>") + landmark.GetComponent<LandmarkObject>().displayName + "</b>";
+        }
+
+        // send text to clients
+        UIManager.Instance.OnLandmarkTextChangedClientRpc(targetText);
     }
 
     [Rpc(SendTo.Everyone, InvokePermission = RpcInvokePermission.Everyone)]

@@ -7,6 +7,7 @@ using System.Linq;
 using UnityEngine.Events;
 using System.Collections.Generic;
 using System.Collections;
+using System;
 
 public class UIManager : NetworkBehaviour
 {
@@ -40,6 +41,7 @@ public class UIManager : NetworkBehaviour
     public Image cameraZoomOutIcon;
     public GameObject loadingIcon;
     private GameObject lastSelectedObject;
+    public TMP_Text landmarkText;
 
     [Header("Minimap Data")]
     public GameObject minimapObject;
@@ -243,6 +245,13 @@ public class UIManager : NetworkBehaviour
         minimapIcon.transform.localScale = Vector3.one;
     }
 
+    [ClientRpc]
+    public void OnLandmarkTextChangedClientRpc(string targetText)
+    {
+        landmarkText.text = targetText;
+        landmarkText.gameObject.SetActive(!String.IsNullOrEmpty(landmarkText.text));
+    }
+
     public void OnQuitButton()
     {
         // destroy spawned player
@@ -262,6 +271,7 @@ public class UIManager : NetworkBehaviour
         loadingIcon.SetActive(false);
         cameraZoomInIcon.gameObject.SetActive(GameManager.Instance.isLobbyStarted.Value);
         cameraZoomOutIcon.gameObject.SetActive(GameManager.Instance.isLobbyStarted.Value);
+        landmarkText.gameObject.SetActive(GameManager.Instance.isLobbyStarted.Value);
         minimapIcon.transform.parent.gameObject.SetActive(GameManager.Instance.isLobbyStarted.Value);
         inventoryIcon.gameObject.SetActive(GameManager.Instance.isLobbyStarted.Value);
         pauseIcon.gameObject.SetActive(GameManager.Instance.isLobbyStarted.Value);

@@ -122,6 +122,10 @@ public class PlayerController : NetworkBehaviour
     private void OnTriggerEnter(Collider other)
     {
         if (other.name.Contains("River")) SetPlayerPosition(lastSafePosition);
+        else if (other.GetComponent<LandmarkObject>() && IsHost)
+        {
+            GameManager.Instance.OnLandmarkEntered(other.gameObject);
+        }
     }
 
     private void AnimationHandler()
