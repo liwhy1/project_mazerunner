@@ -249,7 +249,7 @@ public class UIManager : NetworkBehaviour
     public void OnLandmarkTextChangedClientRpc(string targetText)
     {
         landmarkText.text = targetText;
-        landmarkText.gameObject.SetActive(!string.IsNullOrEmpty(landmarkText.text));
+        landmarkText.gameObject.SetActive(!string.IsNullOrEmpty(landmarkText.text) && !InventoryManager.Instance.isInventoryActive);
     }
 
     public void OnQuitButton()
@@ -401,6 +401,29 @@ public class UIManager : NetworkBehaviour
         else fpsRoutine = StartCoroutine(FpsRoutine());
 
         fpsText.gameObject.SetActive(fpsRoutine != null);
+    }
+
+    public IEnumerator UIAnimator(RectTransform targetObject, Vector3 targetPosition)
+    {
+        Vector3 startPosition = targetObject.anchoredPosition;
+        float duration = .6f;
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float progress = Mathf.Clamp01(elapsed / duration);
+            float t = EaseInOutQuart(progress);
+            targetObject.anchoredPosition = Vector3.Lerp(startPosition, targetPosition, t);
+            yield return null;
+        }
+
+        targetObject.anchoredPosition = targetPosition;
+    }
+
+    public float EaseInOutQuart(float x)
+    {
+        return x < 0.5f ? 8f * x * x * x * x : 1f - Mathf.Pow(-2f * x + 2f, 4f) / 2f;
     }
 
     private IEnumerator FpsRoutine()

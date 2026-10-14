@@ -209,10 +209,9 @@ public class InventoryManager : MonoBehaviour
         pageBackground.SetActive(true);
         if (pageObject == mapOwnViewPage)
         {
-            if (!MapManager.Instance.isLoaded) 
+            if (!MapManager.Instance.isLoaded)
             {
-                MapManager.Instance.iconPile.SetActive(true);
-                MapManager.Instance.OnMapToggleReady(false);
+                SetInventoryInitialState();
             }
             mapOwnViewButton.GetComponent<UIElement>().OnElementSelect();
             journalObject.SetActive(MapNetworkManager.Instance?.mapState.Value == MapState.Own || MapNetworkManager.Instance?.mapState.Value == MapState.Individual);
@@ -226,6 +225,23 @@ public class InventoryManager : MonoBehaviour
         {
             mapIndividualViewButton.GetComponent<UIElement>().OnElementSelect();
         }
+    }
+
+    private void SetInventoryInitialState()
+    {
+        // map object
+        MapManager.Instance.GetComponent<RectTransform>().anchoredPosition = new Vector2(-307f, MapManager.Instance.GetComponent<RectTransform>().anchoredPosition.y);
+        MapManager.Instance.transform.Find("InnerLayer").GetComponent<RectTransform>().anchoredPosition = new Vector2(-307f, MapManager.Instance.transform.Find("InnerLayer").GetComponent<RectTransform>().anchoredPosition.y);
+        MapManager.Instance.iconPile.SetActive(true);
+        MapManager.Instance.OnMapToggleReady(false, false);
+
+        // map tabs
+        mapOwnViewButton.GetComponent<RectTransform>().anchoredPosition = new Vector2(36f, mapOwnViewButton.GetComponent<RectTransform>().anchoredPosition.y);
+        mapSharedViewButton.GetComponent<RectTransform>().anchoredPosition = new Vector2(230f, mapSharedViewButton.GetComponent<RectTransform>().anchoredPosition.y);
+        mapIndividualViewButton.GetComponent<RectTransform>().anchoredPosition = new Vector2(425f, mapIndividualViewButton.GetComponent<RectTransform>().anchoredPosition.y);
+
+        // journal
+        journalObject.GetComponent<RectTransform>().anchoredPosition = new Vector2(-700f, journalObject.GetComponent<RectTransform>().anchoredPosition.y);
     }
 
     public void OnToggleNote() => noteObject.SetActive(!noteObject.activeSelf);
@@ -267,31 +283,20 @@ public class InventoryManager : MonoBehaviour
     public IEnumerator JournalMoveHandler(bool shouldCenter)
     {
         yield return new WaitForSeconds(shouldCenter ? 0f : .1f);
-        Vector3 targetPos = new Vector3(shouldCenter ? -1660f : -930f, journalObject.transform.localPosition.y, 0f);
-        float time = 0f;
-        while (time < 1f)
-        {
-            time += Time.deltaTime;
-            journalObject.transform.localPosition = Vector3.Lerp(journalObject.transform.localPosition, targetPos, Time.deltaTime * 10f);
-            yield return new WaitForEndOfFrame();
-        }
+        Vector2 targetPosition = new Vector2(shouldCenter ? -700f : 30f, journalObject.GetComponent<RectTransform>().anchoredPosition.y);
+        StartCoroutine(UIManager.Instance.UIAnimator(journalObject.GetComponent<RectTransform>(), targetPosition));
     }
 
-    public IEnumerator MapTabMoveHandler(bool shouldCenter)
+    public void MapTabMoveHandler(bool shouldCenter)
     {
-        Vector3 ownTargetPos = new Vector3(!shouldCenter ? 340f : 36f, mapOwnViewButton.transform.localPosition.y, 0f);
-        Vector3 sharedTargetPos = new Vector3(!shouldCenter ? 535f : 230f, mapSharedViewButton.transform.localPosition.y, 0f);
-        Vector3 individualTargetPos = new Vector3(!shouldCenter ? 730f : 425f, mapIndividualViewButton.transform.localPosition.y, 0f);
+        Vector2 targetPosition = new Vector2(!shouldCenter ? 340f : 36f, mapOwnViewButton.GetComponent<RectTransform>().anchoredPosition.y);
+        StartCoroutine(UIManager.Instance.UIAnimator(mapOwnViewButton.GetComponent<RectTransform>(), targetPosition));
+    
+        targetPosition = new Vector2(!shouldCenter ? 535f : 230f, mapSharedViewButton.GetComponent<RectTransform>().anchoredPosition.y);
+        StartCoroutine(UIManager.Instance.UIAnimator(mapSharedViewButton.GetComponent<RectTransform>(), targetPosition));
 
-        float time = 0f;
-        while (time < 1f)
-        {
-            time += Time.deltaTime;
-            mapOwnViewButton.transform.localPosition = Vector3.Lerp(mapOwnViewButton.transform.localPosition, ownTargetPos, Time.deltaTime * 10f);
-            mapSharedViewButton.transform.localPosition = Vector3.Lerp(mapSharedViewButton.transform.localPosition, sharedTargetPos, Time.deltaTime * 10f);
-            mapIndividualViewButton.transform.localPosition = Vector3.Lerp(mapIndividualViewButton.transform.localPosition, individualTargetPos, Time.deltaTime * 10f);
-            yield return new WaitForEndOfFrame();
-        }
+        targetPosition = new Vector2(!shouldCenter ? 730f : 425f, mapIndividualViewButton.GetComponent<RectTransform>().anchoredPosition.y);
+        StartCoroutine(UIManager.Instance.UIAnimator(mapIndividualViewButton.GetComponent<RectTransform>(), targetPosition));
     }
 
     public void OnJournalDisable() => journalPageView.transform.Find("Blocker").gameObject.SetActive(true);

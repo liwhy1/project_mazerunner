@@ -101,7 +101,7 @@ public class MapManager : NetworkBehaviour
         UIManager.Instance.AddEventTrigger(pencilIcon.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, SetActiveTool, pencilIcon);
         UIManager.Instance.AddEventTrigger(eraserIcon.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, SetActiveTool, eraserIcon);
         UIManager.Instance.AddEventTrigger(trashIcon.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnMapClearRequest);
-        UIManager.Instance.AddEventTrigger(saveIcon.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnMapToggleReady, true);
+        UIManager.Instance.AddEventTrigger(saveIcon.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, () => OnMapToggleReady(true, true));
     }
 
     private void InstantiateNewIcon(string targetPrefab, string targetSprite, bool enableTitle, int siblingIndex = -1)
@@ -279,19 +279,13 @@ public class MapManager : NetworkBehaviour
     {
         StartCoroutine(InventoryManager.Instance.JournalMoveHandler(shouldCenter));
         yield return new WaitForSeconds(shouldCenter ? .1f : 0f);
-        StartCoroutine(InventoryManager.Instance.MapTabMoveHandler(shouldCenter));
+        InventoryManager.Instance.MapTabMoveHandler(shouldCenter);
 
-        Vector3 targetPos = new Vector3(shouldCenter ? -307f : 0f, transform.localPosition.y, transform.localPosition.z);
-        Vector3 layerTargetPos = new Vector3(shouldCenter ? 298f : 0f, transform.Find("InnerLayer").localPosition.y, transform.Find("InnerLayer").localPosition.z);
-        float time = 0f;
-        while (time < 1f)
-        {
-            time += Time.deltaTime;
-            transform.localPosition = Vector3.Lerp(transform.localPosition, targetPos, Time.deltaTime * 10f);
-            transform.Find("InnerLayer").localPosition = Vector3.Lerp(transform.Find("InnerLayer").localPosition, layerTargetPos, Time.deltaTime * 10f);
-            
-            yield return new WaitForEndOfFrame();
-        }
+        Vector2 targetPosition = new Vector2(shouldCenter ? -307f : 0f, transform.GetComponent<RectTransform>().anchoredPosition.y);
+        StartCoroutine(UIManager.Instance.UIAnimator(transform.GetComponent<RectTransform>(), targetPosition));
+
+        targetPosition = new Vector2(shouldCenter ? -307f : 0f, transform.Find("InnerLayer").GetComponent<RectTransform>().anchoredPosition.y);
+        StartCoroutine(UIManager.Instance.UIAnimator(transform.Find("InnerLayer").GetComponent<RectTransform>(), targetPosition));
     }
 
     public IEnumerator MapLoadAnimator()
@@ -439,7 +433,7 @@ public class MapManager : NetworkBehaviour
         }
     }
 
-    public void OnMapToggleReady(bool sendToServer = true)
+    public void OnMapToggleReady(bool sendToServer = true, bool shouldAnimate = true)
     {
         bool isMapready = iconPile.activeSelf;
         iconPile.SetActive(!isMapready);
@@ -447,7 +441,7 @@ public class MapManager : NetworkBehaviour
         eraserIcon.GetComponent<UIElement>().OnElementToggleEnable(!isMapready);
         trashIcon.GetComponent<UIElement>().OnElementToggleEnable(!isMapready);
         SetActiveTool(!isMapready ? pencilIcon : null);
-        StartCoroutine(MapMoveHandler(isMapready));
+        if (shouldAnimate) StartCoroutine(MapMoveHandler(isMapready));
 
         // handle behaviour based on map type
         if (isNetworked)
