@@ -230,7 +230,7 @@ public class PlayerController : NetworkBehaviour
         }
 
         // apply speed based on sprint state
-        movementSpeed = InputManager.Instance.sprintAction.ReadValue<float>() == 1 ? sprintSpeed : walkSpeed;
+        movementSpeed = sprintSpeed;
 
         // calculate movement direction
         Vector3 movementDirection = transform.forward * moveDirection.y + transform.right * moveDirection.x;
