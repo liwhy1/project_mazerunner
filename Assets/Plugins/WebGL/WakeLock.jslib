@@ -10,6 +10,7 @@ mergeInto(LibraryManager.library, {
                 wakeLock.addEventListener("release", function () {
                     window.unityWakeLock = null;
                 });
+                console.warn("Wake Lock enabled!");
             })
             .catch(function (error) {
                 console.warn("Wake Lock failed:", error);

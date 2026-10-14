@@ -28,6 +28,7 @@ public class PlayerController : NetworkBehaviour
     private Vector3 lastPlayerPosition;
     private bool isPlayerMoving;
     private bool isAgentNavigating;
+    private Vector3 lastSafePosition;
 
     [Header("Camera Data")]
     public bool enableCamera;
@@ -99,6 +100,12 @@ public class PlayerController : NetworkBehaviour
 
         // set player animation state
         isAgentNavigating = !(!playerAgent.pathPending && (!playerAgent.hasPath || playerAgent.velocity.sqrMagnitude == 0f));
+
+        // handle safe area
+        if (!GameManager.Instance.terrainObject) return;
+        MeshCollider riverCollider = GameManager.Instance.terrainObject.transform.parent.Find("River").Find("ConvexRiver")?.GetComponent<MeshCollider>();
+        float currentDistance = Vector3.Distance(transform.position, riverCollider.ClosestPoint(transform.position));
+        lastSafePosition = isGrounded && currentDistance > 2.5f ? transform.position : lastSafePosition;
     }
 
     private void LateUpdate()
@@ -110,6 +117,11 @@ public class PlayerController : NetworkBehaviour
 
         // handle camera
         CameraHandler();
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.name.Contains("River")) SetPlayerPosition(lastSafePosition);
     }
 
     private void AnimationHandler()
