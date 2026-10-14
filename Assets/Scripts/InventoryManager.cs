@@ -208,7 +208,11 @@ public class InventoryManager : MonoBehaviour
         pageBackground.SetActive(true);
         if (pageObject == mapOwnViewPage)
         {
-            if (!MapManager.Instance.isLoaded) MapManager.Instance.OnMapToggleReady(false);
+            if (!MapManager.Instance.isLoaded) 
+            {
+                MapManager.Instance.iconPile.SetActive(true);
+                MapManager.Instance.OnMapToggleReady(false);
+            }
             mapOwnViewButton.GetComponent<UIElement>().OnElementSelect();
             journalObject.SetActive(MapNetworkManager.Instance?.mapState.Value == MapState.Own || MapNetworkManager.Instance?.mapState.Value == MapState.Individual);
         }

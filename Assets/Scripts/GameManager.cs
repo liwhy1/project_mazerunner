@@ -107,7 +107,8 @@ public class GameManager : NetworkBehaviour
         playerViewCamera.gameObject.SetActive(false);
         InventoryManager.Instance.OnSetupStory();
 
-        if (!isMaster) OnLoadMap(activeStory.Value.ToString());
+        string targetScene = String.IsNullOrEmpty(SceneManager.GetSceneByName(activeStory.Value.ToString()).name) ? "Prototype5" : activeStory.Value.ToString();
+        if (!isMaster) OnLoadMap(targetScene);
         else isMasterGameStarted = true;
     }
 
@@ -142,7 +143,7 @@ public class GameManager : NetworkBehaviour
         // assign scene vars
         // TODO: rewrite this pls
         Scene loadedScene = SceneManager.GetSceneByName(activeStory.Value.ToString());
-        loadedScene = loadedScene == null ? SceneManager.GetActiveScene() : loadedScene;
+        loadedScene = String.IsNullOrEmpty(loadedScene.name) ? SceneManager.GetSceneByName("Prototype5") : loadedScene;
         foreach (GameObject rootObject in loadedScene.GetRootGameObjects())
         {
             if (rootObject.GetComponent<Camera>()) rootObject.SetActive(false);
