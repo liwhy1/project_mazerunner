@@ -75,6 +75,9 @@ public class GameManager : NetworkBehaviour
         Instance = this;
         isPaused = true;
 
+        // Enable wakelock
+        GetComponent<WebGLWakeLock>().Enable();
+
         NetworkManager.OnClientConnectedCallback += OnClientConnected;
         NetworkManager.OnClientDisconnectCallback += OnClientDisconnected;
         isLobbyStarted.OnValueChanged += OnLobbyStartValueChanged;
