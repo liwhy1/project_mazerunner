@@ -208,7 +208,7 @@ public class InventoryManager : MonoBehaviour
         pageBackground.SetActive(true);
         if (pageObject == mapOwnViewPage)
         {
-            if (MapNetworkManager.Instance?.mapState.Value == MapState.Own) MapManager.Instance?.StartCoroutine(MapManager.Instance?.MapMoveHandler(true));
+            if (!MapManager.Instance.isLoaded) MapManager.Instance.OnMapToggleReady(false);
             mapOwnViewButton.GetComponent<UIElement>().OnElementSelect();
             journalObject.SetActive(MapNetworkManager.Instance?.mapState.Value == MapState.Own || MapNetworkManager.Instance?.mapState.Value == MapState.Individual);
         }
@@ -261,8 +261,8 @@ public class InventoryManager : MonoBehaviour
 
     public IEnumerator JournalMoveHandler(bool shouldCenter)
     {
-        yield return new WaitForSeconds(!shouldCenter ? .1f : 0f);
-        Vector3 targetPos = new Vector3(!shouldCenter ? -930f : -1660f, journalObject.transform.localPosition.y, 0f);
+        yield return new WaitForSeconds(shouldCenter ? 0f : .1f);
+        Vector3 targetPos = new Vector3(shouldCenter ? -1660f : -930f, journalObject.transform.localPosition.y, 0f);
         float time = 0f;
         while (time < 1f)
         {

@@ -40,6 +40,7 @@ public class MapManager : NetworkBehaviour
     [SerializeField] private GameObject trashIcon;
     [SerializeField] private Slider pencilSizeSlider;
     public GameObject saveIcon;
+    public bool isLoaded;
 
     public override void OnNetworkSpawn() => OnSetup();
 
@@ -100,7 +101,7 @@ public class MapManager : NetworkBehaviour
         UIManager.Instance.AddEventTrigger(pencilIcon.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, SetActiveTool, pencilIcon);
         UIManager.Instance.AddEventTrigger(eraserIcon.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, SetActiveTool, eraserIcon);
         UIManager.Instance.AddEventTrigger(trashIcon.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnMapClearRequest);
-        UIManager.Instance.AddEventTrigger(saveIcon.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnMapToggleReady);
+        UIManager.Instance.AddEventTrigger(saveIcon.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnMapToggleReady, true);
     }
 
     private void InstantiateNewIcon(string targetPrefab, string targetSprite, bool enableTitle, int siblingIndex = -1)
@@ -295,8 +296,9 @@ public class MapManager : NetworkBehaviour
 
     public IEnumerator MapLoadAnimator()
     {
-        yield return new WaitForSeconds(2f);
-        StartCoroutine(MapMoveHandler(false));
+        yield return new WaitForSeconds(1.5f);
+        MapManager.Instance.OnMapToggleReady(false);
+        isLoaded = true;
     }
 
     public void OnDrawLine()
@@ -437,7 +439,7 @@ public class MapManager : NetworkBehaviour
         }
     }
 
-    public void OnMapToggleReady()
+    public void OnMapToggleReady(bool sendToServer = true)
     {
         bool isMapready = iconPile.activeSelf;
         iconPile.SetActive(!isMapready);
@@ -453,7 +455,7 @@ public class MapManager : NetworkBehaviour
             saveIcon.SetActive(!isMapready);
 
             // send ready state
-            if (!GameManager.Instance.isMaster) MapNetworkManager.Instance.SetMapStateServerRpc(MapState.Explore);
+            if (!GameManager.Instance.isMaster && sendToServer) MapNetworkManager.Instance.SetMapStateServerRpc(MapState.Explore);
         }
         else 
         {
@@ -461,7 +463,7 @@ public class MapManager : NetworkBehaviour
             saveIcon.transform.GetChild(1).gameObject.SetActive(!isMapready);
 
             // send ready state
-            if (!GameManager.Instance.isMaster) MapNetworkManager.Instance.SetPlayerMapStateServerRpc(isMapready);
+            if (!GameManager.Instance.isMaster && sendToServer) MapNetworkManager.Instance.SetPlayerMapStateServerRpc(isMapready);
         }
     }
 
