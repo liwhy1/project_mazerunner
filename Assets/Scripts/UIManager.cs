@@ -249,7 +249,7 @@ public class UIManager : NetworkBehaviour
     public void OnLandmarkTextChangedClientRpc(string targetText)
     {
         landmarkText.text = targetText;
-        landmarkText.gameObject.SetActive(!String.IsNullOrEmpty(landmarkText.text));
+        landmarkText.gameObject.SetActive(!string.IsNullOrEmpty(landmarkText.text));
     }
 
     public void OnQuitButton()

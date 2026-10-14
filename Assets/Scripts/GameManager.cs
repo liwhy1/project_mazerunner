@@ -115,7 +115,7 @@ public class GameManager : NetworkBehaviour
         playerViewCamera.gameObject.SetActive(false);
         InventoryManager.Instance.OnSetupStory();
 
-        string targetScene = String.IsNullOrEmpty(SceneManager.GetSceneByName(activeStory.Value.ToString()).name) ? "Prototype5" : activeStory.Value.ToString();
+        string targetScene = GetSceneBuildIndex(activeStory.Value.ToString()) != -1 ? activeStory.Value.ToString() : "Prototype5";
         if (!isMaster) OnLoadMap(targetScene);
         else isMasterGameStarted = true;
     }
@@ -151,7 +151,7 @@ public class GameManager : NetworkBehaviour
         // assign scene vars
         // TODO: rewrite this pls
         Scene loadedScene = SceneManager.GetSceneByName(activeStory.Value.ToString());
-        loadedScene = String.IsNullOrEmpty(loadedScene.name) ? SceneManager.GetSceneByName("Prototype5") : loadedScene;
+        if (loadedScene == null) UIManager.Instance.OnOpenDialog(DialogId.HostLostConnection);
         foreach (GameObject rootObject in loadedScene.GetRootGameObjects())
         {
             if (rootObject.GetComponent<Camera>()) rootObject.SetActive(false);
@@ -186,6 +186,19 @@ public class GameManager : NetworkBehaviour
         StartCoroutine(MapManager.Instance.MapLoadAnimator());
 
         Debug.Log("GameManager: Map loaded");
+    }
+
+    public int GetSceneBuildIndex(string sceneName)
+    {
+        for (int i = 0; i < SceneManager.sceneCountInBuildSettings; i++)
+        {
+            string path = SceneUtility.GetScenePathByBuildIndex(i);
+            string name = System.IO.Path.GetFileNameWithoutExtension(path);
+
+            if (name == sceneName) return i;
+        }
+
+        return -1;
     }
 
     public void RespawnPlayer()
