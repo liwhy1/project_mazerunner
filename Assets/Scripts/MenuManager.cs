@@ -5,6 +5,7 @@ using UnityEngine.EventSystems;
 using System.Collections.Generic;
 using Unity.Collections;
 using System.Linq;
+using System.Collections;
 using UnityEngine.UI;
 
 public class MenuManager : NetworkBehaviour
@@ -36,6 +37,11 @@ public class MenuManager : NetworkBehaviour
     [SerializeField] private GameObject lobbyObject;
     [SerializeField] private GameObject lobbyReadyButton;
     [SerializeField] private GameObject lobbyQuitButton;
+    [SerializeField] private GameObject lobbySettingsButton;
+    [SerializeField] private GameObject lobbySettingsPage;
+    [SerializeField] private Toggle lobbyLandmarkToggle;
+    [SerializeField] private Toggle lobbyJournalToggle;
+    [SerializeField] private Toggle lobbyInventoryToggle;
     [SerializeField] private UIVerticalSelector lobbyStorySelector;
     public TMP_Text lobbyJoinCodeText;
     public GameObject lobbyPlayerListObject;
@@ -125,7 +131,12 @@ public class MenuManager : NetworkBehaviour
         UIManager.Instance.AddEventTrigger(lobbyFinishButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnMasterFinishButton);
         UIManager.Instance.AddEventTrigger(lobbyQuitButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, UIManager.Instance.OnQuitButton);
         UIManager.Instance.AddEventTrigger(lobbyQuitButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, UIManager.Instance.OnQuitButton);
+        UIManager.Instance.AddEventTrigger(lobbySettingsButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnLobbyToggleSettings);
+        UIManager.Instance.AddEventTrigger(lobbySettingsButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnLobbyToggleSettings);
         lobbyStorySelector.onValueChanged += () => GameManager.Instance.SetActiveStory(lobbyStorySelector.currentSelection);
+        lobbyLandmarkToggle.onValueChanged.AddListener(delegate { GameManager.Instance.allowLandmarkBacktracking = lobbyLandmarkToggle.isOn; });
+        lobbyJournalToggle.onValueChanged.AddListener(delegate { GameManager.Instance.lockJournalAfterOwnMap = lobbyJournalToggle.isOn; });
+        lobbyInventoryToggle.onValueChanged.AddListener(delegate { GameManager.Instance.lockInventoryAtStart = lobbyInventoryToggle.isOn; });
 
         // player customisation
         UIManager.Instance.AddEventTrigger(headArrowLeft.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, DecreasePlayerSkinValue, "hair");
@@ -250,6 +261,7 @@ public class MenuManager : NetworkBehaviour
         individualMapsObject.SetActive(false);
         lobbyFinishButton.SetActive(false);
         timerObject.SetActive(false);
+        lobbySettingsButton.SetActive(IsHost || GameManager.Instance.isMaster);
 
         // set join code
         SetJoinCode(string.IsNullOrEmpty(joinCodeInput.text) ? GameManager.Instance.joinCode.Value.ToString() : joinCodeInput.text);
@@ -313,6 +325,12 @@ public class MenuManager : NetworkBehaviour
     public string GetJoinCodeInput()
     {
         return joinCodeInput.text.Trim().ToUpper();
+    }
+
+    private void OnLobbyToggleSettings()
+    {
+        Vector2 targetPosition = new Vector2(lobbySettingsPage.GetComponent<RectTransform>().anchoredPosition.x > -310f ? -320f : 30f, -150f);
+        StartCoroutine(UIManager.Instance.UIAnimator(lobbySettingsPage.GetComponent<RectTransform>(), targetPosition));
     }
 
     public void SetMasterGameStateText(string targetText)

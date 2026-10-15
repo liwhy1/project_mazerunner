@@ -81,7 +81,7 @@ public class InventoryManager : MonoBehaviour
             isLocked = false;
             OnToggleInventory();
         }
-        else
+        else if (GameManager.Instance.lockInventoryAtStart)
         {
             OnToggleInventory();
             UIManager.Instance.pauseIcon.gameObject.SetActive(true);
@@ -209,12 +209,9 @@ public class InventoryManager : MonoBehaviour
         pageBackground.SetActive(true);
         if (pageObject == mapOwnViewPage)
         {
-            if (!MapManager.Instance.isLoaded)
-            {
-                SetInventoryInitialState();
-            }
+            if (!MapManager.Instance.isLoaded) SetInventoryInitialState();
             mapOwnViewButton.GetComponent<UIElement>().OnElementSelect();
-            journalObject.SetActive(MapNetworkManager.Instance?.mapState.Value == MapState.Own || MapNetworkManager.Instance?.mapState.Value == MapState.Individual);
+            journalObject.SetActive(MapNetworkManager.Instance?.mapState.Value == MapState.Own || MapNetworkManager.Instance?.mapState.Value == MapState.Individual || !GameManager.Instance.lockJournalAfterOwnMap);
         }
         else if (pageObject == mapSharedViewPage)
         {
@@ -242,6 +239,9 @@ public class InventoryManager : MonoBehaviour
 
         // journal
         journalObject.GetComponent<RectTransform>().anchoredPosition = new Vector2(-700f, journalObject.GetComponent<RectTransform>().anchoredPosition.y);
+
+        // conditionally run first animation
+        if (!GameManager.Instance.lockInventoryAtStart) StartCoroutine(MapManager.Instance.MapLoadAnimator());
     }
 
     public void OnToggleNote() => noteObject.SetActive(!noteObject.activeSelf);

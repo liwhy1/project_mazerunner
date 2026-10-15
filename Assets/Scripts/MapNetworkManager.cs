@@ -40,7 +40,7 @@ public class MapNetworkManager : NetworkBehaviour
             if (GameManager.Instance.isMaster) MapManager.SharedInstance?.OnDisableMapUI();
             MapManager.Instance?.OnDisableMapUI();
             InventoryManager.Instance.OnToggleSharedView(true);
-            InventoryManager.Instance.OnJournalDisable();
+            if (GameManager.Instance.lockJournalAfterOwnMap) InventoryManager.Instance.OnJournalDisable();
             if (oldValue != MapState.Null) MapManager.Instance.OnSendMapData();
         }
         else if (newValue == MapState.Explore)

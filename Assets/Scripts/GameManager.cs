@@ -35,6 +35,8 @@ public class GameManager : NetworkBehaviour
 
     [Header("Lobby data")]
     public bool allowLandmarkBacktracking = true;
+    public bool lockJournalAfterOwnMap = true;
+    public bool lockInventoryAtStart = true;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void Initialize()
@@ -183,7 +185,7 @@ public class GameManager : NetworkBehaviour
         UpdatePlayerRenderStateRpc();
 
         // animate map
-        StartCoroutine(MapManager.Instance.MapLoadAnimator());
+        if (lockInventoryAtStart) StartCoroutine(MapManager.Instance.MapLoadAnimator());
 
         Debug.Log("GameManager: Map loaded");
     }
@@ -204,6 +206,7 @@ public class GameManager : NetworkBehaviour
     public void RespawnPlayer()
     {
         PlayerController.Instance.SetPlayerPosition(playerSpawnPosition.transform.position + Vector3.up + Vector3.forward * FetchPersistentPlayerId());
+        if (!mainCamera.activeSelf) UIManager.Instance.OnPauseToggle();
     }
 
     private void OnClientConnected(ulong clientId)
