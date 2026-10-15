@@ -5,7 +5,6 @@ using UnityEngine.EventSystems;
 using System.Collections.Generic;
 using Unity.Collections;
 using System.Linq;
-using System.Collections;
 using UnityEngine.UI;
 
 public class MenuManager : NetworkBehaviour
@@ -162,6 +161,11 @@ public class MenuManager : NetworkBehaviour
         lobbyStorySelector.selectorItems.Clear();
         lobbyStorySelector.selectorItems = storyNames;
         lobbyStorySelector.OnUpdateSelection(lobbyStorySelector.selectorItems.Count - 1);
+
+        // force rebuild ui layout
+        Canvas.ForceUpdateCanvases();
+        LayoutRebuilder.ForceRebuildLayoutImmediate(lobbyStorySelector.transform.parent.parent.parent.GetComponent<RectTransform>());
+        LayoutRebuilder.ForceRebuildLayoutImmediate(lobbyStorySelector.transform.parent.parent.GetComponent<RectTransform>());
     }
 
     public void IncreasePlayerSkinValue(string targetValue)
@@ -250,7 +254,7 @@ public class MenuManager : NetworkBehaviour
         // conditionally enable elements
         lobbyPlayerView.SetActive(!GameManager.Instance.isMaster);
         lobbyWaitingText.gameObject.SetActive(true);
-        lobbyStorySelector.gameObject.SetActive(IsHost);
+        lobbyStorySelector.transform.parent.parent.gameObject.SetActive(IsHost);
         lobbyReadyButton.SetActive(true);
         lobbyReadyButton.transform.Find("Text").GetComponent<TMP_Text>().text = GameManager.Instance.isMaster ? "Start" : "Ready";
         lobbyWaitingText.text = "";
@@ -302,7 +306,7 @@ public class MenuManager : NetworkBehaviour
     public void OnLobbyStart()
     {
         lobbyReadyButton.SetActive(false);
-        lobbyStorySelector.gameObject.SetActive(false);
+        lobbyStorySelector.transform.parent.parent.gameObject.SetActive(false);
         lobbyWaitingText.text = GameManager.Instance.isMaster ? "" : "Starting Game!";
         foreach (Transform child in lobbyPlayerView.transform) { child.GetComponent<UIElement>().OnElementDisable(); }
 
@@ -318,8 +322,8 @@ public class MenuManager : NetworkBehaviour
 
     public void SetJoinCode(string newValue)
     {
-        lobbyJoinCodeText.text = "Join Code: \n<b>" + newValue;
-        UIManager.Instance.pauseJoinCodeText.text = "Join Code: \n<b>" + newValue;
+        lobbyJoinCodeText.text = newValue;
+        UIManager.Instance.pauseJoinCodeText.text = newValue;
     }
 
     public string GetJoinCodeInput()
@@ -329,7 +333,7 @@ public class MenuManager : NetworkBehaviour
 
     private void OnLobbyToggleSettings()
     {
-        Vector2 targetPosition = new Vector2(lobbySettingsPage.GetComponent<RectTransform>().anchoredPosition.x > -310f ? -320f : 30f, -150f);
+        Vector2 targetPosition = new Vector2(lobbySettingsPage.GetComponent<RectTransform>().anchoredPosition.x > -290f ? -300f : 30f, -150f);
         StartCoroutine(UIManager.Instance.UIAnimator(lobbySettingsPage.GetComponent<RectTransform>(), targetPosition));
     }
 

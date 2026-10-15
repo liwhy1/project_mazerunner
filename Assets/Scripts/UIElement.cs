@@ -106,6 +106,7 @@ public class UIElement : MonoBehaviour
         isEnabled = false;
         isSelected = false;
         GetComponents<EventTrigger>().All(p => p.enabled = false);
+        GetComponent<RectTransform>().pivot = new Vector2(0.5f, 0.5f);
         transform.localScale = startSize;
         GetComponent<Image>().color = disabledColor;
         if (transform.Find("Sprite"))
@@ -142,6 +143,7 @@ public class UIElement : MonoBehaviour
 
         if (enableGrow) 
         {
+            GetComponent<RectTransform>().pivot = new Vector2(0.5f, 0.5f);
             transform.localScale = startSize * 1.05f;
         }
         if (enableHighlight) OnElementHighlight();
@@ -150,6 +152,7 @@ public class UIElement : MonoBehaviour
     public void OnElementShrink()
     {
         if (!isEnabled) return;
+        GetComponent<RectTransform>().pivot = new Vector2(0.5f, 0.5f);
         transform.localScale = startSize;
         OnElementUnHighlight();
     }

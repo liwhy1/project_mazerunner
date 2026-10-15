@@ -124,7 +124,7 @@ public class MapNetworkManager : NetworkBehaviour
 
         newObject.name = iconSprite;
         newObject.GetComponent<NetworkObject>().Spawn();
-        newObject.transform.SetParent(MapManager.SharedInstance.mapComponents.transform, false);
+        newObject.transform.SetParent(MapManager.SharedInstance.mapComponents.transform);
         newObject.transform.localPosition = iconPosition;
         newObject.transform.localScale = iconScale;
 
