@@ -219,21 +219,16 @@ public class UIManager : NetworkBehaviour
 
     public void MirrorSharedmaptoMinimap()
     {
-        // TODO: this is hardcoded, has hacks and is unnecessarily complex (but it works)
-        if (!MapManager.SharedInstance.mapComponents) return; // NOTE: This can occur if the player never placed a single thing on the shared map
-        minimapIcon.transform.localScale = new Vector3(.7f, .7f, .7f);
-        foreach (Transform icon in MapManager.SharedInstance.mapComponents.transform)
+        if (!MapManager.SharedInstance.mapBackground) return;
+        foreach (Transform icon in MapManager.SharedInstance.mapBackground.transform)
         {
             // prevent mirroring drawdots
             if (!icon.GetComponent<NetworkObject>() || icon.name.Contains("Dot")) continue;
             GameObject newIcon = Instantiate(Resources.Load<GameObject>("MapPrefabs/MapIcon"), minimapIcon.transform.parent);
 
             // apply position with slightly made up offset
-            newIcon.GetComponent<RectTransform>().anchoredPosition = icon.transform.localPosition;
-            newIcon.GetComponent<RectTransform>().anchoredPosition -= new Vector2(300f, 0f);
-
-            // anchor hack pt1
             newIcon.transform.SetParent(minimapIcon.transform);
+            newIcon.GetComponent<RectTransform>().anchoredPosition = icon.transform.GetComponent<RectTransform>().anchoredPosition;
 
             // apply icon values
             newIcon.transform.localEulerAngles = Vector3.zero;
@@ -241,8 +236,6 @@ public class UIManager : NetworkBehaviour
             newIcon.transform.Find("Sprite").GetComponent<Image>().preserveAspect = true;
             newIcon.transform.Find("Name").gameObject.SetActive(false);
         }
-        // resize minimap sprite aka anchor hack pt2
-        minimapIcon.transform.localScale = Vector3.one;
     }
 
     [ClientRpc]
@@ -424,6 +417,19 @@ public class UIManager : NetworkBehaviour
     public float EaseInOutQuart(float x)
     {
         return x < 0.5f ? 8f * x * x * x * x : 1f - Mathf.Pow(-2f * x + 2f, 4f) / 2f;
+    }
+
+    public Vector2 GetNormalizedPosition(RectTransform placementArea, Vector2 targetPosition)
+    {
+        Vector3 localPosition = placementArea.InverseTransformPoint(targetPosition);
+        Rect rect = placementArea.rect;
+        return new Vector2(Mathf.InverseLerp(rect.xMin, rect.xMax, localPosition.x), Mathf.InverseLerp(rect.yMin, rect.yMax, localPosition.y));
+    }
+
+    public Vector2 ApplyNormalizedPosition(RectTransform placementArea, Vector2 normalizedPosition)
+    {
+        Rect rect = placementArea.rect;
+        return new Vector2(Mathf.Lerp(rect.xMin, rect.xMax, normalizedPosition.x), Mathf.Lerp(rect.yMin, rect.yMax, normalizedPosition.y));
     }
 
     private IEnumerator FpsRoutine()

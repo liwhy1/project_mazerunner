@@ -46,7 +46,6 @@ public class PlayerData : NetworkBehaviour
     private void OnLobbyReadyStateChanged(bool oldValue, bool newValue)
     {
         MenuManager.Instance.UpdateLobbyReadyState();
-        MapManager.Instance.UpdateMapReadyState();
         if (!IsOwner) return;
         GameManager.Instance.CheckLobbyReadyStateServerRpc();
     }

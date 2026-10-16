@@ -309,6 +309,7 @@ public class MenuManager : NetworkBehaviour
         lobbyStorySelector.transform.parent.parent.gameObject.SetActive(false);
         lobbyWaitingText.text = GameManager.Instance.isMaster ? "" : "Starting Game!";
         foreach (Transform child in lobbyPlayerView.transform) { child.GetComponent<UIElement>().OnElementDisable(); }
+        MapManager.Instance.UpdateMapReadyState();
 
         // master
         timerObject.SetActive(GameManager.Instance.isMaster);
@@ -377,8 +378,8 @@ public class MenuManager : NetworkBehaviour
         SetMasterGameStateText("Shared mapping");
         lobbyFinishButton.SetActive(true);
         MapManager.SharedInstance.gameObject.SetActive(true);
-        MapManager.SharedInstance.OnMapToggleReady();
-        MapManager.SharedInstance.saveIcon.SetActive(false);
+        MapManager.SharedInstance.iconPile.SetActive(true);
+        MapManager.SharedInstance.OnMapToggleReady(false, false);
         MapManager.SharedInstance.transform.Find("InnerLayer").gameObject.SetActive(false);
     }
 }

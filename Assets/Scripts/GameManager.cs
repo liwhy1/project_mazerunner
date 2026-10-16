@@ -113,6 +113,7 @@ public class GameManager : NetworkBehaviour
     {
         isPaused = false;
         if (isMaster) isLobbyStarted.Value = true;
+        if (!MapManager.SharedInstance.mapBackground) MapManager.SharedInstance.SetupMapTriggers();
         MenuManager.Instance.OnLobbyStart();
         playerViewCamera.gameObject.SetActive(false);
         InventoryManager.Instance.OnSetupStory();
@@ -179,13 +180,13 @@ public class GameManager : NetworkBehaviour
         mainCamera.SetActive(false);
         UIManager.Instance.ResetUIState();
         MenuManager.Instance.ResetUIState();
-        InventoryManager.Instance.OnToggleInventoryLock();
+        if (MapNetworkManager.Instance.mapState.Value == MapState.Own || MapNetworkManager.Instance.mapState.Value == MapState.Shared) InventoryManager.Instance.OnToggleInventoryLock();
 
         // update player render states
         UpdatePlayerRenderStateRpc();
 
         // animate map
-        if (lockInventoryAtStart) StartCoroutine(MapManager.Instance.MapLoadAnimator());
+        if (lockInventoryAtStart && MapNetworkManager.Instance.mapState.Value == MapState.Own) StartCoroutine(MapManager.Instance.MapLoadAnimator());
 
         Debug.Log("GameManager: Map loaded");
     }

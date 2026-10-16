@@ -36,6 +36,7 @@ public class AudioManager : MonoBehaviour
 
     public void OnGameStarted()
     {
+        if (IsGameStarted) return;
         IsGameStarted = true;
 
         // setup environment sound

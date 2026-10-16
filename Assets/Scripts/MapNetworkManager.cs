@@ -36,23 +36,23 @@ public class MapNetworkManager : NetworkBehaviour
         if (oldValue == MapState.Null && !IsHost) SyncMapDataServerRpc();
         if (newValue == MapState.Shared)
         {
-            if (GameManager.Instance.isMaster) MenuManager.Instance.OnMasterSharedMapEnabled();
             if (GameManager.Instance.isMaster) MapManager.SharedInstance?.OnDisableMapUI();
             MapManager.Instance?.OnDisableMapUI();
             InventoryManager.Instance.OnToggleSharedView(true);
-            if (GameManager.Instance.lockJournalAfterOwnMap) InventoryManager.Instance.OnJournalDisable();
+            if (GameManager.Instance.isMaster) MenuManager.Instance.OnMasterSharedMapEnabled();
+            if (!GameManager.Instance.isMaster) AudioManager.Instance.OnGameStarted();
             if (oldValue != MapState.Null) MapManager.Instance.OnSendMapData();
         }
         else if (newValue == MapState.Explore)
         {
+            MapManager.SharedInstance?.OnDisableMapUI();
             MapManager.Instance?.OnDisableMapUI();
-            MapManager.SharedInstance.OnDisableMapUI();
-            UIManager.Instance.MirrorSharedmaptoMinimap();
             InventoryManager.Instance.OnToggleSharedView(true);
-            if (!GameManager.Instance.isMaster) InventoryManager.Instance.SetMapPage(InventoryManager.Instance.mapSharedViewPage);
-            InventoryManager.Instance.OnToggleInventoryLock();
-            // start game audio
+            if (GameManager.Instance.lockJournalAfterOwnMap) InventoryManager.Instance.OnJournalDisable();
+            UIManager.Instance.MirrorSharedmaptoMinimap();
+            if (InventoryManager.Instance.isLocked) InventoryManager.Instance.OnToggleInventoryLock();
             if (!GameManager.Instance.isMaster) AudioManager.Instance.OnGameStarted();
+            if (oldValue != MapState.Null) MapManager.Instance.OnSendMapData();
         }
         else if (newValue == MapState.Individual)
         {
@@ -82,7 +82,7 @@ public class MapNetworkManager : NetworkBehaviour
             if (GameManager.Instance.playerList.All(p => p.IsMapReady.Value == true))
             {
                 Debug.Log("MNM: All individual maps ready");
-                SetMapStateServerRpc(MapState.Shared);
+                if (mapState.Value == MapState.Own) SetMapStateServerRpc(MapState.Shared);
             }
         }
     }
@@ -93,10 +93,12 @@ public class MapNetworkManager : NetworkBehaviour
         if (mapState.Value == MapState.Own) return;
 
         // sync shared map element data
-        foreach (Transform element in MapManager.SharedInstance.mapComponents.transform)
+        foreach (Transform element in MapManager.SharedInstance.mapBackground.transform)
         {
             if (!element.GetComponent<NetworkObject>()) continue;
             SetMapElementDataClientRpc(0, element.GetComponent<NetworkObject>().NetworkObjectId, element.name, element.transform.localScale);
+            Vector2 normalisedPosition = UIManager.Instance.GetNormalizedPosition(element.transform.parent.GetComponent<RectTransform>(), element.transform.position);
+            SetMapElementPositionRpc(element.GetComponent<NetworkObject>().NetworkObjectId, normalisedPosition);
         }
         // sync individual view data
         // NOTE: This assumes the player limit is 3
@@ -114,22 +116,34 @@ public class MapNetworkManager : NetworkBehaviour
             string playerName = targetMap.transform.Find("Title").GetComponent<TMP_Text>().text;
             SpawnMapInstanceClientRpc(i, playerName, mapElements.ToArray());
         }
+
+        UIManager.Instance.MirrorSharedmaptoMinimap();
     }
 
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
-    public void SpawnMapElementServerRpc(ulong requestId, string iconPrefab, string iconSprite, Vector3 iconPosition, Vector3 iconScale)
+    public void SpawnMapElementServerRpc(ulong requestId, string iconPrefab, string iconSprite, Vector2 iconPosition, Vector2 iconScale)
     {
         Debug.Log("MNM: Spawning new object with type: " + iconPrefab);
         GameObject newObject = Instantiate(Resources.Load<GameObject>("MapPrefabs/" + iconPrefab), MapManager.SharedInstance.transform.position, Quaternion.identity);
-
-        newObject.name = iconSprite;
         newObject.GetComponent<NetworkObject>().Spawn();
-        newObject.transform.SetParent(MapManager.SharedInstance.mapComponents.transform);
-        newObject.transform.localPosition = iconPosition;
-        newObject.transform.localScale = iconScale;
+        newObject.transform.SetParent(MapManager.SharedInstance.mapBackground.transform);
 
         ulong objectId = newObject.GetComponent<NetworkObject>().NetworkObjectId;
         SetMapElementDataClientRpc(requestId, objectId, iconSprite, iconScale);
+        SetMapElementPositionRpc(objectId, iconPosition);
+    }
+
+    [Rpc(SendTo.Everyone, InvokePermission = RpcInvokePermission.Everyone)]
+    public void SetMapElementPositionRpc(ulong targetElement, Vector2 targetPosition, bool ignoreOwner = false, RpcParams rpcParams = default)
+    {
+        // conditionally ignore sender
+        if (ignoreOwner && rpcParams.Receive.SenderClientId == NetworkManager.LocalClientId) return;
+
+        if (NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(targetElement, out NetworkObject targetObject))
+        {
+            Vector2 targetPos = UIManager.Instance.ApplyNormalizedPosition(targetObject.transform.parent.GetComponent<RectTransform>(), targetPosition);
+            targetObject.GetComponent<RectTransform>().anchoredPosition = targetPos;
+        }
     }
 
     [ClientRpc]
@@ -189,8 +203,9 @@ public class MapNetworkManager : NetworkBehaviour
     public void ClearMapServerRpc()
     {
         Debug.Log("MNM: Clearing map");
-        foreach (Transform element in MapManager.SharedInstance.mapComponents.transform)
+        foreach (Transform element in MapManager.SharedInstance.mapBackground.transform)
         {
+            if (element.name.Contains("player")) continue;
             if (element.gameObject.GetComponent<NetworkObject>() && element.gameObject.GetComponent<NetworkObject>().IsSpawned)
             {
                 element.gameObject.GetComponent<NetworkObject>().Despawn();                
@@ -203,8 +218,6 @@ public class MapNetworkManager : NetworkBehaviour
     public void SpawnMapInstanceClientRpc(int persistentId, string playerName, MapElementData[] mapElements)
     {
         GameObject targetMap = InventoryManager.Instance.FetchMapObjectById(persistentId);
-        // prevent spawning instance if elements already exits on the map
-        if (targetMap.transform.childCount > 2) return;
         targetMap.transform.Find("Title").GetComponent<TMP_Text>().text = playerName;
         Debug.Log("MNM: Spawning map objects for player: " + playerName);
 
@@ -218,8 +231,9 @@ public class MapNetworkManager : NetworkBehaviour
                 newObject.transform.Find("Sprite").GetComponent<Image>().preserveAspect = true;
                 newObject.transform.Find("Name").gameObject.SetActive(false);
             }
-            newObject.transform.SetParent(targetMap.transform);
-            newObject.transform.localPosition = element.iconPosition;
+            newObject.transform.SetParent(targetMap.transform.Find("Background"));
+            Vector2 targetPos = UIManager.Instance.ApplyNormalizedPosition(newObject.transform.parent.GetComponent<RectTransform>(), element.iconPosition);
+            newObject.transform.GetComponent<RectTransform>().anchoredPosition = targetPos;
             newObject.transform.localScale = element.iconScale;
         }
     }
@@ -237,8 +251,8 @@ public class MapNetworkManager : NetworkBehaviour
     {
         if (NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(targetElement, out NetworkObject targetObject))
         {
-            ulong clientId = resetOwnership ? NetworkManager.ServerClientId : rpcParams.Receive.SenderClientId;
-            targetObject.ChangeOwnership(clientId);    
+            ulong clientId = rpcParams.Receive.SenderClientId;
+            targetObject.ChangeOwnership(resetOwnership ? NetworkManager.ServerClientId : clientId);    
         }
     }
 }

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Text.RegularExpressions;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -49,7 +50,7 @@ public class InventoryManager : MonoBehaviour
     private void Update()
     {
         if (!GameManager.Instance.isMaster && MapManager.SharedInstance) MapManager.SharedInstance.gameObject.SetActive(isInventoryActive && mapSharedViewPage.activeSelf && mapObject.activeSelf);
-        inventoryObject.transform.Find("InnerLayer").gameObject.SetActive(MapManager.SharedInstance && !MapManager.SharedInstance.gameObject.activeSelf);
+        inventoryObject.transform.Find("InnerLayer").gameObject.SetActive((MapManager.SharedInstance && !MapManager.SharedInstance.gameObject.activeSelf) || !MapManager.SharedInstance);
     }
 
     public void OnSetup()
@@ -231,6 +232,7 @@ public class InventoryManager : MonoBehaviour
         MapManager.Instance.transform.Find("InnerLayer").GetComponent<RectTransform>().anchoredPosition = new Vector2(-307f, MapManager.Instance.transform.Find("InnerLayer").GetComponent<RectTransform>().anchoredPosition.y);
         MapManager.Instance.iconPile.SetActive(true);
         MapManager.Instance.OnMapToggleReady(false, false);
+        MapManager.Instance.saveIcon.SetActive(MapNetworkManager.Instance.mapState.Value == MapState.Own);
 
         // map tabs
         mapOwnViewButton.GetComponent<RectTransform>().anchoredPosition = new Vector2(36f, mapOwnViewButton.GetComponent<RectTransform>().anchoredPosition.y);
@@ -241,7 +243,7 @@ public class InventoryManager : MonoBehaviour
         journalObject.GetComponent<RectTransform>().anchoredPosition = new Vector2(-700f, journalObject.GetComponent<RectTransform>().anchoredPosition.y);
 
         // conditionally run first animation
-        if (!GameManager.Instance.lockInventoryAtStart) StartCoroutine(MapManager.Instance.MapLoadAnimator());
+        if (!GameManager.Instance.lockInventoryAtStart && MapNetworkManager.Instance.mapState.Value == MapState.Own) StartCoroutine(MapManager.Instance.MapLoadAnimator());
     }
 
     public void OnToggleNote() => noteObject.SetActive(!noteObject.activeSelf);
