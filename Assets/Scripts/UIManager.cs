@@ -59,6 +59,7 @@ public class UIManager : NetworkBehaviour
         // setup vars
         Instance = this;
         eventSystem = FindAnyObjectByType<EventSystem>(FindObjectsInactive.Include);
+        gameObject.AddComponent<DialogDatabase>();
 
         // call setup on uielemenets
         foreach (var element in FindObjectsByType<UIElement>(FindObjectsInactive.Include))
