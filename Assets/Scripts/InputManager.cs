@@ -97,7 +97,7 @@ public class InputManager : MonoBehaviour
         if (PlayerController.Instance && !InventoryManager.Instance.isInventoryActive)
         {
             Ray ray = PlayerController.Instance.playerCamera.GetComponent<Camera>().ScreenPointToRay(Pointer.current.position.ReadValue());
-            if (Physics.Raycast(ray, out RaycastHit hit))
+            if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
             {
                 if (hit.collider.GetComponent<ChainliftController>())
                 {

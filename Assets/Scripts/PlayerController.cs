@@ -152,7 +152,7 @@ public class PlayerController : NetworkBehaviour
     private void CameraObstructionHandler()
     {
         Ray ray = new Ray(playerCamera.transform.position, transform.position - playerCamera.transform.position);
-        if (Physics.Raycast(ray, out RaycastHit hit))
+        if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
         {
             // reset previous object
             if (savedObject != null && savedObject != hit.collider.gameObject)
