@@ -103,6 +103,10 @@ public class InputManager : MonoBehaviour
                 {
                     hit.collider.GetComponent<ChainliftController>().OnMoveLift();
                 }
+                else if (hit.collider.gameObject.name == "ChestObject")
+                {
+                    UIManager.Instance.OnTreasureReachedClientRpc();
+                }
                 else
                 {
                     PlayerController.Instance.OnMove(hit.point);                    

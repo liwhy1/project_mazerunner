@@ -250,6 +250,13 @@ public class UIManager : NetworkBehaviour
         landmarkText.gameObject.SetActive(!string.IsNullOrEmpty(landmarkText.text) && !InventoryManager.Instance.isInventoryActive);
     }
 
+    [ClientRpc]
+    public void OnTreasureReachedClientRpc()
+    {
+        OnOpenDialog(DialogId.TreasureReached);
+        MapNetworkManager.Instance.SetMapStateServerRpc(MapState.Individual);
+    }
+
     public void OnQuitButton()
     {
         // destroy spawned player

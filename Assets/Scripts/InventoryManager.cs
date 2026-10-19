@@ -96,7 +96,7 @@ public class InventoryManager : MonoBehaviour
         isInventoryActive = !isInventoryActive;
         inventoryObject.SetActive(isInventoryActive);
         if (isInventoryActive) OnOpenMap();
-        UIManager.Instance.landmarkText.gameObject.SetActive(!isInventoryActive);
+        UIManager.Instance.landmarkText.gameObject.SetActive(!isInventoryActive && !string.IsNullOrEmpty(UIManager.Instance.landmarkText.text));
         UIManager.Instance.cameraZoomInIcon.gameObject.SetActive(!isInventoryActive);
         UIManager.Instance.cameraZoomOutIcon.gameObject.SetActive(!isInventoryActive);
         UIManager.Instance.inventoryIcon.gameObject.SetActive(!isInventoryActive);
