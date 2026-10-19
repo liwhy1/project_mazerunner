@@ -134836,6 +134836,97 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 355985576}
   m_Mesh: {fileID: -9148515125748023482, guid: acb656c57e0784845be45567ca7275ac, type: 3}
+--- !u!1001 &356007523
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 3933619349061597007}
+    m_Modifications:
+    - target: {fileID: 3074116668058527280, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: displayName
+      value: Bridge
+      objectReference: {fileID: 0}
+    - target: {fileID: 3074116668058527280, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: travelRelations.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3074116668058527280, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: travelRelations.Array.data[0].travelCost
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3074116668058527280, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: travelRelations.Array.data[1].travelCost
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3074116668058527280, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: travelRelations.Array.data[0].connectedLandmark
+      value: 
+      objectReference: {fileID: 548195579}
+    - target: {fileID: 3074116668058527280, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: travelRelations.Array.data[1].connectedLandmark
+      value: 
+      objectReference: {fileID: 1344642054}
+    - target: {fileID: 8952467296336816114, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 1.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8952467296336816114, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 1.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 8952467296336816114, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 2.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8952467296336816114, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.94690126
+      objectReference: {fileID: 0}
+    - target: {fileID: 8952467296336816114, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0.021368051
+      objectReference: {fileID: 0}
+    - target: {fileID: 8952467296336816114, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0.32073227
+      objectReference: {fileID: 0}
+    - target: {fileID: 8952467296336816114, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0.0072377375
+      objectReference: {fileID: 0}
+    - target: {fileID: 8952467296336816114, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8952467296336816114, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8952467296336816114, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9198639263344674948, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: m_Name
+      value: BridgeLandmark
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+--- !u!4 &356007524 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 8952467296336816114, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+  m_PrefabInstance: {fileID: 356007523}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &356007525 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 9198639263344674948, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+  m_PrefabInstance: {fileID: 356007523}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &356057947
 GameObject:
   m_ObjectHideFlags: 0
@@ -165324,6 +165415,100 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 436693739}
   m_Mesh: {fileID: -9148515125748023482, guid: acb656c57e0784845be45567ca7275ac, type: 3}
+--- !u!1001 &437139711
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 1552833343191635320}
+    m_Modifications:
+    - target: {fileID: 3074116668058527280, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: displayName
+      value: Treasure
+      objectReference: {fileID: 0}
+    - target: {fileID: 3074116668058527280, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: travelRelations.Array.size
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 3074116668058527280, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: travelRelations.Array.data[0].travelCost
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 3074116668058527280, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: travelRelations.Array.data[1].travelCost
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 3074116668058527280, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: travelRelations.Array.data[2].travelCost
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 3074116668058527280, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: travelRelations.Array.data[0].connectedLandmark
+      value: 
+      objectReference: {fileID: 356007525}
+    - target: {fileID: 3074116668058527280, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: travelRelations.Array.data[1].connectedLandmark
+      value: 
+      objectReference: {fileID: 703237205}
+    - target: {fileID: 3074116668058527280, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: travelRelations.Array.data[2].connectedLandmark
+      value: 
+      objectReference: {fileID: 2140898942}
+    - target: {fileID: 8952467296336816114, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 13.531437
+      objectReference: {fileID: 0}
+    - target: {fileID: 8952467296336816114, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 2.1203098
+      objectReference: {fileID: 0}
+    - target: {fileID: 8952467296336816114, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 13.658986
+      objectReference: {fileID: 0}
+    - target: {fileID: 8952467296336816114, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8952467296336816114, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8952467296336816114, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8952467296336816114, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8952467296336816114, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8952467296336816114, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8952467296336816114, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9198639263344674948, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: m_Name
+      value: TreasureLandmark
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+--- !u!4 &437139712 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 8952467296336816114, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+  m_PrefabInstance: {fileID: 437139711}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &437569123
 GameObject:
   m_ObjectHideFlags: 0
@@ -203718,6 +203903,34 @@ PrefabInstance:
       propertyPath: displayName
       value: Ruins
       objectReference: {fileID: 0}
+    - target: {fileID: 3074116668058527280, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: travelRelations.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3074116668058527280, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: travelRelations.Array.data[0].travelCost
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3074116668058527280, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: travelRelations.Array.data[1].travelCost
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 3074116668058527280, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: travelRelations.Array.data[2].travelCost
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 3074116668058527280, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: travelRelations.Array.data[0].connectedLandmark
+      value: 
+      objectReference: {fileID: 1563851404}
+    - target: {fileID: 3074116668058527280, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: travelRelations.Array.data[1].connectedLandmark
+      value: 
+      objectReference: {fileID: 2140898942}
+    - target: {fileID: 3074116668058527280, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: travelRelations.Array.data[2].connectedLandmark
+      value: 
+      objectReference: {fileID: 2140898942}
     - target: {fileID: 8952467296336816114, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
       propertyPath: m_LocalScale.x
       value: 29.9
@@ -203782,6 +203995,11 @@ PrefabInstance:
 --- !u!4 &548195578 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8952467296336816114, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+  m_PrefabInstance: {fileID: 548195577}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &548195579 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 9198639263344674948, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
   m_PrefabInstance: {fileID: 548195577}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &548324203
@@ -258062,12 +258280,16 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3074116668058527280, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
       propertyPath: travelRelations.Array.size
-      value: 0
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3074116668058527280, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: travelRelations.Array.data[0].travelCost
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 3074116668058527280, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
       propertyPath: travelRelations.Array.data[0].connectedLandmark
       value: 
-      objectReference: {fileID: 1563851404}
+      objectReference: {fileID: 356007525}
     - target: {fileID: 8952467296336816114, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
       propertyPath: m_LocalScale.x
       value: 29.700003
@@ -258132,6 +258354,11 @@ PrefabInstance:
 --- !u!4 &703237204 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8952467296336816114, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+  m_PrefabInstance: {fileID: 703237203}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &703237205 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 9198639263344674948, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
   m_PrefabInstance: {fileID: 703237203}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &703389557
@@ -510685,6 +510912,18 @@ PrefabInstance:
       propertyPath: displayName
       value: Warding Waystone
       objectReference: {fileID: 0}
+    - target: {fileID: 3074116668058527280, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: travelRelations.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3074116668058527280, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: travelRelations.Array.data[0].travelCost
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3074116668058527280, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: travelRelations.Array.data[0].connectedLandmark
+      value: 
+      objectReference: {fileID: 1563851404}
     - target: {fileID: 8952467296336816114, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -510727,7 +510966,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9198639263344674948, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
       propertyPath: m_Name
-      value: LandmarkObject
+      value: WaystoneLandmark
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -510737,6 +510976,11 @@ PrefabInstance:
 --- !u!4 &1344642053 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8952467296336816114, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+  m_PrefabInstance: {fileID: 1344642052}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &1344642054 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 9198639263344674948, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
   m_PrefabInstance: {fileID: 1344642052}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &1344849621
@@ -827049,6 +827293,18 @@ PrefabInstance:
       propertyPath: displayName
       value: Forest
       objectReference: {fileID: 0}
+    - target: {fileID: 3074116668058527280, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: travelRelations.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3074116668058527280, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: travelRelations.Array.data[0].travelCost
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3074116668058527280, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: travelRelations.Array.data[0].connectedLandmark
+      value: 
+      objectReference: {fileID: 356007525}
     - target: {fileID: 8952467296336816114, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
       propertyPath: m_LocalScale.x
       value: 67.4
@@ -827113,6 +827369,11 @@ PrefabInstance:
 --- !u!4 &2140898941 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8952467296336816114, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+  m_PrefabInstance: {fileID: 2140898940}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &2140898942 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 9198639263344674948, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
   m_PrefabInstance: {fileID: 2140898940}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &2141127054
@@ -832057,6 +832318,7 @@ Transform:
   - {fileID: 7731111340572232854}
   - {fileID: 722388649872621642}
   - {fileID: 2916214942371140553}
+  - {fileID: 437139712}
   m_Father: {fileID: 1250843222}
   m_LocalEulerAnglesHint: {x: 0, y: -127.946, z: 0}
 --- !u!1 &1554733440446735682
@@ -835253,7 +835515,8 @@ Transform:
   m_LocalPosition: {x: 27.56, y: 3.72, z: 26.24}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 356007524}
   m_Father: {fileID: 1250843222}
   m_LocalEulerAnglesHint: {x: 2.585, y: 37.424, z: 0}
 --- !u!23 &3948903798429644252
