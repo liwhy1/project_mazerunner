@@ -17,6 +17,7 @@ public class UIManager : NetworkBehaviour
     [Header("Pause Data")]
     [SerializeField] private GameObject pauseObject;
     [SerializeField] public GameObject resumeButton;
+    [SerializeField] public GameObject endGameButton;
     [SerializeField] public GameObject respawnButton;
     [SerializeField] private GameObject settingsButton;
     [SerializeField] private GameObject pauseQuitButton;
@@ -71,6 +72,8 @@ public class UIManager : NetworkBehaviour
         // setup pause triggers
         AddEventTrigger(resumeButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, InputManager.Instance.OnPauseAction);
         AddEventTrigger(resumeButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, InputManager.Instance.OnPauseAction);
+        AddEventTrigger(endGameButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, () => MapNetworkManager.Instance.SetMapStateServerRpc(MapState.Individual));
+        AddEventTrigger(endGameButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, () => MapNetworkManager.Instance.SetMapStateServerRpc(MapState.Individual));
         AddEventTrigger(respawnButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, GameManager.Instance.RespawnPlayer);
         AddEventTrigger(respawnButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, GameManager.Instance.RespawnPlayer);
         AddEventTrigger(pauseQuitButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnQuitButton);
@@ -127,8 +130,9 @@ public class UIManager : NetworkBehaviour
             // prevent deselecting on click in the menu
             if (currentSelectedObject == null && !GameManager.Instance.isLobbyStarted.Value) 
             {
-                currentSelectedObject = lastSelectedObject;
+                lastSelectedObject = null;
                 eventSystem.SetSelectedGameObject(currentSelectedObject);
+                return;
             }
 
             // unhighlight previous element
@@ -150,7 +154,7 @@ public class UIManager : NetworkBehaviour
         if (!eventSystem.currentSelectedGameObject) return;
         Selectable currentSelectable = eventSystem.currentSelectedGameObject.GetComponent<Selectable>();
         Selectable nextSelectable = currentSelectable.navigation.selectOnDown;
-        if (nextSelectable != null)
+        if (nextSelectable != null && nextSelectable.gameObject.activeSelf)
         {
             EventSystem.current.SetSelectedGameObject(nextSelectable.gameObject);
             if (nextSelectable.GetComponent<TMP_InputField>()) nextSelectable.GetComponent<TMP_InputField>().ActivateInputField();
@@ -166,8 +170,8 @@ public class UIManager : NetworkBehaviour
     private void SetupMinimapIcon(int playerId)
     {
         Transform targetParent = GameManager.Instance.isMaster ? MapManager.SharedInstance.mapBackground.transform : minimapIcon.transform.parent;
-        GameObject newIcon = Instantiate(Resources.Load<GameObject>("MapPrefabs/PlayerIcon"), Vector3.zero, Quaternion.identity, targetParent);
-        if (GameManager.Instance.isMaster) newIcon.transform.localScale = new Vector3(.5f, .5f, .5f);
+        GameObject newIcon = Instantiate(Resources.Load<GameObject>("MapPrefabs/PlayerIcon"), Vector2.zero, Quaternion.identity, targetParent);
+        newIcon.transform.localScale = Vector2.one / 2f;
         newIcon.name = "playerIcon_" + playerId;
         newIcon.SetActive(true);
         minimapPlayerIcons.Add(newIcon);
@@ -220,6 +224,7 @@ public class UIManager : NetworkBehaviour
     public void MirrorSharedmaptoMinimap()
     {
         if (!MapManager.SharedInstance.mapBackground) return;
+        Debug.Log("UIManager: Mirroring sharedmap to minimap");
         foreach (Transform icon in MapManager.SharedInstance.mapBackground.transform)
         {
             // prevent mirroring drawdots
@@ -231,7 +236,7 @@ public class UIManager : NetworkBehaviour
             newIcon.GetComponent<RectTransform>().anchoredPosition = icon.transform.GetComponent<RectTransform>().anchoredPosition;
 
             // apply icon values
-            newIcon.transform.localEulerAngles = Vector3.zero;
+            newIcon.transform.localEulerAngles = Vector2.zero;
             newIcon.transform.Find("Sprite").GetComponent<Image>().sprite = Resources.LoadAll<Sprite>("MapIcons").FirstOrDefault(s => s.name.Contains(icon.name));
             newIcon.transform.Find("Sprite").GetComponent<Image>().preserveAspect = true;
             newIcon.transform.Find("Name").gameObject.SetActive(false);
@@ -262,6 +267,7 @@ public class UIManager : NetworkBehaviour
         pauseObject.SetActive(false);
         settingsObject.SetActive(false);
         loadingIcon.SetActive(false);
+        endGameButton.SetActive(IsHost);
         cameraZoomInIcon.gameObject.SetActive(GameManager.Instance.isLobbyStarted.Value);
         cameraZoomOutIcon.gameObject.SetActive(GameManager.Instance.isLobbyStarted.Value);
         landmarkText.gameObject.SetActive(GameManager.Instance.isLobbyStarted.Value);
@@ -324,7 +330,7 @@ public class UIManager : NetworkBehaviour
 
         // create new dialog
         GameObject newDialog = Instantiate(Resources.Load<GameObject>("UIElements/TextDialog"), transform);
-        newDialog.transform.localPosition = Vector3.zero;
+        newDialog.transform.localPosition = Vector2.zero;
         activeDialog = newDialog;
 
         // setup vars
@@ -396,9 +402,9 @@ public class UIManager : NetworkBehaviour
         fpsText.gameObject.SetActive(fpsRoutine != null);
     }
 
-    public IEnumerator UIAnimator(RectTransform targetObject, Vector3 targetPosition)
+    public IEnumerator UIAnimator(RectTransform targetObject, Vector2 targetPosition)
     {
-        Vector3 startPosition = targetObject.anchoredPosition;
+        Vector2 startPosition = targetObject.anchoredPosition;
         float duration = .6f;
         float elapsed = 0f;
 
@@ -407,7 +413,7 @@ public class UIManager : NetworkBehaviour
             elapsed += Time.deltaTime;
             float progress = Mathf.Clamp01(elapsed / duration);
             float t = EaseInOutQuart(progress);
-            targetObject.anchoredPosition = Vector3.Lerp(startPosition, targetPosition, t);
+            targetObject.anchoredPosition = Vector2.Lerp(startPosition, targetPosition, t);
             yield return null;
         }
 
@@ -421,7 +427,7 @@ public class UIManager : NetworkBehaviour
 
     public Vector2 GetNormalizedPosition(RectTransform placementArea, Vector2 targetPosition)
     {
-        Vector3 localPosition = placementArea.InverseTransformPoint(targetPosition);
+        Vector2 localPosition = placementArea.InverseTransformPoint(targetPosition);
         Rect rect = placementArea.rect;
         return new Vector2(Mathf.InverseLerp(rect.xMin, rect.xMax, localPosition.x), Mathf.InverseLerp(rect.yMin, rect.yMax, localPosition.y));
     }

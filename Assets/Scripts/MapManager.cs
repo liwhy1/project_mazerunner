@@ -13,6 +13,7 @@ public class MapManager : NetworkBehaviour
 {
     public static MapManager Instance;
     public static MapManager SharedInstance;
+    public GameObject mapObject;
     [NonSerialized] public Dictionary<ulong, GameObject> pendingPlacements = new();
     [SerializeField] private bool isNetworked;
     private ulong nextPlacementRequestId = 0;
@@ -21,7 +22,7 @@ public class MapManager : NetworkBehaviour
     private List<GameObject> activeIcons = new List<GameObject>();
     public List<Sprite> mapSprites = new List<Sprite>();
     public GameObject iconPile;
-    [SerializeField] private Vector3 savedElementPosition;
+    [SerializeField] private Vector2 savedElementPosition;
     [SerializeField] private bool enablePlacement;
     [SerializeField] private bool enableDiscard;
     private bool isPileHovered;
@@ -49,15 +50,14 @@ public class MapManager : NetworkBehaviour
         {
             Debug.Log("SharedMapManager: Settings up");
             SharedInstance = this;
+
             if (IsHost)
             {
                 mapBackground = Instantiate(Resources.Load<GameObject>("MapPrefabs/Background"));
-                mapBackground.GetComponent<NetworkObject>()?.Spawn();
-                mapBackground.transform.SetParent(transform);
-                mapBackground.transform.SetSiblingIndex(iconPile.transform.GetSiblingIndex());
+                mapBackground.GetComponent<NetworkObject>().Spawn();
+                mapBackground.GetComponent<NetworkObject>().TrySetParent(mapObject);
             }
-            transform.Find("InnerLayer").localPosition = new Vector3(307f, 0f, 0f);
-            gameObject.SetActive(false);
+            mapObject = gameObject;
         }
         else
         {
@@ -65,7 +65,6 @@ public class MapManager : NetworkBehaviour
             Instance = this;
             if (MapManager.SharedInstance) MapNetworkManager.Instance.OnMapStateChanged(MapState.Null, MapNetworkManager.Instance.mapState.Value);
         }
-
         // load map icons
         mapSprites = Resources.LoadAll<Sprite>("MapIcons").ToList();
 
@@ -81,23 +80,39 @@ public class MapManager : NetworkBehaviour
             saveIcon.SetActive(false);
         }
 
-        // setup triggers
         if (mapBackground)
         {
-            SetupMapTriggers();            
+            SetupLayout();
+            SetupMapTriggers();
         }
     }
 
-    private void Update() => PileHoverHandler();
-
-    public void SetupMapTriggers()
+    private void SetupLayout()
     {
-        // NOTE: This is stoopid
-        if (!mapBackground) 
+        if (!mapBackground) mapBackground = mapObject.transform.Find("Background(Clone)").gameObject;
+        mapBackground.transform.SetSiblingIndex(1);
+        mapBackground.GetComponent<RectTransform>().anchoredPosition = new Vector2(307.85f, 0f);
+        mapObject.transform.Find("InnerLayer").GetComponent<RectTransform>().anchoredPosition = new Vector2(307.85f, 0f);
+        mapObject.GetComponent<RectTransform>().anchoredPosition = new Vector2(-307.85f, mapObject.GetComponent<RectTransform>().anchoredPosition.y);
+    }
+
+    private void Update()
+    {
+        bool isMapActive = InventoryManager.Instance.isInventoryActive && InventoryManager.Instance.mapSharedViewPage.activeSelf;
+        bool isMasterActive = GameManager.Instance.isMaster && (MapNetworkManager.Instance.mapState.Value == MapState.Shared || MapNetworkManager.Instance.mapState.Value == MapState.Explore);
+        if (isNetworked && mapBackground) mapObject.transform.localPosition = new Vector2(-307.85f, isMapActive || isMasterActive ? 40f : -3000f);
+
+        if (!mapBackground && transform.Find("Background(Clone)"))
         {
-            mapBackground = transform.Find("Background") ? transform.Find("Background").gameObject : transform.Find("Background(Clone)").gameObject;
-            mapBackground.transform.SetSiblingIndex(iconPile.transform.GetSiblingIndex());
+            SetupLayout();
+            SetupMapTriggers();
         }
+
+        PileHoverHandler();
+    }
+
+    private void SetupMapTriggers()
+    {
         UIManager.Instance.AddEventTrigger(mapBackground.GetComponent<EventTrigger>(), EventTriggerType.PointerEnter, OnEnablePlacement);
         UIManager.Instance.AddEventTrigger(mapBackground.GetComponent<EventTrigger>(), EventTriggerType.PointerExit, OnDisablePlacement);
         UIManager.Instance.AddEventTrigger(mapBackground.GetComponent<EventTrigger>(), EventTriggerType.Drag, OnDrawLine);
@@ -109,7 +124,7 @@ public class MapManager : NetworkBehaviour
         UIManager.Instance.AddEventTrigger(pencilIcon.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, SetActiveTool, pencilIcon);
         UIManager.Instance.AddEventTrigger(eraserIcon.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, SetActiveTool, eraserIcon);
         UIManager.Instance.AddEventTrigger(trashIcon.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnMapClearRequest);
-        UIManager.Instance.AddEventTrigger(saveIcon.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, () => OnMapToggleReady(true, GameManager.Instance.lockInventoryAtStart ? true : false));
+        UIManager.Instance.AddEventTrigger(saveIcon.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, () => OnMapToggleReady(true, GameManager.Instance.lockJournalAfterOwnMap && !isNetworked ? true : false));
     }
 
     private void InstantiateNewIcon(string targetPrefab, string targetSprite, bool enableTitle, int siblingIndex = -1)
@@ -122,7 +137,7 @@ public class MapManager : NetworkBehaviour
 
         // setup icon
         newIcon.name = targetSprite;
-        newIcon.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
+        newIcon.transform.SetLocalPositionAndRotation(Vector2.zero, Quaternion.identity);
         // conditionally apply sibling index
         if (siblingIndex != -1) newIcon.transform.SetSiblingIndex(siblingIndex);
 
@@ -171,12 +186,8 @@ public class MapManager : NetworkBehaviour
             targetElement.transform.Find("Name").gameObject.SetActive(false);
 
             // preset saved position to prevent returning to the pile, this will be used to destroy instead
-            savedElementPosition = Vector3.zero;
+            savedElementPosition = Vector2.zero;
         }
-
-        // set target element to the last child of the object to appear on top of the pile
-        if (targetElement.GetComponent<NetworkObject>()) targetElement.GetComponent<NetworkObject>().TrySetParent(GetComponent<NetworkObject>(), true);
-        else targetElement.transform.SetParent(transform, true);
 
         // disable raycast target to allow detecting hover states under the element
         targetElement.GetComponent<Image>().raycastTarget = false;
@@ -193,17 +204,19 @@ public class MapManager : NetworkBehaviour
         if (activeTool == null || !gameObject.activeSelf) return;
 
         // follow mouse position with object
-        Vector3 targetPosition = Pointer.current.position.ReadValue();
-        targetElement.transform.position = Vector3.Lerp(targetElement.transform.position, targetPosition, Time.deltaTime * 45f);
+        Vector2 targetPosition = Pointer.current.position.ReadValue();
+        targetElement.transform.position = Vector2.Lerp(targetElement.transform.position, targetPosition, Time.deltaTime * 45f);
+
+        // set target element to the last child of the object to appear on top of the pile
+        if (targetElement.GetComponent<NetworkObject>()) targetElement.GetComponent<NetworkObject>().TrySetParent(mapObject.transform, true);
+        else targetElement.transform.SetParent(mapObject.transform, true);
+
         SetElementPosition(targetElement, targetPosition);
     }
 
     private void OnStopElementDrag(GameObject targetElement)
     {
         if (activeTool == null || !gameObject.activeSelf) return;
-
-        // reset ownership
-        if (targetElement.GetComponent<NetworkObject>()) MapNetworkManager.Instance.SetElementOwnershipServerRpc(targetElement.GetComponent<NetworkObject>().NetworkObjectId, true);
 
         // disable color highlight
         ToggleColorHighlight(false);
@@ -212,12 +225,8 @@ public class MapManager : NetworkBehaviour
         AudioManager.Instance.OnElementPlace();
 
         // set target element parent to the components object
-        if (targetElement.GetComponent<NetworkObject>()) 
-        { 
-            targetElement.GetComponent<NetworkObject>().TrySetParent(mapBackground.GetComponent<NetworkObject>(), true);
-            SetElementPosition(targetElement, Pointer.current.position.ReadValue(), true);
-        }
-        else targetElement.transform.SetParent(mapBackground.transform);
+        if (targetElement.GetComponent<NetworkObject>()) SetElementPosition(targetElement, Pointer.current.position.ReadValue(), true);
+        targetElement.transform.SetParent(mapBackground.transform, true);
 
         // destroy element if its dropped over a discard allowed area
         if (enableDiscard)
@@ -231,7 +240,7 @@ public class MapManager : NetworkBehaviour
         if (!enablePlacement)
         {
             // this should only be true if the element wasn't place on the map yet, causing a saved position to "not exist"
-            if (savedElementPosition == Vector3.zero)
+            if (savedElementPosition == Vector2.zero)
             {
                 Destroy(targetElement);
                 return;
@@ -253,7 +262,7 @@ public class MapManager : NetworkBehaviour
         if (!activeIcons.Contains(targetElement)) activeIcons.Add(targetElement);
 
         // spawn networkobject if the element was pulled from the pile
-        if (savedElementPosition == Vector3.zero && isNetworked)
+        if (savedElementPosition == Vector2.zero && isNetworked)
         {
             // prevent interaction until the element is replaced with a networked one
             targetElement.GetComponent<EventTrigger>().enabled = false;
@@ -290,8 +299,9 @@ public class MapManager : NetworkBehaviour
 
     private void PileHoverHandler()
     {
+        if (!iconPile) return;
         float targetY = !isPileHovered ? -520f : -395f;
-        iconPile.transform.localPosition = Vector3.Lerp(iconPile.transform.localPosition, new Vector3(iconPile.transform.localPosition.x, targetY, iconPile.transform.localPosition.z), Time.deltaTime * 10f);
+        iconPile.transform.localPosition = Vector2.Lerp(iconPile.transform.localPosition, new Vector2(iconPile.transform.localPosition.x, targetY), Time.deltaTime * 10f);
     }
 
     public IEnumerator MapMoveHandler(bool shouldCenter)
@@ -300,11 +310,11 @@ public class MapManager : NetworkBehaviour
         yield return new WaitForSeconds(shouldCenter ? .1f : 0f);
         InventoryManager.Instance.MapTabMoveHandler(shouldCenter);
 
-        Vector2 targetPosition = new Vector2(shouldCenter ? -307f : 0f, transform.GetComponent<RectTransform>().anchoredPosition.y);
-        StartCoroutine(UIManager.Instance.UIAnimator(transform.GetComponent<RectTransform>(), targetPosition));
+        Vector2 targetPosition = new Vector2(shouldCenter ? -307f : 0f, mapObject.transform.GetComponent<RectTransform>().anchoredPosition.y);
+        StartCoroutine(UIManager.Instance.UIAnimator(mapObject.transform.GetComponent<RectTransform>(), targetPosition));
 
-        targetPosition = new Vector2(shouldCenter ? -307f : 0f, transform.Find("InnerLayer").GetComponent<RectTransform>().anchoredPosition.y);
-        StartCoroutine(UIManager.Instance.UIAnimator(transform.Find("InnerLayer").GetComponent<RectTransform>(), targetPosition));
+        targetPosition = new Vector2(shouldCenter ? -307f : 0f, mapObject.transform.Find("InnerLayer").GetComponent<RectTransform>().anchoredPosition.y);
+        StartCoroutine(UIManager.Instance.UIAnimator(mapObject.transform.Find("InnerLayer").GetComponent<RectTransform>(), targetPosition));
     }
 
     public IEnumerator MapLoadAnimator()
@@ -322,10 +332,10 @@ public class MapManager : NetworkBehaviour
         if (!AudioManager.Instance.IsPlaying()) AudioManager.Instance.OnDraw();
 
         // instantiate new dot based on mouse position
-        Vector3 targetPosition = Pointer.current.position.ReadValue();
+        Vector2 targetPosition = Pointer.current.position.ReadValue();
         GameObject objectPrefab = Resources.Load<GameObject>("MapPrefabs/" + (isNetworked ? "SharedDrawDot" : "DrawDot"));
         GameObject newDot = Instantiate(objectPrefab, targetPosition, Quaternion.identity, mapBackground.transform);
-        newDot.transform.localScale = new Vector3(pencilSizeSlider.value, pencilSizeSlider.value, pencilSizeSlider.value);
+        newDot.transform.localScale = new Vector2(pencilSizeSlider.value, pencilSizeSlider.value);
         newDot.transform.SetSiblingIndex(0);
         newDot.SetActive(true);
 
@@ -511,7 +521,7 @@ public class MapManager : NetworkBehaviour
     public void UpdateMapReadyState()
     {
         string targetText = GameManager.Instance.playerList.Count(p => p.IsMapReady.Value == true) + "/" + GameManager.Instance.playerList.Count;
-        transform.Find("SaveIcon").Find("ReadyText").GetComponent<TMP_Text>().text = targetText;
+        saveIcon.transform.Find("ReadyText").GetComponent<TMP_Text>().text = targetText;
     }
 
     public void OnEnablePlacement() => enablePlacement = true;
@@ -524,8 +534,8 @@ public struct MapElementData : INetworkSerializable
 {
     public string iconPrefab;
     public string iconSprite;
-    public Vector3 iconPosition;
-    public Vector3 iconScale;
+    public Vector2 iconPosition;
+    public Vector2 iconScale;
 
     public void NetworkSerialize<T>(BufferSerializer<T> serializer)
         where T : IReaderWriter

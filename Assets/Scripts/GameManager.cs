@@ -111,9 +111,9 @@ public class GameManager : NetworkBehaviour
 
     public void OnLobbyStart()
     {
+        Debug.Log("GameManager: Starting lobby");
         isPaused = false;
         if (isMaster) isLobbyStarted.Value = true;
-        if (!MapManager.SharedInstance.mapBackground) MapManager.SharedInstance.SetupMapTriggers();
         MenuManager.Instance.OnLobbyStart();
         playerViewCamera.gameObject.SetActive(false);
         InventoryManager.Instance.OnSetupStory();
@@ -164,6 +164,8 @@ public class GameManager : NetworkBehaviour
                 terrainObject = rootObject.transform.Find("Terrain").Find("Inner terrain").gameObject;
                 playerSpawnPosition = rootObject.transform.Find("Terrain objects").Find("Starting point").gameObject;
                 AudioManager.Instance.environmentAudioSource = rootObject.transform.Find("World Settings").GetComponentInChildren<AudioSource>();
+                AudioManager.Instance.environmentAudioSource.Stop();
+                if (MapNetworkManager.Instance.mapState.Value == MapState.Explore || MapNetworkManager.Instance.mapState.Value == MapState.Individual) AudioManager.Instance.OnGameStarted();
             }
         }
 
@@ -346,7 +348,7 @@ public class GameManager : NetworkBehaviour
     public void SpawnSharedMap()
     {
         Debug.Log("GameManager: Spawning SharedMap");
-        GameObject mapObject = Instantiate(Resources.Load<GameObject>("MapPrefabs/SharedMapUI"), Vector3.zero, Quaternion.identity);
+        GameObject mapObject = Instantiate(Resources.Load<GameObject>("MapPrefabs/SharedMapUI"), Vector2.zero, Quaternion.identity);
         mapObject.GetComponent<NetworkObject>().Spawn();
     }
 
@@ -447,7 +449,7 @@ public class GameManager : NetworkBehaviour
         if (playerList.Count > 0 && playerList.All(p => p.IsLobbyReady.Value == true))
         {
             Debug.Log("GameManager: All lobby players ready");
-            if (!isMaster) isLobbyStarted.Value = true;
+            isLobbyStarted.Value = true;
         }
     }
 

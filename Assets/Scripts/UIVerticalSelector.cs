@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class UIVerticalSelector : MonoBehaviour
 {
@@ -22,6 +23,7 @@ public class UIVerticalSelector : MonoBehaviour
         currentSelection = selectorItems[targetIndex];
         selectorText.text = currentSelection;
         onValueChanged?.Invoke();
+        LayoutRebuilder.ForceRebuildLayoutImmediate(GetComponent<RectTransform>());
     }
 
     public void OnNavigateSelection(int modifierNumber)

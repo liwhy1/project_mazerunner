@@ -19,10 +19,9 @@ public class MapNetworkManager : NetworkBehaviour
 
         if (IsHost)
         {
-            GameObject newMap = Instantiate(Resources.Load<GameObject>("MapPrefabs/MapObject"));
-            newMap.GetComponent<NetworkObject>()?.Spawn();
-            newMap.transform.SetParent(transform, false);
-            newMap.transform.localPosition = new Vector3(-307f, 40f, 0f);
+            var mapObject = Instantiate(Resources.Load<GameObject>("MapPrefabs/MapObject"));
+            mapObject.GetComponent<NetworkObject>().Spawn();
+            mapObject.GetComponent<NetworkObject>().TrySetParent(gameObject);
         }
     }
 
@@ -40,7 +39,7 @@ public class MapNetworkManager : NetworkBehaviour
             MapManager.Instance?.OnDisableMapUI();
             InventoryManager.Instance.OnToggleSharedView(true);
             if (GameManager.Instance.isMaster) MenuManager.Instance.OnMasterSharedMapEnabled();
-            if (!GameManager.Instance.isMaster) AudioManager.Instance.OnGameStarted();
+            if (!GameManager.Instance.isMaster && AudioManager.Instance.environmentAudioSource) AudioManager.Instance.OnGameStarted();
             if (oldValue != MapState.Null) MapManager.Instance.OnSendMapData();
         }
         else if (newValue == MapState.Explore)
@@ -51,8 +50,7 @@ public class MapNetworkManager : NetworkBehaviour
             if (GameManager.Instance.lockJournalAfterOwnMap) InventoryManager.Instance.OnJournalDisable();
             UIManager.Instance.MirrorSharedmaptoMinimap();
             if (InventoryManager.Instance.isLocked) InventoryManager.Instance.OnToggleInventoryLock();
-            if (!GameManager.Instance.isMaster) AudioManager.Instance.OnGameStarted();
-            if (oldValue != MapState.Null) MapManager.Instance.OnSendMapData();
+            if (!GameManager.Instance.isMaster && AudioManager.Instance.environmentAudioSource) AudioManager.Instance.OnGameStarted();
         }
         else if (newValue == MapState.Individual)
         {
@@ -76,13 +74,13 @@ public class MapNetworkManager : NetworkBehaviour
     public void CheckLobbyMapStateServerRpc()
     {
         string targetText = GameManager.Instance.playerList.Count(p => p.IsMapReady.Value == true) + "/" + GameManager.Instance.playerList.Count;
-        if (GameManager.Instance.isLobbyStarted.Value) 
+        if (GameManager.Instance.isLobbyStarted.Value && mapState.Value == MapState.Own) 
         {
             MenuManager.Instance.SetMasterGameStateText("Individual mapping\n" + targetText);
             if (GameManager.Instance.playerList.All(p => p.IsMapReady.Value == true))
             {
                 Debug.Log("MNM: All individual maps ready");
-                if (mapState.Value == MapState.Own) SetMapStateServerRpc(MapState.Shared);
+                SetMapStateServerRpc(MapState.Shared);
             }
         }
     }
@@ -106,12 +104,12 @@ public class MapNetworkManager : NetworkBehaviour
         {
             GameObject targetMap = InventoryManager.Instance.FetchMapObjectById(i);
             List<MapElementData> mapElements = new List<MapElementData>();
-            foreach (Transform icon in targetMap.transform)
+            foreach (Transform icon in targetMap.transform.Find("Background"))
             {
-                if (icon.name.Contains("Background") || icon.name.Contains("Title")) continue;
-                string iconSprite = icon.transform.Find("Sprite") ? icon.transform.Find("Sprite").GetComponent<Image>().sprite.name : "";
+                string iconSprite = icon.transform.Find("Sprite") ? icon.transform.Find("Sprite").GetComponent<Image>().sprite.name : "DrawDot";
                 string iconPrefab = icon.name.Contains("Dot") ? "DrawDot" : "MapIcon";
-                mapElements.Add(new MapElementData{iconPrefab = iconPrefab, iconSprite = iconSprite, iconPosition = icon.transform.localPosition});
+                Vector2 normalisedPosition = UIManager.Instance.GetNormalizedPosition(icon.transform.parent.GetComponent<RectTransform>(), icon.transform.position);
+                mapElements.Add(new MapElementData{iconPrefab = iconPrefab, iconSprite = iconSprite, iconPosition = normalisedPosition, iconScale = icon.transform.localScale});
             }
             string playerName = targetMap.transform.Find("Title").GetComponent<TMP_Text>().text;
             SpawnMapInstanceClientRpc(i, playerName, mapElements.ToArray());
@@ -124,7 +122,7 @@ public class MapNetworkManager : NetworkBehaviour
     public void SpawnMapElementServerRpc(ulong requestId, string iconPrefab, string iconSprite, Vector2 iconPosition, Vector2 iconScale)
     {
         Debug.Log("MNM: Spawning new object with type: " + iconPrefab);
-        GameObject newObject = Instantiate(Resources.Load<GameObject>("MapPrefabs/" + iconPrefab), MapManager.SharedInstance.transform.position, Quaternion.identity);
+        GameObject newObject = Instantiate(Resources.Load<GameObject>("MapPrefabs/" + iconPrefab), MapManager.SharedInstance.mapObject.transform.position, Quaternion.identity);
         newObject.GetComponent<NetworkObject>().Spawn();
         newObject.transform.SetParent(MapManager.SharedInstance.mapBackground.transform);
 
@@ -147,7 +145,7 @@ public class MapNetworkManager : NetworkBehaviour
     }
 
     [ClientRpc]
-    public void SetMapElementDataClientRpc(ulong requestId, ulong targetElement, string targetSprite, Vector3 targetScale)
+    public void SetMapElementDataClientRpc(ulong requestId, ulong targetElement, string targetSprite, Vector2 targetScale)
     {
         if (NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(targetElement, out NetworkObject targetObject))
         {

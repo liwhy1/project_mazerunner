@@ -239,7 +239,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 307.85, y: 0}
   m_SizeDelta: {x: 2000, y: 1200}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4371982300955887467
@@ -305,7 +305,7 @@ GameObject:
   - component: {fileID: 8517941896743173844}
   - component: {fileID: 8354410959105034317}
   - component: {fileID: 141525433274768317}
-  - component: {fileID: 416990211423691733}
+  - component: {fileID: 3491110428956176429}
   m_Layer: 5
   m_Name: MapObject
   m_TagString: Untagged
@@ -333,7 +333,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: -307.85, y: 0}
   m_SizeDelta: {x: 1920, y: 1080}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &8354410959105034317
@@ -367,11 +367,11 @@ MonoBehaviour:
   ActiveSceneSynchronization: 0
   SceneMigrationSynchronization: 1
   SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
+  DontDestroyWithOwner: 1
   AutoObjectParentSync: 1
   SyncOwnerTransformWhenParented: 1
-  AllowOwnerToParent: 0
---- !u!114 &416990211423691733
+  AllowOwnerToParent: 1
+--- !u!114 &3491110428956176429
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -384,6 +384,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MapManager
   ShowTopMostFoldoutHeaderGroup: 1
+  mapObject: {fileID: 4069815804157388454}
   isNetworked: 1
   mapSprites: []
   iconPile: {fileID: 200301085551306106}
@@ -412,7 +413,7 @@ GameObject:
   - component: {fileID: 3044954870004818486}
   - component: {fileID: 5986845620083882467}
   m_Layer: 5
-  m_Name: Tools
+  m_Name: ToolBar
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -923,7 +924,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5220684461558314175, guid: 805b81946c2a69f4dbddbaa70f29453c, type: 3}
       propertyPath: m_Name
-      value: Slider
+      value: PencilSizeSlider
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

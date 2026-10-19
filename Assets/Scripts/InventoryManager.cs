@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Text.RegularExpressions;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -12,10 +11,9 @@ public class InventoryManager : MonoBehaviour
     [Header("Inventory Data")]
     public bool isInventoryActive;
     public GameObject inventoryObject;
-    public GameObject pageBackground;
-    public GameObject buttonLayout;
-    public GameObject backButton;
     public bool isLocked;
+    [SerializeField] private GameObject innerLayer;
+    [SerializeField] private GameObject backButton;
     [SerializeField] private GameObject journalObject;
     [SerializeField] private GameObject mapObject;
     [SerializeField] private GameObject noteObject;
@@ -47,10 +45,10 @@ public class InventoryManager : MonoBehaviour
         ResetInventoryState();
     }
 
-    private void Update()
+    private void LateUpdate()
     {
-        if (!GameManager.Instance.isMaster && MapManager.SharedInstance) MapManager.SharedInstance.gameObject.SetActive(isInventoryActive && mapSharedViewPage.activeSelf && mapObject.activeSelf);
-        inventoryObject.transform.Find("InnerLayer").gameObject.SetActive((MapManager.SharedInstance && !MapManager.SharedInstance.gameObject.activeSelf) || !MapManager.SharedInstance);
+        bool isSharedMapActive = MapManager.SharedInstance && MapManager.SharedInstance.mapObject.transform.localPosition.y != 40;
+        innerLayer.SetActive(!editorObject.activeSelf && (isSharedMapActive || !MapManager.SharedInstance));
     }
 
     public void OnSetup()
@@ -66,11 +64,9 @@ public class InventoryManager : MonoBehaviour
     private void ResetInventoryState()
     {
         inventoryObject.SetActive(false);
-        buttonLayout.SetActive(true);
         journalObject.SetActive(false);
         mapObject.SetActive(false);
-        noteObject.transform.parent.gameObject.SetActive(true);
-        noteObject.SetActive(false);
+        noteObject.SetActive(true);
         editorObject.SetActive(false);
     }
 
@@ -99,21 +95,13 @@ public class InventoryManager : MonoBehaviour
         if (isLocked) return;
         isInventoryActive = !isInventoryActive;
         inventoryObject.SetActive(isInventoryActive);
-        mapObject.SetActive(true);
-        OnOpenMap();
-        OnOpenJournal();
+        if (isInventoryActive) OnOpenMap();
         UIManager.Instance.landmarkText.gameObject.SetActive(!isInventoryActive);
         UIManager.Instance.cameraZoomInIcon.gameObject.SetActive(!isInventoryActive);
         UIManager.Instance.cameraZoomOutIcon.gameObject.SetActive(!isInventoryActive);
         UIManager.Instance.inventoryIcon.gameObject.SetActive(!isInventoryActive);
         UIManager.Instance.pauseIcon.gameObject.SetActive(!isInventoryActive);
         UIManager.Instance.minimapObject.SetActive(!isInventoryActive);
-    }
-
-    public void OnOpenJournal()
-    {
-        buttonLayout.gameObject.SetActive(false);
-        journalObject.SetActive(true);
     }
 
     public void OnSetupStory()
@@ -190,12 +178,12 @@ public class InventoryManager : MonoBehaviour
     public void OnOpenMap() 
     {
         mapObject.SetActive(true);
-        buttonLayout.gameObject.SetActive(false);
         SetMapPage(activeMapPage);
     }
 
     public void SetMapPage(GameObject pageObject)
     {
+        if (!pageObject) return;
         activeMapPage = pageObject;
 
         mapOwnViewPage.SetActive(false);
@@ -207,17 +195,18 @@ public class InventoryManager : MonoBehaviour
         mapOwnViewButton.GetComponent<UIElement>().OnElementDeSelect();
         mapIndividualViewButton.GetComponent<UIElement>().OnElementDeSelect();
         mapSharedViewButton.GetComponent<UIElement>().OnElementDeSelect();
-        pageBackground.SetActive(true);
+        if (MapNetworkManager.Instance?.mapState.Value == MapState.Individual) MapTabMoveHandler(activeMapPage != mapOwnViewPage);
         if (pageObject == mapOwnViewPage)
         {
             if (!MapManager.Instance.isLoaded) SetInventoryInitialState();
             mapOwnViewButton.GetComponent<UIElement>().OnElementSelect();
             journalObject.SetActive(MapNetworkManager.Instance?.mapState.Value == MapState.Own || MapNetworkManager.Instance?.mapState.Value == MapState.Individual || !GameManager.Instance.lockJournalAfterOwnMap);
+            if (MapNetworkManager.Instance?.mapState.Value == MapState.Individual) StartCoroutine(MapManager.Instance.MapMoveHandler(false));
         }
         else if (pageObject == mapSharedViewPage)
         {
             mapSharedViewButton.GetComponent<UIElement>().OnElementSelect();
-            MapManager.SharedInstance.transform.GetChild(0).gameObject.SetActive(true);
+            MapManager.SharedInstance.mapObject.transform.GetChild(0).gameObject.SetActive(true);
         }
         else if (pageObject == mapIndividualViewPage)
         {
@@ -228,8 +217,6 @@ public class InventoryManager : MonoBehaviour
     private void SetInventoryInitialState()
     {
         // map object
-        MapManager.Instance.GetComponent<RectTransform>().anchoredPosition = new Vector2(-307f, MapManager.Instance.GetComponent<RectTransform>().anchoredPosition.y);
-        MapManager.Instance.transform.Find("InnerLayer").GetComponent<RectTransform>().anchoredPosition = new Vector2(-307f, MapManager.Instance.transform.Find("InnerLayer").GetComponent<RectTransform>().anchoredPosition.y);
         MapManager.Instance.iconPile.SetActive(true);
         MapManager.Instance.OnMapToggleReady(false, false);
         MapManager.Instance.saveIcon.SetActive(MapNetworkManager.Instance.mapState.Value == MapState.Own);
@@ -246,15 +233,11 @@ public class InventoryManager : MonoBehaviour
         if (!GameManager.Instance.lockInventoryAtStart && MapNetworkManager.Instance.mapState.Value == MapState.Own) StartCoroutine(MapManager.Instance.MapLoadAnimator());
     }
 
-    public void OnToggleNote() => noteObject.SetActive(!noteObject.activeSelf);
+    public void OnToggleNote() => StartCoroutine(UIManager.Instance.UIAnimator(noteObject.GetComponent<RectTransform>(), new Vector2(noteObject.GetComponent<RectTransform>().anchoredPosition.x < -20f ? 370f : -30f, 0f)));
 
     public void OnInventoryBack()
     {
         OnToggleInventory();
-        return;
-        buttonLayout.SetActive(true);
-        journalObject.SetActive(false);
-        mapObject.SetActive(false);
         editorObject.SetActive(false);
         if (EditorManager.Instance) EditorManager.Instance.OnDisableEditor();
     }
@@ -277,8 +260,8 @@ public class InventoryManager : MonoBehaviour
     public void OnOpenEditor()
     {
         editorObject.SetActive(true);
-        buttonLayout.gameObject.SetActive(false);
-        noteObject.transform.parent.gameObject.SetActive(false);
+        noteObject.SetActive(false);
+        mapObject.SetActive(false);
         if (EditorManager.Instance) EditorManager.Instance.OnEnableEditor();
     }
 

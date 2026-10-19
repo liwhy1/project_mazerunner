@@ -111,8 +111,8 @@ public class MenuManager : NetworkBehaviour
         // host
         UIManager.Instance.AddEventTrigger(startHostButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnStartHost);
         UIManager.Instance.AddEventTrigger(startHostButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnStartHost);
-        UIManager.Instance.AddEventTrigger(hostBackButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnOpenMenu);
-        UIManager.Instance.AddEventTrigger(hostBackButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnOpenMenu);
+        UIManager.Instance.AddEventTrigger(hostBackButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, UIManager.Instance.OnQuitButton);
+        UIManager.Instance.AddEventTrigger(hostBackButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, UIManager.Instance.OnQuitButton);
         playerModeSelector.onValueChanged += () => OnPlayerModeSelectorChanged(playerModeSelector.currentSelection);
         hostPlayerNameInput.onSubmit.AddListener(delegate { GameManager.Instance.OnStartHost(); });
 
@@ -280,7 +280,7 @@ public class MenuManager : NetworkBehaviour
     public void OnLobbyToggleReady()
     {
         // TODO: not any of this
-        if (GameManager.Instance.isLobbyStarted.Value == true) GameManager.Instance.OnLobbyStart();
+        if (GameManager.Instance.isLobbyStarted.Value == true || GameManager.Instance.isMaster) GameManager.Instance.OnLobbyStart();
 
         TMP_Text targetText = lobbyReadyButton.transform.Find("Text").GetComponent<TMP_Text>();
         bool currentState = targetText.text == "Ready" ? false : true;
@@ -292,8 +292,7 @@ public class MenuManager : NetworkBehaviour
             else child.GetComponent<UIElement>().OnElementEnable(); 
         }
 
-        if (GameManager.Instance.isMaster) GameManager.Instance.OnLobbyStart();
-        else GameManager.Instance.SetLobbyReadyStateServerRpc(!currentState);
+        if (!GameManager.Instance.isMaster) GameManager.Instance.SetLobbyReadyStateServerRpc(!currentState);
     }
 
     public void UpdateLobbyReadyState()
@@ -367,7 +366,7 @@ public class MenuManager : NetworkBehaviour
     private void OnMasterEndGame()
     {
         SetMasterGameStateText("Game end");
-        MapManager.SharedInstance.gameObject.SetActive(false);
+        MapManager.SharedInstance.mapObject.SetActive(false);
         individualMapsObject.SetActive(true);
         lobbyFinishButton.SetActive(false);
         MapNetworkManager.Instance.SetMapStateServerRpc(MapState.Individual);
@@ -377,9 +376,9 @@ public class MenuManager : NetworkBehaviour
     {
         SetMasterGameStateText("Shared mapping");
         lobbyFinishButton.SetActive(true);
-        MapManager.SharedInstance.gameObject.SetActive(true);
+        MapManager.SharedInstance.mapObject.SetActive(true);
         MapManager.SharedInstance.iconPile.SetActive(true);
         MapManager.SharedInstance.OnMapToggleReady(false, false);
-        MapManager.SharedInstance.transform.Find("InnerLayer").gameObject.SetActive(false);
+        MapManager.SharedInstance.mapObject.transform.Find("InnerLayer").gameObject.SetActive(false);
     }
 }

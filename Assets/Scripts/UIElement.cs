@@ -9,7 +9,7 @@ public class UIElement : MonoBehaviour
     public Color highlightColor = Color.gray;
     public Color selectColor = Color.darkGray;
     public Color disabledColor = Color.white;
-    private Vector3 startSize;
+    private Vector2 startSize;
     private Sprite originalSprite;
     private Sprite altSprite;
     public bool isElementSetup = false;
@@ -43,11 +43,11 @@ public class UIElement : MonoBehaviour
             disabledColor.a = 0f;
         }
 
-        startSize = transform.localScale;
-        if (startSize == Vector3.zero)
+        startSize = GetComponent<RectTransform>().localScale;
+        if (startSize == Vector2.zero)
         {
-            startSize = Vector3.one;
-            transform.localScale = Vector3.one;
+            startSize = Vector2.one;
+            GetComponent<RectTransform>().localScale = Vector2.one;
         }
 
         // setup event triggers
@@ -106,7 +106,7 @@ public class UIElement : MonoBehaviour
         isEnabled = false;
         isSelected = false;
         GetComponents<EventTrigger>().All(p => p.enabled = false);
-        transform.localScale = startSize;
+        GetComponent<RectTransform>().localScale = startSize;
         GetComponent<Image>().color = disabledColor;
         if (transform.Find("Sprite"))
         {
@@ -142,8 +142,7 @@ public class UIElement : MonoBehaviour
 
         if (enableGrow) 
         {
-            GetComponent<RectTransform>().pivot = new Vector2(0.5f, 0.5f);
-            transform.localScale = startSize * 1.05f;
+            GetComponent<RectTransform>().localScale = startSize * 1.05f;
         }
         if (enableHighlight) OnElementHighlight();
     }
@@ -153,8 +152,7 @@ public class UIElement : MonoBehaviour
         if (!isEnabled) return;
         if (enableGrow)
         {
-            GetComponent<RectTransform>().pivot = new Vector2(0.5f, 0.5f);
-            transform.localScale = startSize;
+            GetComponent<RectTransform>().localScale = startSize;
         }
         OnElementUnHighlight();
     }
