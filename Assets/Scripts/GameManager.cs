@@ -94,6 +94,7 @@ public class GameManager : NetworkBehaviour
     {
         NetworkManager.OnClientConnectedCallback -= OnClientConnected;
         NetworkManager.OnClientDisconnectCallback -= OnClientDisconnected;
+        NetworkManager.SceneManager.OnLoadEventCompleted -= OnMapLoaded;
         isLobbyStarted.OnValueChanged -= OnLobbyStartValueChanged;
     }
 
@@ -106,60 +107,72 @@ public class GameManager : NetworkBehaviour
 
     public void OnLobbyStartValueChanged(bool oldValue, bool newValue)
     {
-        if (newValue) OnLobbyStart();
+        if (newValue) StartCoroutine(OnLobbyStart());
     }
 
-    public void OnLobbyStart()
+    public IEnumerator OnLobbyStart()
     {
         Debug.Log("GameManager: Starting lobby");
-        isPaused = false;
-        if (isMaster) isLobbyStarted.Value = true;
-        MenuManager.Instance.OnLobbyStart();
         playerViewCamera.gameObject.SetActive(false);
         InventoryManager.Instance.OnSetupStory();
+        MenuManager.Instance.OnLobbyStart();
+        NetworkManager.SceneManager.OnLoadEventCompleted += OnMapLoaded;
+        if (FindAnyObjectByType<Volume>()) OnMapLoaded(activeStory.Value.ToString(), LoadSceneMode.Additive, null, null);
 
-        string targetScene = GetSceneBuildIndex(activeStory.Value.ToString()) != -1 ? activeStory.Value.ToString() : "Prototype5";
-        if (!isMaster) OnLoadMap(targetScene);
-        else isMasterGameStarted = true;
-    }
-
-    private void OnLoadMap(string sceneName) => StartCoroutine(AsynchronousLevelLoad(sceneName));
-
-    private IEnumerator AsynchronousLevelLoad(string sceneName)
-    {
-        UIManager.Instance.loadingIcon.SetActive(true);
-        Time.timeScale = 1f;
-        yield return new WaitForSeconds(1f);
-
-        if (IsHost || !FindAnyObjectByType<Volume>())
+        if (isMaster)
         {
-            Debug.Log("GameManager: Loading level " + sceneName);
-            AsyncOperation ao = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
-            ao.allowSceneActivation = false;
-            while (!ao.isDone)
-            {
-                if (ao.progress == 0.9f)
-                {
-                    ao.allowSceneActivation = true;
-                }
-                yield return null;
-            }
+            isLobbyStarted.Value = true;
+            isMasterGameStarted = true;
         }
+        else
+        {
+            UIManager.Instance.loadingIcon.SetActive(true);            
+            mainCamera.SetActive(false);
 
-        OnMapLoaded();
+            yield return new WaitForSeconds(1.5f);
+            if (MapNetworkManager.Instance.mapState.Value == MapState.Own || MapNetworkManager.Instance.mapState.Value == MapState.Shared) InventoryManager.Instance.OnToggleInventoryLock();
+            if (!isMaster) MenuManager.Instance.ResetUIState();
+            isPaused = false;
+
+            // animate map
+            if (lockInventoryAtStart && MapNetworkManager.Instance.mapState.Value == MapState.Own) MapManager.Instance.MapLoadAnimator();
+
+            // update player renderstates
+            UpdatePlayerRenderStateRpc();
+        }
     }
 
-    private void OnMapLoaded()
+    public void OnLoadMap()
     {
-        // assign scene vars
-        // TODO: rewrite this pls
-        Scene loadedScene = SceneManager.GetSceneByName(activeStory.Value.ToString());
+        if (!isMaster && !FindAnyObjectByType<Volume>()) UIManager.Instance.loadingIcon.SetActive(true);
+
+        if (!IsHost) return;
+        string targetScene = GetSceneBuildIndex(activeStory.Value.ToString()) != -1 ? activeStory.Value.ToString() : "Prototype5";
+        SceneEventProgressStatus status = NetworkManager.SceneManager.LoadScene(targetScene, LoadSceneMode.Additive);
+
+        Debug.Log("GameManager: Loading level " + targetScene);
+        if (status != SceneEventProgressStatus.Started)
+        {
+            Debug.Log("GameManager: Failed to start scene load");
+            OnDisconnectClient();
+            return;
+        }
+    }
+
+    private void OnMapLoaded(string sceneName, LoadSceneMode loadSceneMode, List<ulong> clientsCompleted, List<ulong> clientsTimedOut)
+    {
+        Scene loadedScene = SceneManager.GetSceneByName(sceneName);
         if (loadedScene == null) UIManager.Instance.OnOpenDialog(DialogId.HostLostConnection);
         foreach (GameObject rootObject in loadedScene.GetRootGameObjects())
         {
             if (rootObject.GetComponent<Camera>()) rootObject.SetActive(false);
             if (rootObject.name.Contains("Level"))
             {
+                if (isMaster) 
+                {
+                    Destroy(rootObject);
+                    return;
+                }
                 rootObject.transform.eulerAngles = new Vector3(0f, -180f, 0f);
                 terrainObject = rootObject.transform.Find("Terrain").Find("Inner terrain").gameObject;
                 playerSpawnPosition = rootObject.transform.Find("Terrain objects").Find("Starting point").gameObject;
@@ -178,18 +191,13 @@ public class GameManager : NetworkBehaviour
         // move player to map
         RespawnPlayer();
 
-        // reset ui
-        mainCamera.SetActive(false);
-        UIManager.Instance.ResetUIState();
-        MenuManager.Instance.ResetUIState();
-        if (MapNetworkManager.Instance.mapState.Value == MapState.Own || MapNetworkManager.Instance.mapState.Value == MapState.Shared) InventoryManager.Instance.OnToggleInventoryLock();
-
-        // update player render states
+        // update player renderstates
         UpdatePlayerRenderStateRpc();
 
-        // animate map
-        if (lockInventoryAtStart && MapNetworkManager.Instance.mapState.Value == MapState.Own) StartCoroutine(MapManager.Instance.MapLoadAnimator());
+        // close inventory
+        if (InventoryManager.Instance.isLocked) InventoryManager.Instance.OnToggleInventoryLock();
 
+        UIManager.Instance.loadingIcon.SetActive(false);
         Debug.Log("GameManager: Map loaded");
     }
 
@@ -209,7 +217,8 @@ public class GameManager : NetworkBehaviour
     public void RespawnPlayer()
     {
         PlayerController.Instance.SetPlayerPosition(playerSpawnPosition.transform.position + Vector3.up + Vector3.forward * FetchPersistentPlayerId());
-        if (!mainCamera.activeSelf) UIManager.Instance.OnPauseToggle();
+        if (UIManager.Instance.pauseObject.activeSelf) UIManager.Instance.OnPauseToggle();
+        isPaused = false;
     }
 
     private void OnClientConnected(ulong clientId)
@@ -265,16 +274,7 @@ public class GameManager : NetworkBehaviour
 
     public void OnDisconnectClient()
     {
-        try
-        {
-            NetworkManager.Shutdown();
-        }
-        catch (Exception ex)
-        {
-            Debug.Log("GameManager: Failed to disconnect from session. " + ex);
-            return;
-        }
-
+        NetworkManager.Shutdown();
         SceneManager.LoadScene(1);
     }
 
@@ -396,7 +396,7 @@ public class GameManager : NetworkBehaviour
         }
 
         // send text to clients
-        UIManager.Instance.OnLandmarkTextChangedClientRpc(targetText);
+        UIManager.Instance.OnLandmarkTextChangedRpc(targetText);
     }
 
     [Rpc(SendTo.Everyone, InvokePermission = RpcInvokePermission.Everyone)]
@@ -446,7 +446,7 @@ public class GameManager : NetworkBehaviour
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
     public void CheckLobbyReadyStateServerRpc()
     {
-        if (playerList.Count > 0 && playerList.All(p => p.IsLobbyReady.Value == true))
+        if (!isLobbyStarted.Value && playerList.Count > 0 && playerList.All(p => p.IsLobbyReady.Value == true))
         {
             Debug.Log("GameManager: All lobby players ready");
             isLobbyStarted.Value = true;

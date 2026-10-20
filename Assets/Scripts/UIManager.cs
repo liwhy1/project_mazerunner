@@ -7,7 +7,6 @@ using System.Linq;
 using UnityEngine.Events;
 using System.Collections.Generic;
 using System.Collections;
-using System;
 
 public class UIManager : NetworkBehaviour
 {
@@ -15,7 +14,7 @@ public class UIManager : NetworkBehaviour
     public EventSystem eventSystem;
 
     [Header("Pause Data")]
-    [SerializeField] private GameObject pauseObject;
+    public GameObject pauseObject;
     [SerializeField] public GameObject resumeButton;
     [SerializeField] public GameObject endGameButton;
     [SerializeField] public GameObject respawnButton;
@@ -224,7 +223,7 @@ public class UIManager : NetworkBehaviour
 
     public void MirrorSharedmaptoMinimap()
     {
-        if (!MapManager.SharedInstance.mapBackground) return;
+        if (!MapManager.SharedInstance) return;
         Debug.Log("UIManager: Mirroring sharedmap to minimap");
         foreach (Transform icon in MapManager.SharedInstance.mapBackground.transform)
         {
@@ -245,8 +244,9 @@ public class UIManager : NetworkBehaviour
     }
 
     [Rpc(SendTo.Everyone, InvokePermission = RpcInvokePermission.Everyone)]
-    public void OnLandmarkTextChangedClientRpc(string targetText)
+    public void OnLandmarkTextChangedRpc(string targetText)
     {
+        if (GameManager.Instance.isMaster) return;
         landmarkText.text = targetText;
         landmarkText.gameObject.SetActive(!string.IsNullOrEmpty(landmarkText.text) && !InventoryManager.Instance.isInventoryActive);
     }
@@ -255,7 +255,7 @@ public class UIManager : NetworkBehaviour
     public void OnTreasureReachedRpc()
     {
         if (!GameManager.Instance.isMaster) OnOpenDialog(DialogId.TreasureReached);
-        MapNetworkManager.Instance.SetMapStateServerRpc(MapState.Individual);
+        if (IsHost) MapNetworkManager.Instance.SetMapStateServerRpc(MapState.Individual);
     }
 
     public void OnQuitButton()

@@ -318,9 +318,8 @@ public class MapManager : NetworkBehaviour
         StartCoroutine(UIManager.Instance.UIAnimator(mapObject.transform.Find("InnerLayer").GetComponent<RectTransform>(), targetPosition));
     }
 
-    public IEnumerator MapLoadAnimator()
+    public void MapLoadAnimator()
     {
-        yield return new WaitForSeconds(1.5f);
         MapManager.Instance.OnMapToggleReady(false);
         isLoaded = true;
     }

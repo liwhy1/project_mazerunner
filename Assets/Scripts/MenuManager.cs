@@ -249,7 +249,6 @@ public class MenuManager : NetworkBehaviour
     {
         ResetUIState();
         lobbyObject.SetActive(true);
-        UIManager.Instance.loadingIcon.SetActive(false);
 
         // conditionally enable elements
         lobbyPlayerView.SetActive(!GameManager.Instance.isMaster);
@@ -279,8 +278,7 @@ public class MenuManager : NetworkBehaviour
 
     public void OnLobbyToggleReady()
     {
-        // TODO: not any of this
-        if (GameManager.Instance.isLobbyStarted.Value == true || GameManager.Instance.isMaster) GameManager.Instance.OnLobbyStart();
+        if (GameManager.Instance.isLobbyStarted.Value == true || GameManager.Instance.isMaster) StartCoroutine(GameManager.Instance.OnLobbyStart());
 
         TMP_Text targetText = lobbyReadyButton.transform.Find("Text").GetComponent<TMP_Text>();
         bool currentState = targetText.text == "Ready" ? false : true;

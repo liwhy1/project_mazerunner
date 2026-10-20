@@ -39,17 +39,16 @@ public class MapNetworkManager : NetworkBehaviour
             MapManager.Instance?.OnDisableMapUI();
             InventoryManager.Instance.OnToggleSharedView(true);
             if (GameManager.Instance.isMaster) MenuManager.Instance.OnMasterSharedMapEnabled();
-            if (!GameManager.Instance.isMaster && AudioManager.Instance.environmentAudioSource) AudioManager.Instance.OnGameStarted();
             if (oldValue != MapState.Null) MapManager.Instance.OnSendMapData();
         }
         else if (newValue == MapState.Explore)
         {
+            GameManager.Instance.OnLoadMap();
             MapManager.SharedInstance?.OnDisableMapUI();
             MapManager.Instance?.OnDisableMapUI();
             InventoryManager.Instance.OnToggleSharedView(true);
             if (GameManager.Instance.lockJournalAfterOwnMap) InventoryManager.Instance.OnJournalDisable();
             UIManager.Instance.MirrorSharedmaptoMinimap();
-            if (InventoryManager.Instance.isLocked) InventoryManager.Instance.OnToggleInventoryLock();
             if (!GameManager.Instance.isMaster && AudioManager.Instance.environmentAudioSource) AudioManager.Instance.OnGameStarted();
         }
         else if (newValue == MapState.Individual)
@@ -58,6 +57,7 @@ public class MapNetworkManager : NetworkBehaviour
             InventoryManager.Instance.OnToggleSharedView(true);
             InventoryManager.Instance.SetMapPage(InventoryManager.Instance.mapIndividualViewPage);
             InventoryManager.Instance.OnJournalEnable();
+            if (!GameManager.Instance.isMaster && AudioManager.Instance.environmentAudioSource) AudioManager.Instance.OnGameStarted();
         }
     }
 
