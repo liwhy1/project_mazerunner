@@ -105,7 +105,8 @@ public class InputManager : MonoBehaviour
                 }
                 else if (hit.collider.gameObject.name == "ChestObject")
                 {
-                    UIManager.Instance.OnTreasureReachedClientRpc();
+                    if (GameManager.Instance.FetchPersistentPlayerId() != 0) return;
+                    UIManager.Instance.OnTreasureReachedRpc();
                 }
                 else
                 {

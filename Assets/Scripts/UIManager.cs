@@ -251,10 +251,10 @@ public class UIManager : NetworkBehaviour
         landmarkText.gameObject.SetActive(!string.IsNullOrEmpty(landmarkText.text) && !InventoryManager.Instance.isInventoryActive);
     }
 
-    [ClientRpc]
-    public void OnTreasureReachedClientRpc()
+    [Rpc(SendTo.Everyone, InvokePermission = RpcInvokePermission.Everyone)]
+    public void OnTreasureReachedRpc()
     {
-        OnOpenDialog(DialogId.TreasureReached);
+        if (!GameManager.Instance.isMaster) OnOpenDialog(DialogId.TreasureReached);
         MapNetworkManager.Instance.SetMapStateServerRpc(MapState.Individual);
     }
 
