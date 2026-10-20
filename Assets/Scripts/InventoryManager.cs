@@ -206,7 +206,7 @@ public class InventoryManager : MonoBehaviour
         else if (pageObject == mapSharedViewPage)
         {
             mapSharedViewButton.GetComponent<UIElement>().OnElementSelect();
-            MapManager.SharedInstance.mapObject.transform.GetChild(0).gameObject.SetActive(true);
+            MapManager.SharedInstance.SetupLayout();
         }
         else if (pageObject == mapIndividualViewPage)
         {

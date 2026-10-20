@@ -380,5 +380,6 @@ public class MenuManager : NetworkBehaviour
         MapManager.SharedInstance.iconPile.SetActive(true);
         MapManager.SharedInstance.OnMapToggleReady(false, false);
         MapManager.SharedInstance.mapObject.transform.Find("InnerLayer").gameObject.SetActive(false);
+        MapManager.SharedInstance.SetupLayout();
     }
 }

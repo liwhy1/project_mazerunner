@@ -87,13 +87,14 @@ public class MapManager : NetworkBehaviour
         }
     }
 
-    private void SetupLayout()
+    public void SetupLayout()
     {
         if (!mapBackground) mapBackground = mapObject.transform.Find("Background(Clone)").gameObject;
         mapBackground.transform.SetSiblingIndex(1);
         mapBackground.GetComponent<RectTransform>().anchoredPosition = new Vector2(307.85f, 0f);
-        mapObject.transform.Find("InnerLayer").GetComponent<RectTransform>().anchoredPosition = new Vector2(307.85f, 0f);
+        mapObject.transform.Find("InnerLayer").GetComponent<RectTransform>().anchoredPosition = new Vector2(307.85f, -40f);
         mapObject.GetComponent<RectTransform>().anchoredPosition = new Vector2(-307.85f, mapObject.GetComponent<RectTransform>().anchoredPosition.y);
+        mapObject.GetComponent<RectTransform>().localScale = Vector2.one;
     }
 
     private void Update()
@@ -225,8 +226,8 @@ public class MapManager : NetworkBehaviour
         AudioManager.Instance.OnElementPlace();
 
         // set target element parent to the components object
-        if (targetElement.GetComponent<NetworkObject>()) SetElementPosition(targetElement, Pointer.current.position.ReadValue(), true);
         targetElement.transform.SetParent(mapBackground.transform, true);
+        if (targetElement.GetComponent<NetworkObject>()) SetElementPosition(targetElement, Pointer.current.position.ReadValue(), true);
 
         // destroy element if its dropped over a discard allowed area
         if (enableDiscard)
