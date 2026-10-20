@@ -244,7 +244,7 @@ public class UIManager : NetworkBehaviour
         }
     }
 
-    [ClientRpc]
+    [Rpc(SendTo.Everyone, InvokePermission = RpcInvokePermission.Everyone)]
     public void OnLandmarkTextChangedClientRpc(string targetText)
     {
         landmarkText.text = targetText;

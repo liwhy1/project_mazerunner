@@ -122,7 +122,7 @@ public class PlayerController : NetworkBehaviour
     private void OnTriggerEnter(Collider other)
     {
         if (other.name.Contains("River")) SetPlayerPosition(lastSafePosition);
-        else if (other.GetComponent<LandmarkObject>() && IsHost)
+        else if (other.GetComponent<LandmarkObject>() && GameManager.Instance.FetchPersistentPlayerId() == 0)
         {
             GameManager.Instance.OnLandmarkEntered(other.gameObject);
         }
