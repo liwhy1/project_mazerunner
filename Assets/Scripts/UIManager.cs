@@ -180,15 +180,7 @@ public class UIManager : NetworkBehaviour
     private void UpdateMinimapPosition()
     {
         // setup vars
-        if (!GameManager.Instance.terrainObject)
-        {
-            if (GameManager.Instance.isMaster)
-            {
-                GameObject newTerrain = Instantiate(Resources.Load<GameObject>("TerrainObjects/MinimapTerrain"));
-                GameManager.Instance.terrainObject = newTerrain.transform.Find("Terrain").Find("Inner terrain").gameObject;
-            }
-            else return;
-        }
+        if (!GameManager.Instance.terrainObject) return;
         MeshRenderer renderer = GameManager.Instance.terrainObject.GetComponent<MeshRenderer>();
         Bounds bounds = renderer.bounds;
         RectTransform minimapRect = GameManager.Instance.isMaster ? MapManager.SharedInstance.mapBackground.GetComponent<RectTransform>() : minimapIcon.GetComponent<RectTransform>();

@@ -10,8 +10,7 @@ public class AudioManager : MonoBehaviour
 
     [Header("Environment")]
     public AudioSource environmentAudioSource;
-    [SerializeField] private AudioSource riverAudioSource;
-    [SerializeField] private GameObject riverObject;
+    public AudioSource riverAudioSource;
     [SerializeField] private AudioClip riverSound;
     [SerializeField] private AudioClip footstepSound;
 
@@ -43,15 +42,13 @@ public class AudioManager : MonoBehaviour
         environmentAudioSource.Play();
 
         // setup river sound
-        riverObject = GameManager.Instance.terrainObject.transform.parent.Find("River").gameObject;
-        riverAudioSource = riverObject.GetComponentInChildren<AudioSource>();
         riverAudioSource?.PlayOneShot(riverSound);
     }
 
     private void UpdateRiverSound()
     {
-        if (!IsGameStarted || !riverObject || !PlayerController.Instance) return;
-        MeshCollider riverCollider = riverObject.transform.Find("ConvexRiver")?.GetComponent<MeshCollider>();
+        if (!IsGameStarted || !GameManager.Instance.riverObject || !PlayerController.Instance) return;
+        MeshCollider riverCollider = GameManager.Instance.riverObject.transform.GetChild(0)?.GetComponent<MeshCollider>();
         if (!riverCollider) return;
 
         Vector3 closestPoint = riverCollider.ClosestPoint(PlayerController.Instance.transform.position);

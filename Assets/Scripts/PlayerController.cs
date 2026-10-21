@@ -103,7 +103,7 @@ public class PlayerController : NetworkBehaviour
 
         // handle safe area
         if (!GameManager.Instance.terrainObject) return;
-        MeshCollider riverCollider = GameManager.Instance.terrainObject.transform.parent.Find("River").Find("ConvexRiver")?.GetComponent<MeshCollider>();
+        MeshCollider riverCollider = GameManager.Instance.riverObject.transform.GetChild(0)?.GetComponent<MeshCollider>();
         float currentDistance = Vector3.Distance(transform.position, riverCollider.ClosestPoint(transform.position));
         lastSafePosition = isGrounded && currentDistance > 2.5f ? transform.position : lastSafePosition;
     }

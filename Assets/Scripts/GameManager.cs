@@ -27,11 +27,16 @@ public class GameManager : NetworkBehaviour
     [Header("Reference data")]
     [SerializeField] private GameObject mainCamera;
     public Camera playerViewCamera;
-    public GameObject playerSpawnPosition;
-    public GameObject terrainObject;
     public Shader transparentShader;
-    [SerializeField] private GameObject navMeshObject;
+
+    [Header("Map Data")]
+    public GameObject terrainObject;
+    public GameObject terrainEdgeObject;
+    public GameObject riverObject;
+    public GameObject playerSpawnPosition;
     public List<GameObject> visitedLandmarks;
+    [SerializeField] private GameObject navMeshObject;
+
 
     [Header("Lobby data")]
     public bool allowLandmarkBacktracking = true;
@@ -102,7 +107,10 @@ public class GameManager : NetworkBehaviour
     {
         MenuManager.Instance.OnLobbyConnect();
         InventoryManager.Instance.OnSetup();
-        FindObjectsByType<AudioListener>().All(o => o.GetComponent<AudioListener>().enabled = o.GetComponent<AudioManager>() != null);
+        NetworkManager.SceneManager.OnLoadEventCompleted += OnMapLoaded;
+        if (IsHost) OnLoadEmptyMap();
+        // Note: stupid check
+        if (FindAnyObjectByType<AssetSpawner>()) OnMapLoaded("EmptyMap", LoadSceneMode.Additive, null, null);
     }
 
     public void OnLobbyStartValueChanged(bool oldValue, bool newValue)
@@ -116,7 +124,6 @@ public class GameManager : NetworkBehaviour
         playerViewCamera.gameObject.SetActive(false);
         InventoryManager.Instance.OnSetupStory();
         MenuManager.Instance.OnLobbyStart();
-        NetworkManager.SceneManager.OnLoadEventCompleted += OnMapLoaded;
         if (FindAnyObjectByType<Volume>()) OnMapLoaded(activeStory.Value.ToString(), LoadSceneMode.Additive, null, null);
 
         if (isMaster)
@@ -139,6 +146,20 @@ public class GameManager : NetworkBehaviour
 
             // update player renderstates
             UpdatePlayerRenderStateRpc();
+        }
+    }
+
+    private void OnLoadEmptyMap()
+    {
+        string targetScene = "EmptyMap";
+        SceneEventProgressStatus status = NetworkManager.SceneManager.LoadScene(targetScene, LoadSceneMode.Additive);
+
+        Debug.Log("GameManager: Loading level " + targetScene);
+        if (status != SceneEventProgressStatus.Started)
+        {
+            Debug.Log("GameManager: Failed to start scene load");
+            OnDisconnectClient();
+            return;
         }
     }
 
@@ -166,15 +187,25 @@ public class GameManager : NetworkBehaviour
         foreach (GameObject rootObject in loadedScene.GetRootGameObjects())
         {
             if (rootObject.GetComponent<Camera>()) rootObject.SetActive(false);
-            if (rootObject.name.Contains("Level"))
+
+            if (sceneName == "EmptyMap")
             {
-                if (isMaster) 
+                if (rootObject.name == "Inner terrain") terrainObject = rootObject;
+                if (rootObject.name == "Outer Terrain") terrainEdgeObject = rootObject;
+                if (rootObject.name == "River") 
+                {
+                    riverObject = rootObject;
+                    AudioManager.Instance.riverAudioSource = riverObject.GetComponentInChildren<AudioSource>();
+                }
+            }
+            else if (rootObject.name.Contains("Level"))
+            {
+                if (isMaster)
                 {
                     Destroy(rootObject);
                     return;
                 }
                 rootObject.transform.eulerAngles = new Vector3(0f, -180f, 0f);
-                terrainObject = rootObject.transform.Find("Terrain").Find("Inner terrain").gameObject;
                 playerSpawnPosition = rootObject.transform.Find("Terrain objects").Find("Starting point").gameObject;
                 AudioManager.Instance.environmentAudioSource = rootObject.transform.Find("World Settings").GetComponentInChildren<AudioSource>();
                 AudioManager.Instance.environmentAudioSource.Stop();
@@ -182,11 +213,22 @@ public class GameManager : NetworkBehaviour
             }
         }
 
+        // stop rendering terrain objects until the full map is loaded
+        foreach (Transform child in terrainObject.transform)
+        {
+            child.GetComponent<Renderer>().enabled = playerSpawnPosition;
+        }
+        riverObject.GetComponent<Renderer>().enabled = playerSpawnPosition;
+        terrainEdgeObject.GetComponent<Renderer>().enabled = playerSpawnPosition;
+
         // build navmesh
         navMeshObject.GetComponent<NavMeshSurface>().BuildNavMesh();
 
         // hide start platform
         navMeshObject.GetComponent<NavMeshSurface>().GetComponent<Renderer>().enabled = false;
+
+        // prevent placing player on map until it's fully loaded
+        if (!playerSpawnPosition) return;
 
         // move player to map
         RespawnPlayer();
@@ -370,14 +412,14 @@ public class GameManager : NetworkBehaviour
             if (landmarkObject.isStartArea)
             {
                 visitedLandmarks.Clear();
-                currentTravelCost.Value = 0;
+                UpdateTravelCostRpc(0);
                 visitedLandmarks.Add(targetLandmark);
             }
             // handle backtracking
             else if (allowLandmarkBacktracking && visitedLandmarks.Count > 1 && visitedLandmarks[visitedLandmarks.Count - 2] == targetLandmark)
             {
                 int targetCost = visitedLandmarks.Last().GetComponent<LandmarkObject>().travelRelations.FirstOrDefault(t => t.connectedLandmark == targetLandmark).travelCost;
-                currentTravelCost.Value -= targetCost;
+                UpdateTravelCostRpc(currentTravelCost.Value - targetCost);
                 visitedLandmarks.Remove(visitedLandmarks.Last());
             }
         }
@@ -388,7 +430,7 @@ public class GameManager : NetworkBehaviour
             if (landmarkData != null)
             {
                 visitedLandmarks.Add(targetLandmark);
-                currentTravelCost.Value += landmarkData.travelCost;
+                UpdateTravelCostRpc(currentTravelCost.Value + landmarkData.travelCost);
             }
             // store start landmark (no relations)
             else if (landmarkObject.isStartArea)
@@ -409,12 +451,15 @@ public class GameManager : NetworkBehaviour
             {
                 visitedLandmarks.Remove(targetLandmark);
                 LandmarkData lastRelation = targetLandmark.GetComponent<LandmarkObject>().travelRelations.FirstOrDefault(t => t.connectedLandmark == visitedLandmarks.Last());
-                currentTravelCost.Value -= lastRelation.travelCost;
+                UpdateTravelCostRpc(currentTravelCost.Value - lastRelation.travelCost);
             }
 
             UIManager.Instance.OnUpdateLandmarkText();
         }
     }
+
+    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+    public void UpdateTravelCostRpc(int newValue) => currentTravelCost.Value = newValue;
 
     [Rpc(SendTo.Everyone, InvokePermission = RpcInvokePermission.Everyone)]
     public void UpdatePlayerRenderStateRpc()
