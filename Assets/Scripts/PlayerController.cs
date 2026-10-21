@@ -128,6 +128,14 @@ public class PlayerController : NetworkBehaviour
         }
     }
 
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.GetComponent<LandmarkObject>() && GameManager.Instance.FetchPersistentPlayerId() == 0)
+        {
+            GameManager.Instance.OnLandmarkExited(other.gameObject);
+        }
+    }
+
     private void AnimationHandler()
     {
         // falling state

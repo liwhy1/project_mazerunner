@@ -140964,11 +140964,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3074116668058527280, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
       propertyPath: travelRelations.Array.size
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3074116668058527280, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
       propertyPath: travelRelations.Array.data[0].travelCost
-      value: 1
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 3074116668058527280, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
       propertyPath: travelRelations.Array.data[1].travelCost
@@ -140977,7 +140977,7 @@ PrefabInstance:
     - target: {fileID: 3074116668058527280, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
       propertyPath: travelRelations.Array.data[0].connectedLandmark
       value: 
-      objectReference: {fileID: 548195579}
+      objectReference: {fileID: 1344642054}
     - target: {fileID: 3074116668058527280, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
       propertyPath: travelRelations.Array.data[1].connectedLandmark
       value: 
@@ -216474,11 +216474,6 @@ PrefabInstance:
 --- !u!4 &548195578 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8952467296336816114, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
-  m_PrefabInstance: {fileID: 548195577}
-  m_PrefabAsset: {fileID: 0}
---- !u!1 &548195579 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 9198639263344674948, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
   m_PrefabInstance: {fileID: 548195577}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &548504413
@@ -611443,6 +611438,10 @@ PrefabInstance:
     - target: {fileID: 3074116668058527280, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
       propertyPath: displayName
       value: Camp
+      objectReference: {fileID: 0}
+    - target: {fileID: 3074116668058527280, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: isStartArea
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8952467296336816114, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
       propertyPath: m_LocalScale.x

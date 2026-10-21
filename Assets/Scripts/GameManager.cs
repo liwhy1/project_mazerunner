@@ -363,10 +363,18 @@ public class GameManager : NetworkBehaviour
 
     public void OnLandmarkEntered(GameObject targetLandmark)
     {
+        LandmarkObject landmarkObject = targetLandmark.GetComponent<LandmarkObject>();
         if (visitedLandmarks.Contains(targetLandmark))
         {
+            // reset landmark progress on start area re-entry
+            if (landmarkObject.isStartArea)
+            {
+                visitedLandmarks.Clear();
+                currentTravelCost.Value = 0;
+                visitedLandmarks.Add(targetLandmark);
+            }
             // handle backtracking
-            if (allowLandmarkBacktracking && visitedLandmarks.Count > 1 && visitedLandmarks[visitedLandmarks.Count - 2] == targetLandmark)
+            else if (allowLandmarkBacktracking && visitedLandmarks.Count > 1 && visitedLandmarks[visitedLandmarks.Count - 2] == targetLandmark)
             {
                 int targetCost = visitedLandmarks.Last().GetComponent<LandmarkObject>().travelRelations.FirstOrDefault(t => t.connectedLandmark == targetLandmark).travelCost;
                 currentTravelCost.Value -= targetCost;
@@ -375,28 +383,37 @@ public class GameManager : NetworkBehaviour
         }
         else
         {
-            LandmarkData landmarkData = targetLandmark.GetComponent<LandmarkObject>().travelRelations.FirstOrDefault(t => t.connectedLandmark == visitedLandmarks.Last());
+            LandmarkData landmarkData = landmarkObject.travelRelations.Count == 0 ? null : landmarkObject.travelRelations.FirstOrDefault(t => t.connectedLandmark == visitedLandmarks.Last());
+            // store new landmark and add travel cost
             if (landmarkData != null)
             {
                 visitedLandmarks.Add(targetLandmark);
                 currentTravelCost.Value += landmarkData.travelCost;
             }
-            // this should be reserved for the starting landmark
-            else if (targetLandmark.GetComponent<LandmarkObject>().travelRelations.Count == 0 && targetLandmark.GetComponent<LandmarkObject>().isStartArea)
+            // store start landmark (no relations)
+            else if (landmarkObject.isStartArea)
             {
                 visitedLandmarks.Add(targetLandmark);
             }
         }
 
-        // setup display text
-        string targetText = "Current travel cost: <b>" + currentTravelCost.Value + "</b>\n";
-        foreach (var landmark in visitedLandmarks)
-        {
-            targetText += (visitedLandmarks.IndexOf(landmark) == 0 ? "<b>" : " --> <b>") + landmark.GetComponent<LandmarkObject>().displayName + "</b>";
-        }
+        UIManager.Instance.OnUpdateLandmarkText();
+    }
 
-        // send text to clients
-        UIManager.Instance.OnLandmarkTextChangedRpc(targetText);
+    public void OnLandmarkExited(GameObject targetLandmark)
+    {
+        if (visitedLandmarks.Contains(targetLandmark))
+        {
+            var relationMentioners = FindObjectsByType<LandmarkObject>().Any(l => l.travelRelations.Any(t => t.connectedLandmark == targetLandmark));
+            if (!relationMentioners) 
+            {
+                visitedLandmarks.Remove(targetLandmark);
+                LandmarkData lastRelation = targetLandmark.GetComponent<LandmarkObject>().travelRelations.FirstOrDefault(t => t.connectedLandmark == visitedLandmarks.Last());
+                currentTravelCost.Value -= lastRelation.travelCost;
+            }
+
+            UIManager.Instance.OnUpdateLandmarkText();
+        }
     }
 
     [Rpc(SendTo.Everyone, InvokePermission = RpcInvokePermission.Everyone)]

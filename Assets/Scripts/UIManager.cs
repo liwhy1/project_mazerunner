@@ -243,6 +243,19 @@ public class UIManager : NetworkBehaviour
         }
     }
 
+    public void OnUpdateLandmarkText()
+    {
+        // setup display text
+        string targetText = "Current travel cost: <b>" + GameManager.Instance.currentTravelCost.Value + "</b>\n";
+        foreach (var landmark in GameManager.Instance.visitedLandmarks)
+        {
+            targetText += (GameManager.Instance.visitedLandmarks.IndexOf(landmark) == 0 ? "<b>" : " --> <b>") + landmark.GetComponent<LandmarkObject>().displayName + "</b>";
+        }
+
+        // send text to clients
+        OnLandmarkTextChangedRpc(targetText);
+    }
+
     [Rpc(SendTo.Everyone, InvokePermission = RpcInvokePermission.Everyone)]
     public void OnLandmarkTextChangedRpc(string targetText)
     {
