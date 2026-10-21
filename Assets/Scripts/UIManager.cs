@@ -361,9 +361,12 @@ public class UIManager : NetworkBehaviour
         GameObject closeButton = buttonLayout.transform.Find("CloseButton").gameObject;
         GameObject mainButton = buttonLayout.transform.Find("MainButton").gameObject;
 
+        // runtime data
+        string runtimeData = id == DialogId.TreasureReached ? GameManager.Instance.currentTravelCost.Value + " hours!" : "";
+
         // setup text
         dialogTitle.GetComponent<TMP_Text>().text = dialogEntry.title;
-        dialogText.GetComponent<TMP_Text>().text = dialogEntry.text;
+        dialogText.GetComponent<TMP_Text>().text = dialogEntry.text + runtimeData;
         mainButton.SetActive(!string.IsNullOrEmpty(dialogEntry.button));
         mainButton.transform.Find("Text").GetComponent<TMP_Text>().text = dialogEntry.button;
 
