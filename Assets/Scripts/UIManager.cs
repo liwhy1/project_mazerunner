@@ -7,6 +7,7 @@ using System.Linq;
 using UnityEngine.Events;
 using System.Collections.Generic;
 using System.Collections;
+using UnityEngine.InputSystem;
 
 public class UIManager : NetworkBehaviour
 {
@@ -94,6 +95,9 @@ public class UIManager : NetworkBehaviour
         AddEventTrigger(cameraZoomOutIcon.GetComponent<EventTrigger>(), EventTriggerType.PointerDown, InputManager.Instance.OnScrollStart, 1f);
         AddEventTrigger(cameraZoomOutIcon.GetComponent<EventTrigger>(), EventTriggerType.PointerUp, InputManager.Instance.OnScrollStop);
 
+        // setup minimap triggers
+        AddEventTrigger(minimapObject.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnMinimapClicked);
+
         // setup menumanager
         MenuManager.Instance.OnSetup();
     }
@@ -165,6 +169,26 @@ public class UIManager : NetworkBehaviour
     {
         settingsObject.SetActive(!settingsObject.activeSelf);
         eventSystem.SetSelectedGameObject(uiVolumeSlider.gameObject);
+    }
+
+    private void OnMinimapClicked()
+    {
+        MeshRenderer renderer = GameManager.Instance.terrainObject.GetComponent<MeshRenderer>();
+        Bounds bounds = renderer.bounds;
+        RectTransform minimapRect = minimapObject.GetComponent<RectTransform>();
+
+        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(minimapRect, Pointer.current.position.ReadValue(), null, out Vector2 localPosition)) return;
+
+        float normalizedX = Mathf.InverseLerp(minimapRect.rect.xMin, minimapRect.rect.xMax, localPosition.x);
+        float normalizedY = Mathf.InverseLerp(minimapRect.rect.yMin, minimapRect.rect.yMax, localPosition.y);
+        float worldX = Mathf.Lerp(bounds.min.x, bounds.max.x, normalizedX);
+        float worldZ = Mathf.Lerp(bounds.min.z, bounds.max.z, normalizedY);
+
+        Vector3 rayOrigin = new Vector3(worldX, bounds.max.y + 100f, worldZ);
+        if (Physics.Raycast(rayOrigin, Vector3.down, out RaycastHit hit, bounds.size.y + 200f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+        {
+            PlayerController.Instance.OnMove(hit.point);
+        }
     }
 
     private void SetupMinimapIcon(int playerId)
