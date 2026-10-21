@@ -7,6 +7,7 @@ public class LandmarkObject : MonoBehaviour
     public List<LandmarkData> travelRelations = new List<LandmarkData>();
     [Tooltip("The name this landmark will be displayed as on the UI.")]
     public string displayName = "Landmark";
+    public bool isStartArea;
 }
 
 [Serializable]

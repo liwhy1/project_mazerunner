@@ -382,7 +382,7 @@ public class GameManager : NetworkBehaviour
                 currentTravelCost.Value += landmarkData.travelCost;
             }
             // this should be reserved for the starting landmark
-            else if (targetLandmark.GetComponent<LandmarkObject>().travelRelations.Count == 0)
+            else if (targetLandmark.GetComponent<LandmarkObject>().travelRelations.Count == 0 && targetLandmark.GetComponent<LandmarkObject>().isStartArea)
             {
                 visitedLandmarks.Add(targetLandmark);
             }
