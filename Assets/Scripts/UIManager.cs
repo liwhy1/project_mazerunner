@@ -43,6 +43,7 @@ public class UIManager : NetworkBehaviour
     public GameObject loadingIcon;
     private GameObject lastSelectedObject;
     public TMP_Text landmarkText;
+    [SerializeField] private TMP_Text timerText;
 
     [Header("Minimap Data")]
     public GameObject minimapObject;
@@ -306,6 +307,7 @@ public class UIManager : NetworkBehaviour
         pauseObject.SetActive(false);
         settingsObject.SetActive(false);
         loadingIcon.SetActive(false);
+        timerText.gameObject.SetActive(false);
         cameraZoomInIcon.gameObject.SetActive(GameManager.Instance.isLobbyStarted.Value);
         cameraZoomOutIcon.gameObject.SetActive(GameManager.Instance.isLobbyStarted.Value);
         landmarkText.gameObject.SetActive(GameManager.Instance.isLobbyStarted.Value);
@@ -498,5 +500,13 @@ public class UIManager : NetworkBehaviour
             fpsValue = Mathf.RoundToInt(frameCount / timeSpan);
             fpsText.text = fpsValue + " FPS";
         }
+    }
+
+    [ClientRpc]
+    public void OnSyncTimerClientRpc(float currentTime, bool isPlaying, bool showTimer = true)
+    {
+        timerText.gameObject.SetActive(!GameManager.Instance.isMaster && showTimer);
+        timerText.GetComponent<UITimer>().OnSetPlaying(isPlaying);
+        timerText.GetComponent<UITimer>().OnSetTime(currentTime);
     }
 }

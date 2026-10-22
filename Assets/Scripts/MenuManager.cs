@@ -357,6 +357,7 @@ public class MenuManager : NetworkBehaviour
     private void OnMasterSharedMapReady()
     {
         SetMasterGameState(3);
+        UIManager.Instance.OnSyncTimerClientRpc(0f, false, false);
         MapNetworkManager.Instance.SetMapStateServerRpc(MapState.Explore);
         lobbyFinishButton.transform.Find("Text").GetComponent<TMP_Text>().text = "End Game";
         timerObject.SetActive(false);

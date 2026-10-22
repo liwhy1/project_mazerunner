@@ -39,6 +39,7 @@ public class UITimer : MonoBehaviour
         // update ui
         timerText.text = $"{minutes:00}:{seconds:00}";
         timerText.color = timeRemaining > 0 ? Color.black : Color.red;
+        if (!playToggleButton) return;
         playToggleButton.transform.Find("Sprite").gameObject.SetActive(!isPlaying);
         playToggleButton.transform.Find("Sprite2").gameObject.SetActive(isPlaying);
     }
@@ -46,16 +47,22 @@ public class UITimer : MonoBehaviour
     public void OnTogglePause()
     {
         isPlaying = !isPlaying;
+        UIManager.Instance.OnSyncTimerClientRpc(timeRemaining, isPlaying);
     }
 
     public void OnResetTimer()
     {
         isPlaying = false;
         timeRemaining = 900f; // 15 mins
+        UIManager.Instance?.OnSyncTimerClientRpc(timeRemaining, isPlaying, false);
     }
 
     public void OnModifyTime(int targetModifier)
     {
         timeRemaining = Mathf.Max(timeRemaining += targetModifier, 0);
+        UIManager.Instance.OnSyncTimerClientRpc(timeRemaining, isPlaying);
     }
+
+    public void OnSetTime(float targetTime) => timeRemaining = targetTime;
+    public void OnSetPlaying(bool targetState) => isPlaying = targetState;
 }
