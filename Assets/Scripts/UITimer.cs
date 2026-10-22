@@ -8,7 +8,7 @@ public class UITimer : MonoBehaviour
     [SerializeField] private float timeRemaining = 0f;
     private bool isPlaying;
 
-    private void Awake()
+    private void Start()
     {
         // setup default states
         isPlaying = false;
@@ -47,20 +47,20 @@ public class UITimer : MonoBehaviour
     public void OnTogglePause()
     {
         isPlaying = !isPlaying;
-        UIManager.Instance.OnSyncTimerClientRpc(timeRemaining, isPlaying);
+        UIManager.Instance?.OnSyncTimerClientRpc(timeRemaining, isPlaying);
     }
 
     public void OnResetTimer()
     {
         isPlaying = false;
         timeRemaining = 900f; // 15 mins
-        UIManager.Instance?.OnSyncTimerClientRpc(timeRemaining, isPlaying, false);
+        if (GameManager.Instance.isLobbyStarted.Value) UIManager.Instance?.OnSyncTimerClientRpc(timeRemaining, isPlaying, false);
     }
 
     public void OnModifyTime(int targetModifier)
     {
         timeRemaining = Mathf.Max(timeRemaining += targetModifier, 0);
-        UIManager.Instance.OnSyncTimerClientRpc(timeRemaining, isPlaying);
+        UIManager.Instance?.OnSyncTimerClientRpc(timeRemaining, isPlaying);
     }
 
     public void OnSetTime(float targetTime) => timeRemaining = targetTime;
