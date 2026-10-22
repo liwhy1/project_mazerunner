@@ -4,7 +4,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class UIVerticalSelector : MonoBehaviour
+public class UIHorizontalSelector : MonoBehaviour
 {
     [SerializeField] private GameObject leftArrowButton;
     [SerializeField] private GameObject rightArrowButton;

@@ -21,7 +21,7 @@ public class MenuManager : NetworkBehaviour
     [Header("Host Data")]
     [SerializeField] private GameObject hostObject;
     public TMP_InputField hostPlayerNameInput;
-    [SerializeField] private UIVerticalSelector playerModeSelector;
+    [SerializeField] private UIHorizontalSelector playerModeSelector;
     [SerializeField] private GameObject startHostButton;
     [SerializeField] private GameObject hostBackButton;
 
@@ -41,7 +41,7 @@ public class MenuManager : NetworkBehaviour
     [SerializeField] private Toggle lobbyLandmarkToggle;
     [SerializeField] private Toggle lobbyJournalToggle;
     [SerializeField] private Toggle lobbyInventoryToggle;
-    [SerializeField] private UIVerticalSelector lobbyStorySelector;
+    [SerializeField] private UIHorizontalSelector lobbyStorySelector;
     public TMP_Text lobbyJoinCodeText;
     public GameObject lobbyPlayerListObject;
     [SerializeField] private TMP_Text lobbyWaitingText;
