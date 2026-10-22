@@ -371,7 +371,7 @@ public class UIManager : NetworkBehaviour
 
         // create new dialog
         GameObject newDialog = Instantiate(Resources.Load<GameObject>("UIElements/TextDialog"), transform);
-        newDialog.transform.localPosition = Vector2.zero;
+        newDialog.GetComponent<RectTransform>().anchoredPosition = new Vector2(0f, -1000);
         activeDialog = newDialog;
 
         // setup vars
@@ -390,15 +390,14 @@ public class UIManager : NetworkBehaviour
         mainButton.SetActive(!string.IsNullOrEmpty(dialogEntry.button));
         mainButton.transform.Find("Text").GetComponent<TMP_Text>().text = dialogEntry.button;
 
-        // set ui selected button
-        //eventSystem.SetSelectedGameObject(mainButton.activeSelf ? mainButton : closeButton);
-
         // setup triggers
         AddEventTrigger(closeButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnCloseDialog);
         AddEventTrigger(closeButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnCloseDialog);
 
         AddEventTrigger(mainButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, DialogActionHandler, dialogEntry.action);
         AddEventTrigger(mainButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, DialogActionHandler, dialogEntry.action);
+
+        StartCoroutine(UIAnimator(newDialog.GetComponent<RectTransform>(), Vector2.zero));
     }
 
     private void DialogActionHandler(string targetAction)
