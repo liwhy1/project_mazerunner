@@ -112,6 +112,15 @@ public class InventoryManager : MonoBehaviour
         Sprite mapSprite = Resources.Load<Sprite>("Information/" + activeStory + "/MapSprite");
         MapManager.Instance.mapBackground.GetComponent<Image>().sprite = mapSprite;
         MapManager.SharedInstance.mapBackground.GetComponent<Image>().sprite = mapSprite;
+        UIManager.Instance.minimapObject.transform.Find("Background").GetComponent<Image>().sprite = mapSprite;
+        foreach (Transform child in mapIndividualViewPage.transform)
+        {
+            if (child.name.Contains("Map")) child.Find("Background").GetComponent<Image>().sprite = mapSprite;
+        }
+        foreach (Transform child in MenuManager.Instance.individualMapsObject.transform)
+        {
+            if (child.name.Contains("Map")) child.Find("Background").GetComponent<Image>().sprite = mapSprite;
+        }
 
         // setup journal
         journalPage1Layout.SetActive(true);
