@@ -434,13 +434,18 @@ public class MapManager : NetworkBehaviour
     public IEnumerator ElementReplaceRoutine(GameObject oldElement, GameObject newElement)
     {
         float timeCounter = 0f;
-        while (newElement.transform.localPosition.z != 1) 
+        while (newElement.transform.localPosition.z != 0)
         {
             timeCounter += .1f;
             yield return new WaitForSeconds(.1f);
             if (timeCounter > 2f || !newElement) break;
         }
-        if (!newElement || !oldElement) yield break;
+        if (!newElement || !oldElement) 
+        {
+            if (!newElement) Destroy(oldElement);
+            else if (!oldElement) Destroy(newElement);
+            yield break;
+        }
         newElement.transform.Find("Sprite")?.gameObject.SetActive(true);
         if (newElement.GetComponent<Image>()) newElement.GetComponent<Image>().enabled = true;
         pendingPlacements.Remove(pendingPlacements.FirstOrDefault(p => p.Value == oldElement).Key);
