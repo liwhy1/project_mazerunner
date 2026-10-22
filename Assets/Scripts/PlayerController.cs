@@ -217,7 +217,6 @@ public class PlayerController : NetworkBehaviour
         if (!enableMovement || GameManager.Instance.isPaused || UIManager.Instance.activeDialog || InventoryManager.Instance.isInventoryActive) 
         {
             if (playerRigidbody.isKinematic) return;
-            playerRigidbody.linearVelocity = Vector3.zero;
             playerRigidbody.angularVelocity = Vector3.zero;
             return;
         }
