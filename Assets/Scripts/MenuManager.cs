@@ -45,7 +45,7 @@ public class MenuManager : NetworkBehaviour
     public TMP_Text lobbyJoinCodeText;
     public GameObject lobbyPlayerListObject;
     [SerializeField] private TMP_Text lobbyWaitingText;
-    [SerializeField] private TMP_Text gameStateText;
+    [SerializeField] private UIProgressBar gameStateProgressBar;
     [SerializeField] private GameObject lobbyFinishButton;
     [SerializeField] private GameObject timerObject;
     public GameObject individualMapsObject;
@@ -254,15 +254,15 @@ public class MenuManager : NetworkBehaviour
         lobbyPlayerView.SetActive(!GameManager.Instance.isMaster);
         lobbyWaitingText.gameObject.SetActive(true);
         lobbyStorySelector.transform.parent.parent.gameObject.SetActive(IsHost);
-        lobbyReadyButton.SetActive(true);
-        lobbyReadyButton.transform.Find("Text").GetComponent<TMP_Text>().text = GameManager.Instance.isMaster ? "Start" : "Ready";
+        lobbyReadyButton.SetActive(!GameManager.Instance.isMaster);
+        lobbyReadyButton.transform.Find("Text").GetComponent<TMP_Text>().text = "Ready";
         lobbyWaitingText.text = "";
-        gameStateText.text = "";
-        gameStateText.gameObject.SetActive(GameManager.Instance.isMaster);
+        gameStateProgressBar.gameObject.SetActive(false);
         lobbyPlayerListObject.SetActive(!GameManager.Instance.isMaster);
         UIManager.Instance.pausePlayerListObject.SetActive(!GameManager.Instance.isMaster);
         individualMapsObject.SetActive(false);
         lobbyFinishButton.SetActive(false);
+        lobbyFinishButton.transform.Find("Text").GetComponent<TMP_Text>().text = "Save Map";
         timerObject.SetActive(false);
         lobbySettingsButton.SetActive(IsHost || GameManager.Instance.isMaster);
 
@@ -302,7 +302,6 @@ public class MenuManager : NetworkBehaviour
 
     public void OnLobbyStart()
     {
-        lobbyReadyButton.SetActive(false);
         lobbyStorySelector.transform.parent.parent.gameObject.SetActive(false);
         lobbyWaitingText.text = GameManager.Instance.isMaster ? "" : "Starting Game!";
         foreach (Transform child in lobbyPlayerView.transform) { child.GetComponent<UIElement>().OnElementDisable(); }
@@ -310,7 +309,8 @@ public class MenuManager : NetworkBehaviour
 
         // master
         timerObject.SetActive(GameManager.Instance.isMaster);
-        SetMasterGameStateText("Individual mapping\n" + GameManager.Instance.playerList.Count(p => p.IsMapReady.Value == true) + "/" + GameManager.Instance.playerList.Count);
+        gameStateProgressBar.gameObject.SetActive(GameManager.Instance.isMaster);
+        SetMasterGameState(1);
     }
 
     private void OnJoinCodeValueChanged(FixedString64Bytes oldValue, FixedString64Bytes newValue)
@@ -335,10 +335,10 @@ public class MenuManager : NetworkBehaviour
         StartCoroutine(UIManager.Instance.UIAnimator(lobbySettingsPage.GetComponent<RectTransform>(), targetPosition));
     }
 
-    public void SetMasterGameStateText(string targetText)
+    public void SetMasterGameState(int targetLevel)
     {
-        gameStateText.text = "<b>Game State:</b>\n";
-        gameStateText.text += targetText;
+        if (!GameManager.Instance.isMaster) return;
+        gameStateProgressBar.OnProgressUpdate(targetLevel);
     }
 
     private void OnMasterFinishButton()
@@ -355,7 +355,7 @@ public class MenuManager : NetworkBehaviour
 
     private void OnMasterSharedMapReady()
     {
-        SetMasterGameStateText("Explore map");
+        SetMasterGameState(3);
         MapNetworkManager.Instance.SetMapStateServerRpc(MapState.Explore);
         lobbyFinishButton.transform.Find("Text").GetComponent<TMP_Text>().text = "End Game";
         timerObject.SetActive(false);
@@ -363,7 +363,7 @@ public class MenuManager : NetworkBehaviour
 
     private void OnMasterEndGame()
     {
-        SetMasterGameStateText("Game end");
+        SetMasterGameState(4);
         MapManager.SharedInstance.mapObject.SetActive(false);
         individualMapsObject.SetActive(true);
         lobbyFinishButton.SetActive(false);
@@ -372,7 +372,7 @@ public class MenuManager : NetworkBehaviour
 
     public void OnMasterSharedMapEnabled()
     {
-        SetMasterGameStateText("Shared mapping");
+        SetMasterGameState(2);
         lobbyFinishButton.SetActive(true);
         MapManager.SharedInstance.mapObject.SetActive(true);
         MapManager.SharedInstance.iconPile.SetActive(true);
