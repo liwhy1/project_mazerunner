@@ -347,6 +347,7 @@ public class MapManager : NetworkBehaviour
     {
         MapManager.Instance.OnMapToggleReady(false);
         isLoaded = true;
+        //if (MapNetworkManager.Instance.mapState.Value == MapState.Own) UIManager.Instance.OnOpenDialog(DialogId.MapTutorial);
     }
 
     public void OnDrawLine()

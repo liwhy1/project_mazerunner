@@ -14,7 +14,8 @@ public enum DialogId
     MapClear,
     PlayerTutorial,
     TreasureReached,
-    EditorOpen
+    EditorOpen,
+    MapTutorial
 }
 
 [Serializable]
@@ -46,7 +47,8 @@ public class DialogDatabase : MonoBehaviour
             new DialogEntry() { id = DialogId.SharedMapClear,       title = "Notice",   text = "Are you sure you want to clear the map?",                                                                                   button = "Yes",     action = "sharedmapclear" },
             new DialogEntry() { id = DialogId.PlayerTutorial,       title = "Tutorial", text = "<b>Player movement:</b>\n(WASD) / (Point & Click)\n<b>Camera height control:</b>\n(Mouse Wheel) / (UI Plus & Minus icon)",  button = "",        action = "" },
             new DialogEntry() { id = DialogId.TreasureReached,      title = "Game End", text = "The treasure was reached in: ",                                                                                             button = "",        action = "" },
-            new DialogEntry() { id = DialogId.EditorOpen,           title = "Notice",   text = "Would you like to open the map editor?",                                                                                    button = "Yes",     action = "openeditor" }
+            new DialogEntry() { id = DialogId.EditorOpen,           title = "Notice",   text = "Would you like to open the map editor?",                                                                                    button = "Yes",     action = "openeditor" },
+            new DialogEntry() { id = DialogId.MapTutorial,          title = "Tutorial", text = "Would you like to see the mapmaking instructions?",                                                                        button = "Yes",     action = "maptutorial" }
         };
     }
 

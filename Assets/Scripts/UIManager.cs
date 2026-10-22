@@ -419,6 +419,9 @@ public class UIManager : NetworkBehaviour
             case "selfdisconnect":
                 GameManager.Instance.OnDisconnectClient();
                 break;
+            case "maptutorial":
+                InventoryManager.Instance.SetMapTutorialState(1);
+                break;
         }
         OnCloseDialog();
     }

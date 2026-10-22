@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Text.RegularExpressions;
 using TMPro;
@@ -35,6 +36,7 @@ public class InventoryManager : MonoBehaviour
     public GameObject mapSharedViewPage;
     public GameObject mapIndividualViewPage;
     public GameObject activeMapPage;
+    [SerializeField] private GameObject highlightImage;
 
     private void Start()
     {
@@ -68,6 +70,7 @@ public class InventoryManager : MonoBehaviour
         mapObject.SetActive(false);
         noteObject.SetActive(true);
         editorObject.SetActive(false);
+        highlightImage.SetActive(false);
     }
 
     public void OnToggleInventoryLock()
@@ -310,5 +313,16 @@ public class InventoryManager : MonoBehaviour
     {
         if (targetState) mapIndividualViewButton.GetComponent<UIElement>().OnElementEnable();
         else mapIndividualViewButton.GetComponent<UIElement>().OnElementDisable();
+    }
+
+    public void SetMapTutorialState(int targetState)
+    {
+        /*
+        highlightImage.SetActive(true);
+        highlightImage.GetComponent<RectTransform>().sizeDelta = journalObject.GetComponent<RectTransform>().sizeDelta;
+        highlightImage.GetComponent<RectTransform>().position = journalObject.GetComponent<RectTransform>().position;
+        highlightImage.GetComponent<RectTransform>().sizeDelta = MapManager.Instance.mapBackground.GetComponent<RectTransform>().sizeDelta;
+        highlightImage.GetComponent<RectTransform>().position = MapManager.Instance.mapBackground.GetComponent<RectTransform>().position;
+        */
     }
 }

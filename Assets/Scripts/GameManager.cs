@@ -136,7 +136,7 @@ public class GameManager : NetworkBehaviour
             UIManager.Instance.loadingIcon.SetActive(true);            
             mainCamera.SetActive(false);
 
-            yield return new WaitForSeconds(1.5f);
+            yield return new WaitForSeconds(1f);
             if (MapNetworkManager.Instance.mapState.Value == MapState.Own || MapNetworkManager.Instance.mapState.Value == MapState.Shared) InventoryManager.Instance.OnToggleInventoryLock();
             if (!isMaster) MenuManager.Instance.ResetUIState();
             isPaused = false;
