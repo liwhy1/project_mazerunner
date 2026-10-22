@@ -161,7 +161,6 @@ public class MapNetworkManager : NetworkBehaviour
             if (targetSprite == "DrawDot") 
             {
                 targetObject.transform.SetSiblingIndex(MapManager.SharedInstance.iconPile.transform.GetSiblingIndex());
-                MapManager.SharedInstance.SetupDrawDotEventTriggers(targetObject.gameObject);
             }
             else
             {
