@@ -247,12 +247,13 @@ public class UIManager : NetworkBehaviour
             if (!icon.GetComponent<NetworkObject>() || icon.name.Contains("Dot")) continue;
             GameObject newIcon = Instantiate(Resources.Load<GameObject>("MapPrefabs/MapIcon"), minimapIcon.transform.parent);
 
-            // apply position with slightly made up offset
+            // apply transform
             newIcon.transform.SetParent(minimapIcon.transform);
             newIcon.GetComponent<RectTransform>().anchoredPosition = icon.transform.GetComponent<RectTransform>().anchoredPosition;
+            newIcon.transform.localEulerAngles = Vector2.zero;
+            newIcon.GetComponent<Image>().raycastTarget = false;
 
             // apply icon values
-            newIcon.transform.localEulerAngles = Vector2.zero;
             newIcon.transform.Find("Sprite").GetComponent<Image>().sprite = Resources.LoadAll<Sprite>("MapIcons").FirstOrDefault(s => s.name.Contains(icon.name));
             newIcon.transform.Find("Sprite").GetComponent<Image>().preserveAspect = true;
             newIcon.transform.Find("Name").gameObject.SetActive(false);
@@ -304,7 +305,6 @@ public class UIManager : NetworkBehaviour
         pauseObject.SetActive(false);
         settingsObject.SetActive(false);
         loadingIcon.SetActive(false);
-        endGameButton.SetActive(IsHost);
         cameraZoomInIcon.gameObject.SetActive(GameManager.Instance.isLobbyStarted.Value);
         cameraZoomOutIcon.gameObject.SetActive(GameManager.Instance.isLobbyStarted.Value);
         landmarkText.gameObject.SetActive(GameManager.Instance.isLobbyStarted.Value);
@@ -317,6 +317,7 @@ public class UIManager : NetworkBehaviour
     {
         pauseObject.SetActive(settingsObject.activeSelf ? false : !pauseObject.activeSelf);
         settingsObject.SetActive(false);
+        endGameButton.SetActive(IsHost);
         inventoryIcon.gameObject.SetActive(!pauseObject.activeSelf && !InventoryManager.Instance.isInventoryActive);
         pauseIcon.gameObject.SetActive(!pauseObject.activeSelf && !InventoryManager.Instance.isInventoryActive || InventoryManager.Instance.isInventoryActive && InventoryManager.Instance.isLocked);
     }
