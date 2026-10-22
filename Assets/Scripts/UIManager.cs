@@ -268,7 +268,7 @@ public class UIManager : NetworkBehaviour
         string targetText = "Current travel cost: <b>" + GameManager.Instance.currentTravelCost.Value + "</b>\n";
         foreach (var landmark in GameManager.Instance.visitedLandmarks)
         {
-            targetText += (GameManager.Instance.visitedLandmarks.IndexOf(landmark) == 0 ? "<b>" : " --> <b>") + landmark.GetComponent<LandmarkObject>().displayName + "</b>";
+            targetText += (GameManager.Instance.visitedLandmarks.IndexOf(landmark) == 0 ? "<b>" : " --> <b>") + landmark.GetComponent<LandmarkObject>().landmarkType.ToString().Replace('_', ' ') + "</b>";
         }
 
         // send text to clients
