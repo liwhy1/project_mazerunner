@@ -99,6 +99,7 @@ public class MapManager : NetworkBehaviour
         mapObject.transform.Find("InnerLayer").GetComponent<RectTransform>().anchoredPosition = new Vector2(307.85f, -40f);
         mapObject.GetComponent<RectTransform>().anchoredPosition = new Vector2(-307.85f, mapObject.GetComponent<RectTransform>().anchoredPosition.y);
         mapObject.GetComponent<RectTransform>().localScale = Vector2.one;
+        pointerCircle.SetActive(false);
     }
 
     private void Update()

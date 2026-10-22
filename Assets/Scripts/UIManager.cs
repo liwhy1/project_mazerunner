@@ -232,6 +232,7 @@ public class UIManager : NetworkBehaviour
                 playerIconRect.gameObject.GetComponent<Image>().color = newColor;
                 playerIconRect.gameObject.SetActive(true);
                 playerIconRect.anchoredPosition = new Vector2(Mathf.Lerp(minimapRect.rect.xMin, minimapRect.rect.xMax, normalizedX), Mathf.Lerp(minimapRect.rect.yMin, minimapRect.rect.yMax, normalizedY));
+                playerIcon.transform.SetAsLastSibling();
             }
             else SetupMinimapIcon(playerId);
         }
