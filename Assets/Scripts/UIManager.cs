@@ -111,6 +111,8 @@ public class UIManager : NetworkBehaviour
         }
 
         HandleActiveNavigationElement();
+
+        MistEffectHandler();
     }
 
     public void AddEventTrigger(EventTrigger trigger, EventTriggerType type, UnityAction action)
@@ -510,5 +512,24 @@ public class UIManager : NetworkBehaviour
         timerText.gameObject.SetActive(!GameManager.Instance.isMaster && showTimer);
         timerText.GetComponent<UITimer>().OnSetPlaying(isPlaying);
         timerText.GetComponent<UITimer>().OnSetTime(currentTime);
+    }
+
+
+    [SerializeField] private Image mistOverlay;
+    private void MistEffectHandler()
+    {
+        mistOverlay.gameObject.SetActive(!InventoryManager.Instance.isInventoryActive && !GameManager.Instance.isPaused);
+        if (PlayerController.Instance && PlayerController.Instance.isInMist)
+        {
+            Color tempColor = mistOverlay.color;
+            if (tempColor.a < 0.92f) tempColor.a += Time.deltaTime / 10f;
+            mistOverlay.color = tempColor;
+        }
+        else
+        {
+            Color tempColor = mistOverlay.color;
+            tempColor.a -= Time.deltaTime / 20f;
+            mistOverlay.color = tempColor;
+        }
     }
 }

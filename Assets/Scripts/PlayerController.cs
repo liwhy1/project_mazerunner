@@ -39,6 +39,7 @@ public class PlayerController : NetworkBehaviour
     public float distanceMultiplier = 1f;
     private Material savedMaterial;
     private GameObject savedObject;
+    public bool isInMist;
 
     public override void OnNetworkSpawn()
     {
@@ -141,6 +142,7 @@ public class PlayerController : NetworkBehaviour
             currentPlatform = other.transform;
             lastPlatformPosition = currentPlatform.position;
         }
+        if (other.name.Contains("Mist")) isInMist = true;
     }
 
     private void OnTriggerExit(Collider other)
@@ -153,6 +155,7 @@ public class PlayerController : NetworkBehaviour
         {
             if (currentPlatform == other.transform) currentPlatform = null;
         }
+        if (other.name.Contains("Mist")) isInMist = false;
     }
 
     private void AnimationHandler()
