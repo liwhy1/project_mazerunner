@@ -101,13 +101,17 @@ public class InputManager : MonoBehaviour
             {
                 if (hit.collider.GetComponent<ChainliftController>())
                 {
-                    if (!GameManager.Instance.IsHost) return;
+                    if (GameManager.Instance.FetchPersistentPlayerId() != 0) return;
                     hit.collider.GetComponent<ChainliftController>().OnMoveLift();
                 }
                 else if (hit.collider.gameObject.name == "ChestObject")
                 {
                     if (GameManager.Instance.FetchPersistentPlayerId() != 0) return;
                     UIManager.Instance.OnTreasureReachedRpc();
+                }
+                else if (hit.collider.gameObject.name == "BellObject")
+                {
+                    AudioManager.Instance.OnBellHit();
                 }
                 else
                 {

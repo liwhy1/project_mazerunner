@@ -20,6 +20,7 @@ public class AudioManager : MonoBehaviour
     [SerializeField] private AudioClip buttonClickSound;
     [SerializeField] private AudioClip elementPlaceSound;
     [SerializeField] private AudioClip pencilDrawSound;
+    [SerializeField] private AudioClip bellHitSound;
 
     private void Start()
     {
@@ -71,5 +72,6 @@ public class AudioManager : MonoBehaviour
     public void OnButtonClick() => PlaySoundClip(buttonClickSound, false);
     public void OnElementPlace() => PlaySoundClip(elementPlaceSound);
     public void OnFootstep() => PlaySoundClip(footstepSound);
-    public void OnDraw() => PlaySoundClip(pencilDrawSound, true);
+    public void OnDraw() => PlaySoundClip(pencilDrawSound);
+    public void OnBellHit() => PlaySoundClip(bellHitSound);
 }
