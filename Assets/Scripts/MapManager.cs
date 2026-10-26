@@ -495,10 +495,10 @@ public class MapManager : NetworkBehaviour
             // send ready state
             if (!GameManager.Instance.isMaster && sendToServer) MapNetworkManager.Instance.SetMapStateServerRpc(MapState.Explore);
         }
-        else 
+        else
         {
-            saveIcon.transform.GetChild(0).gameObject.SetActive(isMapready);
-            saveIcon.transform.GetChild(1).gameObject.SetActive(!isMapready);
+            saveIcon.transform.GetChild(1).gameObject.SetActive(isMapready);
+            saveIcon.transform.GetChild(0).gameObject.SetActive(!isMapready);
 
             // send ready state
             if (!GameManager.Instance.isMaster && sendToServer) MapNetworkManager.Instance.SetPlayerMapStateServerRpc(isMapready);
