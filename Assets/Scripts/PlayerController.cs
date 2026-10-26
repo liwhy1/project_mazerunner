@@ -29,6 +29,8 @@ public class PlayerController : NetworkBehaviour
     private bool isPlayerMoving;
     private bool isAgentNavigating;
     private Vector3 lastSafePosition;
+    private Transform currentPlatform;
+    private Vector3 lastPlatformPosition;
 
     [Header("Camera Data")]
     public bool enableCamera;
@@ -101,6 +103,14 @@ public class PlayerController : NetworkBehaviour
         // set player animation state
         isAgentNavigating = !(!playerAgent.pathPending && (!playerAgent.hasPath || playerAgent.velocity.sqrMagnitude == 0f));
 
+        // handle platform movement
+        if (currentPlatform)
+        {
+            Vector3 platformDelta = currentPlatform.position - lastPlatformPosition;
+            playerRigidbody.MovePosition(playerRigidbody.position + platformDelta);
+            lastPlatformPosition = currentPlatform.position;
+        }
+
         // handle safe area
         if (!GameManager.Instance.terrainObject) return;
         MeshCollider riverCollider = GameManager.Instance.riverObject.transform.GetChild(0)?.GetComponent<MeshCollider>();
@@ -126,6 +136,11 @@ public class PlayerController : NetworkBehaviour
         {
             GameManager.Instance.OnLandmarkEntered(other.gameObject);
         }
+        else if (FindObjectsByType<ChainliftController>().Any(c => c.chainliftObject == other.gameObject))
+        {
+            currentPlatform = other.transform;
+            lastPlatformPosition = currentPlatform.position;
+        }
     }
 
     private void OnTriggerExit(Collider other)
@@ -133,6 +148,10 @@ public class PlayerController : NetworkBehaviour
         if (other.GetComponent<LandmarkObject>() && GameManager.Instance.FetchPersistentPlayerId() == 0)
         {
             GameManager.Instance.OnLandmarkExited(other.gameObject);
+        }
+        else if (FindObjectsByType<ChainliftController>().Any(c => c.chainliftObject == other.gameObject))
+        {
+            if (currentPlatform == other.transform) currentPlatform = null;
         }
     }
 

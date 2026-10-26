@@ -101,6 +101,7 @@ public class InputManager : MonoBehaviour
             {
                 if (hit.collider.GetComponent<ChainliftController>())
                 {
+                    if (!GameManager.Instance.IsHost) return;
                     hit.collider.GetComponent<ChainliftController>().OnMoveLift();
                 }
                 else if (hit.collider.gameObject.name == "ChestObject")

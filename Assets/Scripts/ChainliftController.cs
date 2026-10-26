@@ -1,9 +1,10 @@
 using System.Collections;
+using Unity.Netcode;
 using UnityEngine;
 
 public class ChainliftController : MonoBehaviour
 {
-    [SerializeField] private GameObject chainliftObject;
+    public GameObject chainliftObject;
     private Coroutine liftMoveRoutine;
     public float lowLimit = 20.35f;
     public float highLimit = -17.07f;
@@ -24,9 +25,16 @@ public class ChainliftController : MonoBehaviour
         while (time < movementSpeed)
         {
             time += Time.deltaTime;
-            chainliftObject.transform.localPosition = Vector3.Lerp(startPosition, targetPosition, time / movementSpeed);
+            Vector3 newPosition = Vector3.Lerp(startPosition, targetPosition, time / movementSpeed);
+            SyncLiftPositionClientRpc(newPosition);
             yield return new WaitForEndOfFrame();
         }
         liftMoveRoutine = null;
+    }
+
+    [ClientRpc]
+    public void SyncLiftPositionClientRpc(Vector3 targetPosition)
+    {
+        chainliftObject.transform.localPosition = targetPosition;
     }
 }
