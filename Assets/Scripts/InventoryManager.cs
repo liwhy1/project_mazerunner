@@ -151,7 +151,7 @@ public class InventoryManager : MonoBehaviour
         if (!Resources.Load<TextAsset>(textTargetPath + "_" + targetPage))
         {
             Destroy(targetView);
-            journalObject.transform.Find("NextPageButton").gameObject.SetActive(false);
+            journalPageNumber.transform.Find("NextPageButton").gameObject.SetActive(false);
             return;
         }
 
