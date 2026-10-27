@@ -54,7 +54,7 @@ public class UITimer : MonoBehaviour
     {
         isPlaying = false;
         timeRemaining = 900f; // 15 mins
-        if (GameManager.Instance.isLobbyStarted.Value) UIManager.Instance?.OnSyncTimerClientRpc(timeRemaining, isPlaying, false);
+        if (MapManager.Instance) UIManager.Instance?.OnSyncTimerClientRpc(timeRemaining, isPlaying, false);
     }
 
     public void OnModifyTime(int targetModifier)

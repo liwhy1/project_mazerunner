@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,7 +15,6 @@ public class GameManager : NetworkBehaviour
     public bool isPaused;
     public List<PlayerData> playerList = new List<PlayerData>();
     public bool isMaster;
-    public bool isMasterGameStarted;
 
     [Header("Network vars")]
     public NetworkVariable<FixedString64Bytes> activeStory = new NetworkVariable<FixedString64Bytes>("Prototype3", NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
@@ -36,7 +34,6 @@ public class GameManager : NetworkBehaviour
     public GameObject playerSpawnPosition;
     public List<GameObject> visitedLandmarks;
     [SerializeField] private GameObject navMeshObject;
-
 
     [Header("Lobby data")]
     public bool allowLandmarkBacktracking = true;
@@ -84,12 +81,14 @@ public class GameManager : NetworkBehaviour
 
     private void Start()
     {
+        // setup vars
         Instance = this;
         isPaused = true;
 
-        // Enable wakelock
+        // enable wakelock
         GetComponent<WebGLWakeLock>().Enable();
 
+        // subscribe to network events
         NetworkManager.OnClientConnectedCallback += OnClientConnected;
         NetworkManager.OnClientDisconnectCallback += OnClientDisconnected;
         isLobbyStarted.OnValueChanged += OnLobbyStartValueChanged;
@@ -97,19 +96,25 @@ public class GameManager : NetworkBehaviour
 
     public override void OnDestroy()
     {
-        NetworkManager.OnClientConnectedCallback -= OnClientConnected;
-        NetworkManager.OnClientDisconnectCallback -= OnClientDisconnected;
-        NetworkManager.SceneManager.OnLoadEventCompleted -= OnMapLoaded;
+        if (NetworkManager) NetworkManager.OnClientConnectedCallback -= OnClientConnected;
+        if (NetworkManager) NetworkManager.OnClientDisconnectCallback -= OnClientDisconnected;
+        if (NetworkManager && NetworkManager.SceneManager != null) NetworkManager.SceneManager.OnLoadEventCompleted -= OnMapLoaded;
         isLobbyStarted.OnValueChanged -= OnLobbyStartValueChanged;
     }
 
     public void OnLobbyConnect()
     {
+        // setup ui
         MenuManager.Instance.OnLobbyConnect();
         InventoryManager.Instance.OnSetup();
+
+        // subscribe to scene load events
         NetworkManager.SceneManager.OnLoadEventCompleted += OnMapLoaded;
+
+        // load empty map
         if (IsHost) OnLoadEmptyMap();
-        // Note: stupid check
+
+        // manually run load event, if the empty map is already loaded (client behaviour)
         if (FindAnyObjectByType<AssetSpawner>()) OnMapLoaded("EmptyMap", LoadSceneMode.Additive, null, null);
     }
 
@@ -121,31 +126,40 @@ public class GameManager : NetworkBehaviour
     public IEnumerator OnLobbyStart()
     {
         Debug.Log("GameManager: Starting lobby");
+
+        // setup ui
         playerViewCamera.gameObject.SetActive(false);
         InventoryManager.Instance.OnSetupStory();
         MenuManager.Instance.OnLobbyStart();
+
+        // manually run load event, if the main map is already loaded (client behaviour)
         if (FindAnyObjectByType<Volume>()) OnMapLoaded(activeStory.Value.ToString(), LoadSceneMode.Additive, null, null);
 
         if (isMaster)
         {
+            // force lobby start state in master mode (ignore ready states)
             isLobbyStarted.Value = true;
-            isMasterGameStarted = true;
         }
         else
         {
-            UIManager.Instance.loadingIcon.SetActive(true);            
+            // start using the player's camera
             mainCamera.SetActive(false);
 
+            // run a fake load for a better transition
+            UIManager.Instance.loadingIcon.SetActive(true);
             yield return new WaitForSeconds(1f);
-            if (MapNetworkManager.Instance.mapState.Value == MapState.Own || MapNetworkManager.Instance.mapState.Value == MapState.Shared) InventoryManager.Instance.OnToggleInventoryLock();
-            if (!isMaster) MenuManager.Instance.ResetUIState();
-            isPaused = false;
 
-            // animate map
+            // handle map ui
+            if (MapNetworkManager.Instance.mapState.Value == MapState.Own || MapNetworkManager.Instance.mapState.Value == MapState.Shared) InventoryManager.Instance.OnToggleInventoryLock();
             if (lockInventoryAtStart && MapNetworkManager.Instance.mapState.Value == MapState.Own) MapManager.Instance.MapLoadAnimator();
 
-            // update player renderstates
+            // reset menu ui
+            if (!isMaster) MenuManager.Instance.ResetUIState();
+
+            // update player render states
             UpdatePlayerRenderStateRpc();
+
+            isPaused = false;
         }
     }
 
@@ -165,6 +179,7 @@ public class GameManager : NetworkBehaviour
 
     public void OnLoadMap()
     {
+        // prevent enabling load icon on master mode or if the main map is already loaded
         if (!isMaster && !FindAnyObjectByType<Volume>()) UIManager.Instance.loadingIcon.SetActive(true);
 
         if (!IsHost) return;
@@ -186,8 +201,10 @@ public class GameManager : NetworkBehaviour
         if (loadedScene == null) UIManager.Instance.OnOpenDialog(DialogId.HostLostConnection);
         foreach (GameObject rootObject in loadedScene.GetRootGameObjects())
         {
+            // disable extra cameras
             if (rootObject.GetComponent<Camera>()) rootObject.SetActive(false);
 
+            // setup environment releated vars
             if (sceneName == "EmptyMap")
             {
                 if (rootObject.name == "Inner terrain") terrainObject = rootObject;
@@ -258,8 +275,12 @@ public class GameManager : NetworkBehaviour
 
     public void RespawnPlayer()
     {
+        // force player position
         PlayerController.Instance.SetPlayerPosition(playerSpawnPosition.transform.position + Vector3.up + Vector3.forward * FetchPersistentPlayerId());
+
+        // toggle pause menu if its active
         if (UIManager.Instance.pauseObject.activeSelf) UIManager.Instance.OnPauseToggle();
+
         isPaused = false;
     }
 
@@ -326,15 +347,9 @@ public class GameManager : NetworkBehaviour
         if (clientId == NetworkManager.LocalClientId) OnDisconnectClient();
     }
 
-    public void OnStartMaster()
+    public async void OnStartHost(bool masterStart)
     {
-        Debug.Log("GameManager: Starting game as Master");
-        isMaster = true;
-        OnStartHost();
-    }
-
-    public async void OnStartHost()
-    {
+        isMaster = masterStart;
         if (string.IsNullOrEmpty(MenuManager.Instance.hostPlayerNameInput.text) && !isMaster) 
         {
             UIManager.Instance.OnOpenDialog(DialogId.InvalidPlayerName);
@@ -383,7 +398,6 @@ public class GameManager : NetworkBehaviour
     {
         Debug.Log("GameManager: Spawning player for: " + clientId);
         GameObject playerObject = Instantiate(Resources.Load<GameObject>("GameComponents/Player"));
-
         playerObject.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientId);
     }
 
@@ -444,6 +458,7 @@ public class GameManager : NetworkBehaviour
 
     public void OnLandmarkExited(GameObject targetLandmark)
     {
+        // if the landmark was stored due to a previous relation, but no other landmarks have it in their relations data, aka the player is not able to continue through this landmark, remove it
         if (visitedLandmarks.Contains(targetLandmark))
         {
             var relationMentioners = FindObjectsByType<LandmarkObject>().Any(l => l.travelRelations.Any(t => t.connectedLandmark == targetLandmark));
@@ -513,11 +528,6 @@ public class GameManager : NetworkBehaviour
             Debug.Log("GameManager: All lobby players ready");
             isLobbyStarted.Value = true;
         }
-    }
-
-    public ulong FetchLocalClientId()
-    {
-        return NetworkManager.LocalClientId;
     }
 
     public int FetchPersistentPlayerId()

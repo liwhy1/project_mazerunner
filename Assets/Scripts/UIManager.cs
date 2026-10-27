@@ -71,6 +71,15 @@ public class UIManager : NetworkBehaviour
         // reset ui
         ResetUIState();
 
+        // setup event triggers
+        SetupEventTriggers();
+
+        // setup menumanager
+        MenuManager.Instance.OnSetup();
+    }
+
+    private void SetupEventTriggers()
+    {
         // setup pause triggers
         AddEventTrigger(resumeButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, InputManager.Instance.OnPauseAction);
         AddEventTrigger(resumeButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, InputManager.Instance.OnPauseAction);
@@ -98,9 +107,6 @@ public class UIManager : NetworkBehaviour
 
         // setup minimap triggers
         AddEventTrigger(minimapObject.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnMinimapClicked);
-
-        // setup menumanager
-        MenuManager.Instance.OnSetup();
     }
 
     private void Update()
@@ -513,7 +519,6 @@ public class UIManager : NetworkBehaviour
         timerText.GetComponent<UITimer>().OnSetPlaying(isPlaying);
         timerText.GetComponent<UITimer>().OnSetTime(currentTime);
     }
-
 
     [SerializeField] private Image mistOverlay;
     private void MistEffectHandler()

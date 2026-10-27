@@ -114,7 +114,7 @@ public class MenuManager : NetworkBehaviour
         UIManager.Instance.AddEventTrigger(hostBackButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, UIManager.Instance.OnQuitButton);
         UIManager.Instance.AddEventTrigger(hostBackButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, UIManager.Instance.OnQuitButton);
         playerModeSelector.onValueChanged += () => OnPlayerModeSelectorChanged(playerModeSelector.currentSelection);
-        hostPlayerNameInput.onSubmit.AddListener(delegate { GameManager.Instance.OnStartHost(); });
+        hostPlayerNameInput.onSubmit.AddListener(delegate { GameManager.Instance.OnStartHost(false); });
 
         // join
         UIManager.Instance.AddEventTrigger(startClientButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, GameManager.Instance.OnStartClient);
@@ -210,14 +210,7 @@ public class MenuManager : NetworkBehaviour
 
     private void OnStartHost()
     {
-        if (playerModeSelector.currentSelection == "Player")
-        {
-            GameManager.Instance.OnStartHost();
-        }
-        else
-        {
-            GameManager.Instance.OnStartMaster();
-        }
+        GameManager.Instance.OnStartHost(playerModeSelector.currentSelection != "Player");
     }
 
     private void OnOpenEditor()
