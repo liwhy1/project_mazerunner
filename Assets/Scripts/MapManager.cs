@@ -326,7 +326,7 @@ public class MapManager : NetworkBehaviour
     private void PileAnimationHandler()
     {
         if (!iconPile) return;
-        float targetY = !isPileHovered ? -520f : -395f;
+        float targetY = !isPileHovered ? -495f : -375f;
         iconPile.transform.localPosition = Vector2.Lerp(iconPile.transform.localPosition, new Vector2(iconPile.transform.localPosition.x, targetY), Time.deltaTime * 10f);
     }
 

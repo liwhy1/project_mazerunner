@@ -9,8 +9,8 @@ public class UIProgressBar : MonoBehaviour
     [SerializeField] private Slider progressSlider;
     [SerializeField] private GameObject levelHolder;
     private List<GameObject> levelObjects = new List<GameObject>();
-    private Color normalColor = new Color(0.9882354f, 0.6862745f, 0.345098f);
-    private Color activeColor = new Color(0.427451f, 0.7529412f, 0.3294118f);
+    [SerializeField] private Color normalColor = new Color(0.7254902f, 0.5607843f, 0.3882353f);
+    [SerializeField] private Color activeColor = new Color(0.8000001f, 0.654902f, 0.5137255f);
 
     private void Start()
     {

@@ -76,16 +76,16 @@ public class UIElement : MonoBehaviour
     {
         if (!isEnabled) return;
         isSelected = true;
-        GetComponent<Image>().color = selectColor;
         if (altSprite) GetComponent<Image>().sprite = altSprite;
+        else GetComponent<Image>().color = selectColor;
     }
 
     public void OnElementDeSelect()
     {
         if (!isEnabled) return;
         isSelected = false;
-        GetComponent<Image>().color = normalColor;
         if (altSprite) GetComponent<Image>().sprite = originalSprite;
+        GetComponent<Image>().color = normalColor;
     }
 
     public void OnElementEnable()

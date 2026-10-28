@@ -36,7 +36,6 @@ public class InventoryManager : MonoBehaviour
     public GameObject mapSharedViewPage;
     public GameObject mapIndividualViewPage;
     public GameObject activeMapPage;
-    [SerializeField] private GameObject highlightImage;
 
     private void Start()
     {
@@ -70,7 +69,6 @@ public class InventoryManager : MonoBehaviour
         mapObject.SetActive(false);
         noteObject.SetActive(true);
         editorObject.SetActive(false);
-        highlightImage.SetActive(false);
     }
 
     public void OnToggleInventoryLock()
@@ -173,11 +171,12 @@ public class InventoryManager : MonoBehaviour
             // generate text blocks
             else
             {
-                GameObject newComponent = Instantiate(journalText, targetView.transform);
-                newComponent.SetActive(true);
-                TMP_Text textComponent = newComponent.GetComponent<TMP_Text>();
+                //GameObject newComponent = Instantiate(journalText, targetView.transform);
+                //newComponent.SetActive(true);
+                //TMP_InputField textComponent = newComponent.GetComponent<TMP_InputField>();
+                TMP_InputField textComponent = journalObject.GetComponentInChildren<TMP_InputField>();
                 textComponent.text = block;
-                textComponent.ForceMeshUpdate();
+                textComponent.textComponent.ForceMeshUpdate();
             }
         }
     }

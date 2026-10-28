@@ -161,11 +161,6 @@ public class MenuManager : NetworkBehaviour
         lobbyStorySelector.selectorItems.Clear();
         lobbyStorySelector.selectorItems = storyNames;
         lobbyStorySelector.OnUpdateSelection(lobbyStorySelector.selectorItems.Count - 1);
-
-        // force rebuild ui layout
-        Canvas.ForceUpdateCanvases();
-        LayoutRebuilder.ForceRebuildLayoutImmediate(lobbyStorySelector.transform.parent.parent.parent.GetComponent<RectTransform>());
-        LayoutRebuilder.ForceRebuildLayoutImmediate(lobbyStorySelector.transform.parent.parent.GetComponent<RectTransform>());
     }
 
     public void IncreasePlayerSkinValue(string targetValue)
@@ -246,7 +241,7 @@ public class MenuManager : NetworkBehaviour
         // conditionally enable elements
         lobbyPlayerView.SetActive(!GameManager.Instance.isMaster);
         lobbyWaitingText.gameObject.SetActive(true);
-        lobbyStorySelector.transform.parent.parent.gameObject.SetActive(IsHost);
+        lobbyStorySelector.gameObject.SetActive(IsHost);
         lobbyReadyButton.SetActive(!GameManager.Instance.isMaster);
         lobbyReadyButton.transform.Find("Text").GetComponent<TMP_Text>().text = "Ready";
         lobbyWaitingText.text = "";
@@ -279,7 +274,7 @@ public class MenuManager : NetworkBehaviour
         targetText.text = targetText.text == "Ready" ? "Unready" : "Ready";
         foreach (Transform child in lobbyPlayerView.transform) 
         { 
-            if (!currentState) child.GetComponent<UIElement>().OnElementDisable(); 
+            if (!currentState) child.GetComponent<UIElement>()?.OnElementDisable(); 
             else child.GetComponent<UIElement>().OnElementEnable(); 
         }
 
@@ -295,7 +290,7 @@ public class MenuManager : NetworkBehaviour
 
     public void OnLobbyStart()
     {
-        lobbyStorySelector.transform.parent.parent.gameObject.SetActive(false);
+        lobbyStorySelector.gameObject.SetActive(false);
         lobbyWaitingText.text = GameManager.Instance.isMaster ? "" : "Starting Game!";
         lobbyReadyButton.SetActive(false);
         foreach (Transform child in lobbyPlayerView.transform) { child.GetComponent<UIElement>().OnElementDisable(); }

@@ -128,7 +128,6 @@ public class GameManager : NetworkBehaviour
         Debug.Log("GameManager: Starting lobby");
 
         // setup ui
-        playerViewCamera.gameObject.SetActive(false);
         InventoryManager.Instance.OnSetupStory();
         MenuManager.Instance.OnLobbyStart();
 
@@ -153,8 +152,9 @@ public class GameManager : NetworkBehaviour
             if (MapNetworkManager.Instance.mapState.Value == MapState.Own || MapNetworkManager.Instance.mapState.Value == MapState.Shared) InventoryManager.Instance.OnToggleInventoryLock();
             if (lockInventoryAtStart && MapNetworkManager.Instance.mapState.Value == MapState.Own) MapManager.Instance.MapLoadAnimator();
 
-            // reset menu ui
+            // reset ui
             if (!isMaster) MenuManager.Instance.ResetUIState();
+            playerViewCamera.gameObject.SetActive(false);
 
             // update player render states
             UpdatePlayerRenderStateRpc();
