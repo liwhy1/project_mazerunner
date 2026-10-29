@@ -294,7 +294,6 @@ public class MenuManager : NetworkBehaviour
         lobbyWaitingText.text = GameManager.Instance.isMaster ? "" : "Starting Game!";
         lobbyReadyButton.SetActive(false);
         foreach (Transform child in lobbyPlayerView.transform) { child.GetComponent<UIElement>().OnElementDisable(); }
-        MapManager.Instance.UpdateMapReadyState();
 
         // master
         timerObject.SetActive(GameManager.Instance.isMaster);

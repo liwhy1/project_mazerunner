@@ -43,7 +43,7 @@ public class MapNetworkManager : NetworkBehaviour
         }
         else if (newValue == MapState.Explore)
         {
-            GameManager.Instance.OnLoadMap();
+            if (oldValue != MapState.Null && !GameManager.Instance.isMaster) GameManager.Instance.OnExploreGameState();
             MapManager.SharedInstance?.OnDisableMapUI();
             MapManager.Instance?.OnDisableMapUI();
             InventoryManager.Instance.OnToggleSharedView(true);

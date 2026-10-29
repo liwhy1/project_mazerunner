@@ -126,41 +126,25 @@ public class GameManager : NetworkBehaviour
     public IEnumerator OnLobbyStart()
     {
         Debug.Log("GameManager: Starting lobby");
+        UIManager.Instance.loadingIcon.SetActive(true);
 
         // setup ui
         InventoryManager.Instance.OnSetupStory();
         MenuManager.Instance.OnLobbyStart();
+        MapManager.Instance.UpdateMapReadyState();
+
+        // force lobby start state in master mode (ignore ready states)
+        if (isMaster) isLobbyStarted.Value = true;
+        
+        // update player renderstates
+        UpdatePlayerRenderStateRpc();
+
+        // start map load
+        yield return new WaitForSeconds(.5f);
+        if (IsHost) OnLoadMap();
 
         // manually run load event, if the main map is already loaded (client behaviour)
         if (FindAnyObjectByType<Volume>()) OnMapLoaded(activeStory.Value.ToString(), LoadSceneMode.Additive, null, null);
-
-        if (isMaster)
-        {
-            // force lobby start state in master mode (ignore ready states)
-            isLobbyStarted.Value = true;
-        }
-        else
-        {
-            // start using the player's camera
-            mainCamera.SetActive(false);
-
-            // run a fake load for a better transition
-            UIManager.Instance.loadingIcon.SetActive(true);
-            yield return new WaitForSeconds(1f);
-
-            // handle map ui
-            if (MapNetworkManager.Instance.mapState.Value == MapState.Own || MapNetworkManager.Instance.mapState.Value == MapState.Shared) InventoryManager.Instance.OnToggleInventoryLock();
-            if (lockInventoryAtStart && MapNetworkManager.Instance.mapState.Value == MapState.Own) MapManager.Instance.MapLoadAnimator();
-
-            // reset ui
-            if (!isMaster) MenuManager.Instance.ResetUIState();
-            playerViewCamera.gameObject.SetActive(false);
-
-            // update player render states
-            UpdatePlayerRenderStateRpc();
-
-            isPaused = false;
-        }
     }
 
     private void OnLoadEmptyMap()
@@ -179,11 +163,8 @@ public class GameManager : NetworkBehaviour
 
     public void OnLoadMap()
     {
-        // prevent enabling load icon on master mode or if the main map is already loaded
-        if (!isMaster && !FindAnyObjectByType<Volume>()) UIManager.Instance.loadingIcon.SetActive(true);
-
         if (!IsHost) return;
-        string targetScene = GetSceneBuildIndex(activeStory.Value.ToString()) != -1 ? activeStory.Value.ToString() : "Prototype5";
+        string targetScene = GetSceneBuildIndex(activeStory.Value.ToString()) != -1 ? activeStory.Value.ToString() : "Prototype8";
         SceneEventProgressStatus status = NetworkManager.SceneManager.LoadScene(targetScene, LoadSceneMode.Additive);
 
         Debug.Log("GameManager: Loading level " + targetScene);
@@ -199,53 +180,76 @@ public class GameManager : NetworkBehaviour
     {
         Scene loadedScene = SceneManager.GetSceneByName(sceneName);
         if (loadedScene == null) UIManager.Instance.OnOpenDialog(DialogId.HostLostConnection);
-        foreach (GameObject rootObject in loadedScene.GetRootGameObjects())
+        if (sceneName == "EmptyMap")
         {
-            // disable extra cameras
-            if (rootObject.GetComponent<Camera>()) rootObject.SetActive(false);
-
-            // setup environment releated vars
-            if (sceneName == "EmptyMap")
+            foreach (GameObject rootObject in loadedScene.GetRootGameObjects())
             {
+                if (rootObject.GetComponent<Camera>()) rootObject.SetActive(false);
                 if (rootObject.name == "Inner terrain") terrainObject = rootObject;
                 if (rootObject.name == "Outer Terrain") terrainEdgeObject = rootObject;
-                if (rootObject.name == "River") 
+                if (rootObject.name == "River")
                 {
                     riverObject = rootObject;
                     AudioManager.Instance.riverAudioSource = riverObject.GetComponentInChildren<AudioSource>();
                 }
             }
-            else if (rootObject.name.Contains("Level"))
-            {
-                if (isMaster)
-                {
-                    Destroy(rootObject);
-                    return;
-                }
-                rootObject.transform.eulerAngles = new Vector3(0f, -180f, 0f);
-                playerSpawnPosition = rootObject.transform.Find("Terrain objects").Find("Starting point").gameObject;
-                AudioManager.Instance.environmentAudioSource = rootObject.transform.Find("World Settings").GetComponentInChildren<AudioSource>();
-                AudioManager.Instance.environmentAudioSource.Stop();
-                if (MapNetworkManager.Instance.mapState.Value == MapState.Explore || MapNetworkManager.Instance.mapState.Value == MapState.Individual) AudioManager.Instance.OnGameStarted();
-            }
-        }
 
-        // stop rendering terrain objects until the full map is loaded
-        foreach (Transform child in terrainObject.transform)
+            // build navmesh
+            navMeshObject.GetComponent<NavMeshSurface>().BuildNavMesh();
+        }
+        else
         {
-            child.GetComponent<Renderer>().enabled = playerSpawnPosition;
+            foreach (GameObject rootObject in loadedScene.GetRootGameObjects())
+            {
+                if (rootObject.GetComponent<Camera>()) rootObject.SetActive(false);
+
+                if (rootObject.name.Contains("Level"))
+                {
+                    if (isMaster)
+                    {
+                        Destroy(rootObject);
+                        UIManager.Instance.loadingIcon.SetActive(false);
+                        return;
+                    }
+                    // rotate map
+                    rootObject.transform.eulerAngles = new Vector3(0f, -180f, 0f);
+
+                    // set spawn position
+                    playerSpawnPosition = rootObject.transform.Find("Terrain objects").Find("Starting point").gameObject;
+
+                    // setup audio
+                    AudioManager.Instance.environmentAudioSource = rootObject.transform.Find("World Settings").GetComponentInChildren<AudioSource>();
+                    AudioManager.Instance.environmentAudioSource.Stop();
+                }
+            }
+
+            // build navmesh
+            navMeshObject.GetComponent<NavMeshSurface>().BuildNavMesh();
+
+            // hide start platform
+            navMeshObject.GetComponent<NavMeshSurface>().GetComponent<Renderer>().enabled = false;
+
+            // reset ui
+            if (MapNetworkManager.Instance.mapState.Value == MapState.Own || MapNetworkManager.Instance.mapState.Value == MapState.Shared) InventoryManager.Instance.OnToggleInventoryLock();
+            if (lockInventoryAtStart && MapNetworkManager.Instance.mapState.Value == MapState.Own) MapManager.Instance.MapLoadAnimator();
+            playerViewCamera.gameObject.SetActive(false);
+            MenuManager.Instance.ResetUIState();
+
+            // start using the player's camera
+            mainCamera.SetActive(false);
+
+            if (MapNetworkManager.Instance.mapState.Value == MapState.Explore) OnExploreGameState();
+
+            isPaused = false;
         }
-        riverObject.GetComponent<Renderer>().enabled = playerSpawnPosition;
-        terrainEdgeObject.GetComponent<Renderer>().enabled = playerSpawnPosition;
+        UIManager.Instance.loadingIcon.SetActive(false);
+        Debug.Log("GameManager: Map loaded: " + loadedScene.name);
+    }
 
-        // build navmesh
-        navMeshObject.GetComponent<NavMeshSurface>().BuildNavMesh();
-
-        // hide start platform
-        navMeshObject.GetComponent<NavMeshSurface>().GetComponent<Renderer>().enabled = false;
-
-        // prevent placing player on map until it's fully loaded
-        if (!playerSpawnPosition) return;
+    public void OnExploreGameState()
+    {
+        // start environment audio
+        if (MapNetworkManager.Instance.mapState.Value == MapState.Explore || MapNetworkManager.Instance.mapState.Value == MapState.Individual) AudioManager.Instance.OnGameStarted();
 
         // move player to map
         RespawnPlayer();
@@ -253,11 +257,11 @@ public class GameManager : NetworkBehaviour
         // update player renderstates
         UpdatePlayerRenderStateRpc();
 
+        // reset player camera
+        PlayerController.Instance.playerCamera.GetComponent<Camera>().farClipPlane = 100f;
+
         // close inventory
         if (InventoryManager.Instance.isLocked) InventoryManager.Instance.OnToggleInventoryLock();
-
-        UIManager.Instance.loadingIcon.SetActive(false);
-        Debug.Log("GameManager: Map loaded");
     }
 
     public int GetSceneBuildIndex(string sceneName)
@@ -488,7 +492,7 @@ public class GameManager : NetworkBehaviour
             foreach (Transform child in player.transform.Find("Model").transform)
             {
                 if (child.GetComponent<Renderer>()) child.GetComponent<Renderer>().enabled = isOwner || (!isOwner && shouldRenderObject);
-            }            
+            }
         }
     }
 
