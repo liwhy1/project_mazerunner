@@ -117,8 +117,8 @@ public class MenuManager : NetworkBehaviour
         hostPlayerNameInput.onSubmit.AddListener(delegate { GameManager.Instance.OnStartHost(false); });
 
         // join
-        UIManager.Instance.AddEventTrigger(startClientButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, GameManager.Instance.OnStartClient);
-        UIManager.Instance.AddEventTrigger(startClientButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, GameManager.Instance.OnStartClient);
+        UIManager.Instance.AddEventTrigger(startClientButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnStartClient);
+        UIManager.Instance.AddEventTrigger(startClientButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnStartClient);
         UIManager.Instance.AddEventTrigger(joinBackButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, UIManager.Instance.OnQuitButton);
         UIManager.Instance.AddEventTrigger(joinBackButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, UIManager.Instance.OnQuitButton);
         joinCodeInput.onSubmit.AddListener(delegate { GameManager.Instance.OnStartClient(); });
@@ -205,7 +205,20 @@ public class MenuManager : NetworkBehaviour
 
     private void OnStartHost()
     {
+        startHostButton.GetComponent<UIElement>().OnElementDisable();
         GameManager.Instance.OnStartHost(playerModeSelector.currentSelection != "Player");
+    }
+
+    private void OnStartClient()
+    {
+        startClientButton.GetComponent<UIElement>().OnElementDisable();
+        GameManager.Instance.OnStartClient();
+    }
+
+    public void OnSessionConnectFailed()
+    {
+        startHostButton.GetComponent<UIElement>().OnElementEnable();
+        startClientButton.GetComponent<UIElement>().OnElementEnable();
     }
 
     private void OnOpenEditor()
