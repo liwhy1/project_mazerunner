@@ -44,6 +44,7 @@ public class UIManager : NetworkBehaviour
     private GameObject lastSelectedObject;
     public TMP_Text landmarkText;
     [SerializeField] private TMP_Text timerText;
+    [SerializeField] private Image mistOverlay;
 
     [Header("Minimap Data")]
     public GameObject minimapObject;
@@ -520,7 +521,6 @@ public class UIManager : NetworkBehaviour
         timerText.GetComponent<UITimer>().OnSetTime(currentTime);
     }
 
-    [SerializeField] private Image mistOverlay;
     private void MistEffectHandler()
     {
         mistOverlay.gameObject.SetActive(!InventoryManager.Instance.isInventoryActive && !GameManager.Instance.isPaused);
@@ -536,5 +536,10 @@ public class UIManager : NetworkBehaviour
             tempColor.a -= Time.deltaTime / 20f;
             mistOverlay.color = tempColor;
         }
+    }
+
+    public void InputFieldLimitHandler(TMP_InputField targetField)
+    {
+        targetField.text = targetField.text.Length > 12 ? targetField.text.Substring(0, 12) : targetField.text;
     }
 }
