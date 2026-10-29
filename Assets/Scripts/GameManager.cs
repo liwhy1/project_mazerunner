@@ -194,8 +194,13 @@ public class GameManager : NetworkBehaviour
                 }
             }
 
-            // build navmesh
-            navMeshObject.GetComponent<NavMeshSurface>().BuildNavMesh();
+            // stop rendering terrain objects until the game start
+            foreach (Transform child in terrainObject.transform)
+            {
+                child.GetComponent<Renderer>().enabled = false;
+            }
+            riverObject.GetComponent<Renderer>().enabled = false;
+            terrainEdgeObject.GetComponent<Renderer>().enabled = false;
         }
         else
         {
@@ -211,6 +216,9 @@ public class GameManager : NetworkBehaviour
                         UIManager.Instance.loadingIcon.SetActive(false);
                         return;
                     }
+
+                    foreach (Transform child in rootObject.transform) child.gameObject.SetActive(false);
+
                     // rotate map
                     rootObject.transform.eulerAngles = new Vector3(0f, -180f, 0f);
 
@@ -222,9 +230,6 @@ public class GameManager : NetworkBehaviour
                     AudioManager.Instance.environmentAudioSource.Stop();
                 }
             }
-
-            // build navmesh
-            navMeshObject.GetComponent<NavMeshSurface>().BuildNavMesh();
 
             // hide start platform
             navMeshObject.GetComponent<NavMeshSurface>().GetComponent<Renderer>().enabled = false;
@@ -250,6 +255,18 @@ public class GameManager : NetworkBehaviour
     {
         // start environment audio
         if (MapNetworkManager.Instance.mapState.Value == MapState.Explore || MapNetworkManager.Instance.mapState.Value == MapState.Individual) AudioManager.Instance.OnGameStarted();
+
+        // enable terrain renderers
+        foreach (Transform child in terrainObject.transform)
+        {
+            child.GetComponent<Renderer>().enabled = true;
+        }
+        riverObject.GetComponent<Renderer>().enabled = true;
+        terrainEdgeObject.GetComponent<Renderer>().enabled = true;
+        foreach (Transform child in AudioManager.Instance.environmentAudioSource.transform.parent.parent) child.gameObject.SetActive(true);
+
+        // build navmesh
+        navMeshObject.GetComponent<NavMeshSurface>().BuildNavMesh();
 
         // move player to map
         RespawnPlayer();

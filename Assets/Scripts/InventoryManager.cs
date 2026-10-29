@@ -209,7 +209,7 @@ public class InventoryManager : MonoBehaviour
         mapOwnViewButton.GetComponent<UIElement>().OnElementDeSelect();
         mapIndividualViewButton.GetComponent<UIElement>().OnElementDeSelect();
         mapSharedViewButton.GetComponent<UIElement>().OnElementDeSelect();
-        if (MapNetworkManager.Instance?.mapState.Value == MapState.Individual) MapTabMoveHandler(activeMapPage == mapSharedViewPage);
+        if (MapNetworkManager.Instance?.mapState.Value == MapState.Individual) MapTabMoveHandler(activeMapPage != mapOwnViewPage);
         if (pageObject == mapOwnViewPage)
         {
             if (!MapManager.Instance.isLoaded) SetInventoryInitialState();
