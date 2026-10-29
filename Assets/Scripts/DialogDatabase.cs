@@ -26,6 +26,7 @@ public class DialogEntry
     public string text;
     public string button;
     public string action;
+    public bool forceAction = false;
 }
 
 public class DialogDatabase : MonoBehaviour
@@ -38,9 +39,9 @@ public class DialogDatabase : MonoBehaviour
         Instance = this;
         dialogs = new List<DialogEntry>()
         { 
-            new DialogEntry() { id = DialogId.InvalidPlayerName,    title = "Notice",   text = "Player name can't be empty!",                                                                                               button = "",        action = "" },
-            new DialogEntry() { id = DialogId.InvalidJoinCode,      title = "Notice",   text = "Join code can't be empty!",                                                                                                 button = "",        action = "" },
-            new DialogEntry() { id = DialogId.FailedGameJoin,       title = "Notice",   text = "Failed to join game!",                                                                                                      button = "",        action = "" },
+            new DialogEntry() { id = DialogId.InvalidPlayerName,    title = "Notice",   text = "Player name can't be empty!",                                                                                               button = "",        action = "sessionconnectfail",             forceAction = true},
+            new DialogEntry() { id = DialogId.InvalidJoinCode,      title = "Notice",   text = "Join code can't be empty!",                                                                                                 button = "",        action = "sessionconnectfail",             forceAction = true},
+            new DialogEntry() { id = DialogId.FailedGameJoin,       title = "Notice",   text = "Failed to join game!",                                                                                                      button = "",        action = "sessionconnectfail",             forceAction = true},
             new DialogEntry() { id = DialogId.HostLostConnection,   title = "Notice",   text = "Connection to the game host has been lost. Would you like to return to the main menu?",                                     button = "Yes",     action = "selfdisconnect" },
             new DialogEntry() { id = DialogId.SceneLoadFail,        title = "Notice",   text = "Failed to load scene! Would you like to return to the main menu?",                                                          button = "Yes",     action = "selfdisconnect" },
             new DialogEntry() { id = DialogId.MapClear,             title = "Notice",   text = "Are you sure you want to clear the map?",                                                                                   button = "Yes",     action = "mapclear" },
@@ -48,7 +49,7 @@ public class DialogDatabase : MonoBehaviour
             new DialogEntry() { id = DialogId.PlayerTutorial,       title = "Tutorial", text = "<b>Player movement:</b>\n(WASD) / (Point & Click)\n<b>Camera height control:</b>\n(Mouse Wheel) / (UI Plus & Minus icon)",  button = "",        action = "" },
             new DialogEntry() { id = DialogId.TreasureReached,      title = "Game End", text = "The treasure was reached in: ",                                                                                             button = "",        action = "" },
             new DialogEntry() { id = DialogId.EditorOpen,           title = "Notice",   text = "Would you like to open the map editor?",                                                                                    button = "Yes",     action = "openeditor" },
-            new DialogEntry() { id = DialogId.MapTutorial,          title = "Tutorial", text = "Would you like to see the mapmaking instructions?",                                                                        button = "Yes",     action = "maptutorial" }
+            new DialogEntry() { id = DialogId.MapTutorial,          title = "Tutorial", text = "Would you like to see the mapmaking instructions?",                                                                         button = "Yes",     action = "maptutorial" }
         };
     }
 

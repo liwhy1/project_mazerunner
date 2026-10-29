@@ -403,6 +403,13 @@ public class UIManager : NetworkBehaviour
         AddEventTrigger(closeButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnCloseDialog);
         AddEventTrigger(closeButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnCloseDialog);
 
+        // conditionally assign forced action to close button
+        if (dialogEntry.forceAction)
+        {
+            AddEventTrigger(closeButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, DialogActionHandler, dialogEntry.action);
+            AddEventTrigger(closeButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, DialogActionHandler, dialogEntry.action);
+        }
+
         AddEventTrigger(mainButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, DialogActionHandler, dialogEntry.action);
         AddEventTrigger(mainButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, DialogActionHandler, dialogEntry.action);
 
@@ -430,6 +437,9 @@ public class UIManager : NetworkBehaviour
                 break;
             case "maptutorial":
                 InventoryManager.Instance.SetMapTutorialState(1);
+                break;
+            case "sessionconnectfail":
+                MenuManager.Instance.OnSessionConnectFailed();
                 break;
         }
         OnCloseDialog();
