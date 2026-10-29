@@ -209,7 +209,7 @@ public class InventoryManager : MonoBehaviour
         mapOwnViewButton.GetComponent<UIElement>().OnElementDeSelect();
         mapIndividualViewButton.GetComponent<UIElement>().OnElementDeSelect();
         mapSharedViewButton.GetComponent<UIElement>().OnElementDeSelect();
-        if (MapNetworkManager.Instance?.mapState.Value == MapState.Individual) MapTabMoveHandler(activeMapPage != mapOwnViewPage);
+        if (MapNetworkManager.Instance?.mapState.Value == MapState.Individual) MapTabMoveHandler(activeMapPage == mapSharedViewPage);
         if (pageObject == mapOwnViewPage)
         {
             if (!MapManager.Instance.isLoaded) SetInventoryInitialState();
@@ -300,6 +300,29 @@ public class InventoryManager : MonoBehaviour
 
     public void OnJournalDisable() => journalPageView.transform.Find("Blocker").gameObject.SetActive(true);
     public void OnJournalEnable() => journalPageView.transform.Find("Blocker").gameObject.SetActive(false);
+
+    public void OnMapStateChanged(MapState oldValue, MapState newValue)
+    {
+        OnToggleSharedView(false);
+        OnToggleIndividualView(false);
+        switch (newValue)
+        {
+            case MapState.Shared:
+                OnToggleSharedView(true);
+                break;
+            case MapState.Explore:
+                OnToggleSharedView(true);
+                if (GameManager.Instance.lockJournalAfterOwnMap) OnJournalDisable();
+                break;
+            case MapState.Individual:
+                OnToggleIndividualView(true);
+                OnToggleSharedView(true);
+                SetMapPage(mapIndividualViewPage);
+                OnJournalEnable();
+            break;
+        }
+    }
+
     public GameObject FetchMapObjectById(int targetId) 
     {
         if (GameManager.Instance.isMaster) return MenuManager.Instance.individualMapsObject.transform.Find("MapP" + targetId).gameObject;

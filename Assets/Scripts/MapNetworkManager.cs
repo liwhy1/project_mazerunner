@@ -30,34 +30,27 @@ public class MapNetworkManager : NetworkBehaviour
     public void OnMapStateChanged(MapState oldValue, MapState newValue)
     {
         Debug.Log("MNM: Map state changed from: " + oldValue + " to: " + newValue);
-        InventoryManager.Instance.OnToggleSharedView(false);
-        InventoryManager.Instance.OnToggleIndividualView(false);
+
+        // call class specific functions
+        InventoryManager.Instance?.OnMapStateChanged(oldValue, newValue);
+        MapManager.Instance?.OnMapStateChanged(oldValue, newValue);
+        MapManager.SharedInstance?.OnMapStateChanged(oldValue, newValue);
+
+        // sync map data for clients joining after the game has started
         if (oldValue == MapState.Null && !IsHost) SyncMapDataServerRpc();
-        if (newValue == MapState.Shared)
+        switch (newValue)
         {
-            if (GameManager.Instance.isMaster) MapManager.SharedInstance?.OnDisableMapUI();
-            MapManager.Instance?.OnDisableMapUI();
-            InventoryManager.Instance.OnToggleSharedView(true);
-            if (GameManager.Instance.isMaster) MenuManager.Instance.OnMasterSharedMapEnabled();
-            if (oldValue != MapState.Null) MapManager.Instance.OnSendMapData();
-        }
-        else if (newValue == MapState.Explore)
-        {
-            if (oldValue != MapState.Null && !GameManager.Instance.isMaster) GameManager.Instance.OnExploreGameState();
-            MapManager.SharedInstance?.OnDisableMapUI();
-            MapManager.Instance?.OnDisableMapUI();
-            InventoryManager.Instance.OnToggleSharedView(true);
-            if (GameManager.Instance.lockJournalAfterOwnMap) InventoryManager.Instance.OnJournalDisable();
-            UIManager.Instance.MirrorSharedmaptoMinimap();
-            if (!GameManager.Instance.isMaster && AudioManager.Instance.environmentAudioSource) AudioManager.Instance.OnGameStarted();
-        }
-        else if (newValue == MapState.Individual)
-        {
-            InventoryManager.Instance.OnToggleIndividualView(true);
-            InventoryManager.Instance.OnToggleSharedView(true);
-            InventoryManager.Instance.SetMapPage(InventoryManager.Instance.mapIndividualViewPage);
-            InventoryManager.Instance.OnJournalEnable();
-            if (!GameManager.Instance.isMaster && AudioManager.Instance.environmentAudioSource) AudioManager.Instance.OnGameStarted();
+            case MapState.Shared:
+                if (GameManager.Instance.isMaster) MenuManager.Instance.OnMasterSharedMapEnabled();
+                break;
+            case MapState.Explore:
+                if (oldValue != MapState.Null && !GameManager.Instance.isMaster) GameManager.Instance.OnExploreGameState();
+                UIManager.Instance.MirrorSharedmaptoMinimap();
+                if (!GameManager.Instance.isMaster && AudioManager.Instance.environmentAudioSource) AudioManager.Instance.OnGameStarted();
+                break;
+            case MapState.Individual:
+                if (!GameManager.Instance.isMaster && AudioManager.Instance.environmentAudioSource) AudioManager.Instance.OnGameStarted();
+                break;
         }
     }
 

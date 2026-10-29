@@ -545,6 +545,23 @@ public class MapManager : NetworkBehaviour
         string targetText = GameManager.Instance.playerList.Count(p => p.IsMapReady.Value == true) + "/" + GameManager.Instance.playerList.Count;
         saveIcon.transform.Find("ReadyText").GetComponent<TMP_Text>().text = targetText;
     }
+
+    public void OnMapStateChanged(MapState oldValue, MapState newState)
+    {
+        switch (newState)
+        {
+            case MapState.Shared:
+                if (!isNetworked && oldValue != MapState.Null) OnSendMapData();
+                if (!isNetworked || (isNetworked && GameManager.Instance.isMaster)) OnDisableMapUI();
+                break;
+            case MapState.Explore:
+                OnDisableMapUI();
+                break;
+            case MapState.Individual:
+                OnDisableMapUI();
+                break;
+        }
+    }
 }
 
 public struct MapElementData : INetworkSerializable
