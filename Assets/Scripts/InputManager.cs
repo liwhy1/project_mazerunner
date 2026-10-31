@@ -69,7 +69,6 @@ public class InputManager : MonoBehaviour
     {
         if (!GameManager.Instance.isLobbyStarted.Value || GameManager.Instance.isMaster) return;
 
-        GameManager.Instance.isPaused = !GameManager.Instance.isPaused;
         UIManager.Instance.OnPauseToggle();
     }
 

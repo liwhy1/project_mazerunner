@@ -185,7 +185,7 @@ public class MapManager : NetworkBehaviour
 
         // setup title
         newIconTitle.gameObject.SetActive(enableTitle);
-        newIconTitle.text = targetSprite.Remove(targetSprite.Length - 2, 2);
+        newIconTitle.text = UIManager.Instance.GetLocalLandmarkString("LANDMARK_" + targetSprite);
 
         // setup triggers
         SetupElementTriggers(newIcon);

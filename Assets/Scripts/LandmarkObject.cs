@@ -4,17 +4,17 @@ using UnityEngine;
 
 public enum LandmarkType
 {
-    Start,
-    Brug, // bridge
-    Kettinglift, // chainlift
-    Bos, // forest
-    Mistige_Moeras, // misty marsh
-    Monsternest, //monster nest
-    Bergen, // mountains
-    Ruïnes, // ruins
-    Schat, // treasure
-    Dorp, // village
-    Grenssteen // waystone
+    START,
+    BRIDGE,
+    CHAINLIFT,
+    FOREST,
+    MISTYMARSH,
+    MONSTERNEST,
+    MOUNTAINS,
+    RUINS,
+    TREASURE,
+    VILLAGE,
+    WAYSTONE
 }
 
 public class LandmarkObject : MonoBehaviour

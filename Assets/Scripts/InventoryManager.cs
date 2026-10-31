@@ -77,12 +77,13 @@ public class InventoryManager : MonoBehaviour
         if (isLocked)
         {
             isLocked = false;
+            UIManager.Instance.inventoryIcon.gameObject.SetActive(true);
             OnToggleInventory();
         }
         else if (GameManager.Instance.lockInventoryAtStart)
         {
             OnToggleInventory();
-            UIManager.Instance.pauseIcon.gameObject.SetActive(true);
+            UIManager.Instance.inventoryIcon.gameObject.SetActive(false);
             isLocked = true;
         }
         backButton.SetActive(!isLocked);
@@ -100,8 +101,6 @@ public class InventoryManager : MonoBehaviour
         UIManager.Instance.landmarkText.gameObject.SetActive(!isInventoryActive && !string.IsNullOrEmpty(UIManager.Instance.landmarkText.text));
         UIManager.Instance.cameraZoomInIcon.gameObject.SetActive(!isInventoryActive);
         UIManager.Instance.cameraZoomOutIcon.gameObject.SetActive(!isInventoryActive);
-        UIManager.Instance.inventoryIcon.gameObject.SetActive(!isInventoryActive);
-        UIManager.Instance.pauseIcon.gameObject.SetActive(!isInventoryActive);
         UIManager.Instance.minimapObject.SetActive(!isInventoryActive);
     }
 

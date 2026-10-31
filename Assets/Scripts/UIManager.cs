@@ -8,6 +8,7 @@ using UnityEngine.Events;
 using System.Collections.Generic;
 using System.Collections;
 using UnityEngine.InputSystem;
+using UnityEngine.Localization.Settings;
 
 public class UIManager : NetworkBehaviour
 {
@@ -274,10 +275,10 @@ public class UIManager : NetworkBehaviour
     public void OnUpdateLandmarkText()
     {
         // setup display text
-        string targetText = "Current travel cost: <b>" + GameManager.Instance.currentTravelCost.Value + "</b>\n";
+        string targetText = GetLocalUIString("MENU_TRAVEL_COST_SUBSTRING") + " <b>" + GameManager.Instance.currentTravelCost.Value + "</b>\n";
         foreach (var landmark in GameManager.Instance.visitedLandmarks)
         {
-            targetText += (GameManager.Instance.visitedLandmarks.IndexOf(landmark) == 0 ? "<b>" : " --> <b>") + landmark.GetComponent<LandmarkObject>().landmarkType.ToString().Replace('_', ' ') + "</b>";
+            targetText += (GameManager.Instance.visitedLandmarks.IndexOf(landmark) == 0 ? "<b>" : " --> <b>") + GetLocalLandmarkString("LANDMARK_" + landmark.GetComponent<LandmarkObject>().landmarkType) + "</b>";
         }
 
         // send text to clients
@@ -317,21 +318,22 @@ public class UIManager : NetworkBehaviour
         settingsObject.SetActive(false);
         loadingIcon.SetActive(false);
         timerText.gameObject.SetActive(false);
-        cameraZoomInIcon.gameObject.SetActive(GameManager.Instance.isLobbyStarted.Value);
-        cameraZoomOutIcon.gameObject.SetActive(GameManager.Instance.isLobbyStarted.Value);
-        landmarkText.gameObject.SetActive(GameManager.Instance.isLobbyStarted.Value);
-        minimapIcon.transform.parent.gameObject.SetActive(GameManager.Instance.isLobbyStarted.Value);
-        inventoryIcon.gameObject.SetActive(GameManager.Instance.isLobbyStarted.Value);
-        pauseIcon.gameObject.SetActive(GameManager.Instance.isLobbyStarted.Value);
+        cameraZoomInIcon.gameObject.SetActive(false);
+        cameraZoomOutIcon.gameObject.SetActive(false);
+        landmarkText.gameObject.SetActive(false);
+        minimapIcon.transform.parent.gameObject.SetActive(false);
+        inventoryIcon.gameObject.SetActive(false);
+        pauseIcon.gameObject.SetActive(false);
     }
 
     public void OnPauseToggle()
     {
+        GameManager.Instance.isPaused = !GameManager.Instance.isPaused;
         pauseObject.SetActive(settingsObject.activeSelf ? false : !pauseObject.activeSelf);
         settingsObject.SetActive(false);
         endGameButton.SetActive(IsHost);
-        inventoryIcon.gameObject.SetActive(!pauseObject.activeSelf && !InventoryManager.Instance.isInventoryActive);
-        pauseIcon.gameObject.SetActive(!pauseObject.activeSelf && !InventoryManager.Instance.isInventoryActive || InventoryManager.Instance.isInventoryActive && InventoryManager.Instance.isLocked);
+        inventoryIcon.gameObject.SetActive(!pauseObject.activeSelf && !InventoryManager.Instance.isLocked);
+        pauseIcon.gameObject.SetActive(!pauseObject.activeSelf);
     }
 
     public void OnRefreshPlayerList()
@@ -390,14 +392,12 @@ public class UIManager : NetworkBehaviour
         GameObject closeButton = buttonLayout.transform.Find("CloseButton").gameObject;
         GameObject mainButton = buttonLayout.transform.Find("MainButton").gameObject;
 
-        // runtime data
-        string runtimeData = id == DialogId.TreasureReached ? GameManager.Instance.currentTravelCost.Value + " hours!" : "";
-
         // setup text
         dialogTitle.GetComponent<TMP_Text>().text = dialogEntry.title;
-        dialogText.GetComponent<TMP_Text>().text = dialogEntry.text + runtimeData;
+        dialogText.GetComponent<TMP_Text>().text = dialogEntry.text;
         mainButton.SetActive(!string.IsNullOrEmpty(dialogEntry.button));
         mainButton.transform.Find("Text").GetComponent<TMP_Text>().text = dialogEntry.button;
+        closeButton.transform.Find("Text").GetComponent<TMP_Text>().text = GetLocalDialogString("DIALOG_OPTION_CLOSE");
 
         // setup triggers
         AddEventTrigger(closeButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnCloseDialog);
@@ -551,5 +551,20 @@ public class UIManager : NetworkBehaviour
     public void InputFieldLimitHandler(TMP_InputField targetField)
     {
         targetField.text = targetField.text.Length > 12 ? targetField.text.Substring(0, 12) : targetField.text;
+    }
+
+    public string GetLocalUIString(string tableKey)
+    {
+        return LocalizationSettings.StringDatabase.GetLocalizedString("UI_Strings", tableKey);
+    }
+
+    public string GetLocalDialogString(string tableKey)
+    {
+        return LocalizationSettings.StringDatabase.GetLocalizedString("Dialog_Strings", tableKey);
+    }
+
+    public string GetLocalLandmarkString(string tableKey)
+    {
+        return LocalizationSettings.StringDatabase.GetLocalizedString("Landmark_Strings", tableKey);
     }
 }

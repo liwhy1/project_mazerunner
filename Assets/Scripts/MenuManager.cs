@@ -94,6 +94,7 @@ public class MenuManager : NetworkBehaviour
         joinPlayerNameInput.text = "";
         joinCodeInput.text = "";
         OnPlayerModeSelectorChanged(playerModeSelector.currentSelection);
+        UIManager.Instance.pauseIcon.gameObject.SetActive(GameManager.Instance.isLobbyStarted.Value);
     }
 
     private void SetupUITriggers()
@@ -256,14 +257,14 @@ public class MenuManager : NetworkBehaviour
         lobbyWaitingText.gameObject.SetActive(true);
         lobbyStorySelector.gameObject.SetActive(IsHost);
         lobbyReadyButton.SetActive(!GameManager.Instance.isMaster);
-        lobbyReadyButton.transform.Find("Text").GetComponent<TMP_Text>().text = "Ready";
+        lobbyReadyButton.transform.Find("Text").GetComponent<TMP_Text>().text = UIManager.Instance.GetLocalUIString("MENU_READY_BUTTON");
         lobbyWaitingText.text = "";
         gameStateProgressBar.gameObject.SetActive(false);
         lobbyPlayerListObject.SetActive(!GameManager.Instance.isMaster);
         UIManager.Instance.pausePlayerListObject.SetActive(!GameManager.Instance.isMaster);
         individualMapsObject.SetActive(false);
         lobbyFinishButton.SetActive(false);
-        lobbyFinishButton.transform.Find("Text").GetComponent<TMP_Text>().text = "Save Map";
+        lobbyFinishButton.transform.Find("Text").GetComponent<TMP_Text>().text = UIManager.Instance.GetLocalUIString("MENU_SAVE_BUTTON");
         timerObject.SetActive(false);
         lobbySettingsButton.SetActive(IsHost || GameManager.Instance.isMaster);
 
@@ -281,30 +282,31 @@ public class MenuManager : NetworkBehaviour
     {
         if (GameManager.Instance.isLobbyStarted.Value == true || GameManager.Instance.isMaster) StartCoroutine(GameManager.Instance.OnLobbyStart());
 
+        bool isReady = GameManager.Instance.FetchPlayerDataById(NetworkManager.LocalClientId).IsLobbyReady.Value;
         TMP_Text targetText = lobbyReadyButton.transform.Find("Text").GetComponent<TMP_Text>();
-        bool currentState = targetText.text == "Ready" ? false : true;
-
-        targetText.text = targetText.text == "Ready" ? "Unready" : "Ready";
-        foreach (Transform child in lobbyPlayerView.transform) 
+        string targetString = isReady ? UIManager.Instance.GetLocalUIString("MENU_UNREADY_BUTTON") : UIManager.Instance.GetLocalUIString("MENU_READY_BUTTON");
+        targetText.text = targetString;
+        foreach (Transform child in lobbyPlayerView.transform)
         { 
-            if (!currentState) child.GetComponent<UIElement>()?.OnElementDisable(); 
+            if (!isReady) child.GetComponent<UIElement>()?.OnElementDisable(); 
             else child.GetComponent<UIElement>().OnElementEnable(); 
         }
 
-        if (!GameManager.Instance.isMaster) GameManager.Instance.SetLobbyReadyStateServerRpc(!currentState);
+        if (!GameManager.Instance.isMaster) GameManager.Instance.SetLobbyReadyStateServerRpc(!isReady);
     }
 
     public void UpdateLobbyReadyState()
     {
         if (GameManager.Instance.isLobbyStarted.Value || GameManager.Instance.playerList.Count == 0) return;
-        lobbyWaitingText.text = "Waiting for players to ready up! ";
-        lobbyWaitingText.text += GameManager.Instance.playerList.Count(p => p.IsLobbyReady.Value == true) + "/" + GameManager.Instance.playerList.Count;
+        
+        lobbyWaitingText.text = UIManager.Instance.GetLocalUIString("MENU_READY_SUBTITLE");
+        lobbyWaitingText.text += " " + GameManager.Instance.playerList.Count(p => p.IsLobbyReady.Value == true) + "/" + GameManager.Instance.playerList.Count;
     }
 
     public void OnLobbyStart()
     {
         lobbyStorySelector.gameObject.SetActive(false);
-        lobbyWaitingText.text = GameManager.Instance.isMaster ? "" : "Starting Game!";
+        lobbyWaitingText.text = GameManager.Instance.isMaster ? "" : UIManager.Instance.GetLocalUIString("MENU_STARTING_SUBSTRING");
         lobbyReadyButton.SetActive(false);
         foreach (Transform child in lobbyPlayerView.transform) { child.GetComponent<UIElement>().OnElementDisable(); }
 
@@ -359,7 +361,7 @@ public class MenuManager : NetworkBehaviour
         SetMasterGameState(3);
         UIManager.Instance.OnSyncTimerClientRpc(0f, false, false);
         MapNetworkManager.Instance.SetMapStateServerRpc(MapState.Explore);
-        lobbyFinishButton.transform.Find("Text").GetComponent<TMP_Text>().text = "End Game";
+        lobbyFinishButton.transform.Find("Text").GetComponent<TMP_Text>().text = UIManager.Instance.GetLocalUIString("MENU_END_BUTTON");
         timerObject.SetActive(false);
     }
 

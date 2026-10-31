@@ -135,9 +135,6 @@ public class GameManager : NetworkBehaviour
 
         // force lobby start state in master mode (ignore ready states)
         if (isMaster) isLobbyStarted.Value = true;
-        
-        // update player renderstates
-        UpdatePlayerRenderStateRpc();
 
         // start map load
         yield return new WaitForSeconds(.5f);
@@ -244,6 +241,9 @@ public class GameManager : NetworkBehaviour
             mainCamera.SetActive(false);
 
             if (MapNetworkManager.Instance.mapState.Value == MapState.Explore) OnExploreGameState();
+
+            // update player renderstates
+            UpdatePlayerRenderStateRpc();
 
             isPaused = false;
         }
