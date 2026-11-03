@@ -455,7 +455,7 @@ public class MapManager : NetworkBehaviour
 
     public void OnMapClearRequest()
     {
-        UIManager.Instance.OnOpenDialog(isNetworked ? DialogId.SharedMapClear : DialogId.MapClear);
+        UIDialog.Instance.OnOpenDialog(isNetworked ? DialogId.SharedMapClear : DialogId.MapClear);
     }
 
     public void OnClearMap()

@@ -176,7 +176,7 @@ public class GameManager : NetworkBehaviour
     private void OnMapLoaded(string sceneName, LoadSceneMode loadSceneMode, List<ulong> clientsCompleted, List<ulong> clientsTimedOut)
     {
         Scene loadedScene = SceneManager.GetSceneByName(sceneName);
-        if (loadedScene == null) UIManager.Instance.OnOpenDialog(DialogId.HostLostConnection);
+        if (loadedScene == null) UIDialog.Instance.OnOpenDialog(DialogId.HostLostConnection);
         if (sceneName == "EmptyMap")
         {
             foreach (GameObject rootObject in loadedScene.GetRootGameObjects())
@@ -352,7 +352,7 @@ public class GameManager : NetworkBehaviour
         {
             if (clientId == NetworkManager.ServerClientId || FetchPlayerDataById(clientId)?.PersistentPlayerId.Value == 0)
             {
-                UIManager.Instance.OnOpenDialog(DialogId.HostLostConnection);
+                UIDialog.Instance.OnOpenDialog(DialogId.HostLostConnection);
                 return;
             }
         }
@@ -384,7 +384,7 @@ public class GameManager : NetworkBehaviour
         isMaster = masterStart;
         if (string.IsNullOrEmpty(MenuManager.Instance.hostPlayerNameInput.text) && !isMaster) 
         {
-            UIManager.Instance.OnOpenDialog(DialogId.InvalidPlayerName);
+            UIDialog.Instance.OnOpenDialog(DialogId.InvalidPlayerName);
             return;
         }
 
@@ -406,13 +406,13 @@ public class GameManager : NetworkBehaviour
 
         if (string.IsNullOrEmpty(MenuManager.Instance.joinPlayerNameInput.text))
         {
-            UIManager.Instance.OnOpenDialog(DialogId.InvalidPlayerName);
+            UIDialog.Instance.OnOpenDialog(DialogId.InvalidPlayerName);
             return;
         }
 
         if (string.IsNullOrEmpty(joinCode))
         {
-            UIManager.Instance.OnOpenDialog(DialogId.InvalidJoinCode);
+            UIDialog.Instance.OnOpenDialog(DialogId.InvalidJoinCode);
             return;
         }
 
@@ -420,7 +420,7 @@ public class GameManager : NetworkBehaviour
         if (!await RelayManager.Instance.JoinHost(joinCode))
         {
             Debug.Log("GameManager: Failed to join game.");
-            UIManager.Instance.OnOpenDialog(DialogId.FailedGameJoin);
+            UIDialog.Instance.OnOpenDialog(DialogId.FailedGameJoin);
             UIManager.Instance.loadingIcon.SetActive(false);
             return;
         }

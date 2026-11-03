@@ -89,7 +89,7 @@ public class InventoryManager : MonoBehaviour
         backButton.SetActive(!isLocked);
 
         // tutorial dialog
-        if (!isLocked) UIManager.Instance.OnOpenDialog(DialogId.PlayerTutorial);
+        if (!isLocked) UIDialog.Instance.OnOpenDialog(DialogId.PlayerTutorial);
     }
 
     public void OnToggleInventory()

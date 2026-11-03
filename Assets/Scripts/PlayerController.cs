@@ -58,7 +58,7 @@ public class PlayerController : NetworkBehaviour
     public override void OnNetworkDespawn()
     {
         if (!IsOwner) return;
-        UIManager.Instance.OnOpenDialog(DialogId.HostLostConnection);
+        UIDialog.Instance.OnOpenDialog(DialogId.HostLostConnection);
     }
 
     private void OnSetup()
@@ -237,7 +237,7 @@ public class PlayerController : NetworkBehaviour
 
     private void MovementHandler()
     {
-        if (!enableMovement || GameManager.Instance.isPaused || UIManager.Instance.activeDialog || InventoryManager.Instance.isInventoryActive) 
+        if (!enableMovement || GameManager.Instance.isPaused || UIDialog.Instance.activeDialog || InventoryManager.Instance.isInventoryActive) 
         {
             if (playerRigidbody.isKinematic) return;
             playerRigidbody.angularVelocity = Vector3.zero;
@@ -294,7 +294,7 @@ public class PlayerController : NetworkBehaviour
     public void OnMove(Vector3 targetPosition)
     {
         if (!IsOwner) return;
-        if (GameManager.Instance.isPaused || InventoryManager.Instance.isInventoryActive || UIManager.Instance.activeDialog) return;
+        if (GameManager.Instance.isPaused || InventoryManager.Instance.isInventoryActive || UIDialog.Instance.activeDialog) return;
 
         // reset agent conditionally
         if (!playerRigidbody.isKinematic) playerAgent.Warp(playerRigidbody.position);

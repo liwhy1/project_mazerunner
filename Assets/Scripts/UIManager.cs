@@ -52,9 +52,6 @@ public class UIManager : NetworkBehaviour
     [SerializeField] private Image minimapIcon;
     [SerializeField] private List<GameObject> minimapPlayerIcons;
 
-    [Header("Dialog Data")]
-    public GameObject activeDialog;
-
     private void Start()
     {
         Debug.Log("UIManager: Setting up");
@@ -296,7 +293,7 @@ public class UIManager : NetworkBehaviour
     [Rpc(SendTo.Everyone, InvokePermission = RpcInvokePermission.Everyone)]
     public void OnTreasureReachedRpc()
     {
-        if (!GameManager.Instance.isMaster) OnOpenDialog(DialogId.TreasureReached);
+        if (!GameManager.Instance.isMaster) UIDialog.Instance.OnOpenDialog(DialogId.TreasureReached);
         if (IsHost) MapNetworkManager.Instance.SetMapStateServerRpc(MapState.Individual);
     }
 
@@ -366,92 +363,6 @@ public class UIManager : NetworkBehaviour
             AddEventTrigger(newEntry.transform.Find("KickButton").GetComponent<EventTrigger>(), EventTriggerType.PointerClick, GameManager.Instance.PlayerKickNotifyClientRpc, player.OwnerClientId);
             GameObject newPauseEntry = Instantiate(newEntry, pausePlayerListObject.transform);
             AddEventTrigger(newPauseEntry.transform.Find("KickButton").GetComponent<EventTrigger>(), EventTriggerType.PointerClick, GameManager.Instance.PlayerKickNotifyClientRpc, player.OwnerClientId);
-        }
-    }
-
-    public void OnOpenDialog(DialogId id)
-    {
-        var dialogEntry = DialogDatabase.Instance.GetEntry(id);
-        if (dialogEntry == null) return;
-
-        // close any active dialogs
-        OnCloseDialog();
-
-        // play open sound
-        AudioManager.Instance.OnDialogOpen();
-
-        // create new dialog
-        GameObject newDialog = Instantiate(Resources.Load<GameObject>("UIElements/TextDialog"), transform);
-        newDialog.GetComponent<RectTransform>().anchoredPosition = new Vector2(0f, -1000);
-        activeDialog = newDialog;
-
-        // setup vars
-        GameObject dialogTitle = activeDialog.transform.Find("DialogTitle").gameObject;
-        GameObject dialogText = activeDialog.transform.Find("DialogText").gameObject;
-        GameObject buttonLayout = activeDialog.transform.Find("ButtonLayout").gameObject;
-        GameObject closeButton = buttonLayout.transform.Find("CloseButton").gameObject;
-        GameObject mainButton = buttonLayout.transform.Find("MainButton").gameObject;
-
-        // setup text
-        dialogTitle.GetComponent<TMP_Text>().text = dialogEntry.title;
-        dialogText.GetComponent<TMP_Text>().text = dialogEntry.text;
-        mainButton.SetActive(!string.IsNullOrEmpty(dialogEntry.button));
-        mainButton.transform.Find("Text").GetComponent<TMP_Text>().text = dialogEntry.button;
-        closeButton.transform.Find("Text").GetComponent<TMP_Text>().text = GetLocalDialogString("DIALOG_OPTION_CLOSE");
-
-        // setup triggers
-        AddEventTrigger(closeButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnCloseDialog);
-        AddEventTrigger(closeButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnCloseDialog);
-
-        // conditionally assign forced action to close button
-        if (dialogEntry.forceAction)
-        {
-            AddEventTrigger(closeButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, DialogActionHandler, dialogEntry.action);
-            AddEventTrigger(closeButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, DialogActionHandler, dialogEntry.action);
-        }
-
-        AddEventTrigger(mainButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, DialogActionHandler, dialogEntry.action);
-        AddEventTrigger(mainButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, DialogActionHandler, dialogEntry.action);
-
-        StartCoroutine(UIAnimator(newDialog.GetComponent<RectTransform>(), Vector2.zero));
-    }
-
-    private void DialogActionHandler(string targetAction)
-    {
-        switch (targetAction)
-        {
-            case "mapclear":
-                MapManager.Instance.OnClearMap();
-                break;
-            case "sharedmapclear":
-                MapManager.SharedInstance.OnClearMap();
-                break;
-            case "openeditor":
-                MenuManager.Instance.ResetUIState();
-                GameManager.Instance.isPaused = false;
-                InventoryManager.Instance.OnToggleInventory();
-                InventoryManager.Instance.OnOpenEditor();
-                break;
-            case "selfdisconnect":
-                GameManager.Instance.OnDisconnectClient();
-                break;
-            case "maptutorial":
-                InventoryManager.Instance.SetMapTutorialState(1);
-                break;
-            case "sessionconnectfail":
-                MenuManager.Instance.OnSessionConnectFailed();
-                break;
-        }
-        OnCloseDialog();
-    }
-
-    public void OnCloseDialog()
-    {
-        if (activeDialog)
-        {
-            AudioManager.Instance.OnDialogClose();
-            Destroy(activeDialog);
-            activeDialog = null;
         }
     }
 

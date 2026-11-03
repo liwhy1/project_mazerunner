@@ -224,7 +224,7 @@ public class MenuManager : NetworkBehaviour
 
     private void OnOpenEditor()
     {
-        UIManager.Instance.OnOpenDialog(DialogId.EditorOpen);
+        UIDialog.Instance.OnOpenDialog(DialogId.EditorOpen);
     }
 
     public void OnOpenMenu()
