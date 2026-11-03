@@ -6,8 +6,8 @@ public class ChainliftController : MonoBehaviour
 {
     public GameObject chainliftObject;
     private Coroutine liftMoveRoutine;
-    public float lowLimit = 20.35f;
-    public float highLimit = -17.07f;
+    public float lowLimit = 20.35f; // CHANGEME
+    public float highLimit = -17.07f; // CHANGEME
     public float movementSpeed = 10f;
 
     public void OnMoveLift()
@@ -19,7 +19,7 @@ public class ChainliftController : MonoBehaviour
     private IEnumerator LiftMoveRoutine()
     {
         Vector3 startPosition = chainliftObject.transform.localPosition;
-        float targetPositionX = startPosition.x > 0 ? highLimit : lowLimit;
+        float targetPositionX = startPosition.x > lowLimit - highLimit ? highLimit : lowLimit;
         Vector3 targetPosition = new Vector3(targetPositionX, startPosition.y, startPosition.z);
         float time = 0f;
         while (time < movementSpeed)
