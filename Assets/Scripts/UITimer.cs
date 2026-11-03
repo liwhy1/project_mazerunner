@@ -6,6 +6,7 @@ public class UITimer : MonoBehaviour
     [SerializeField] private GameObject playToggleButton;
     [SerializeField] private TMP_Text timerText;
     [SerializeField] private float timeRemaining = 0f;
+    private Color startColor;
     private bool isPlaying;
 
     private void Start()
@@ -13,6 +14,7 @@ public class UITimer : MonoBehaviour
         // setup default states
         isPlaying = false;
         timeRemaining = 900f; // 15mins
+        startColor = timerText.color;
 
         OnResetTimer();
     }
@@ -38,7 +40,7 @@ public class UITimer : MonoBehaviour
 
         // update ui
         timerText.text = $"{minutes:00}:{seconds:00}";
-        timerText.color = timeRemaining > 0 ? Color.black : Color.red;
+        timerText.color = timeRemaining > 0 ? startColor : Color.red;
         if (!playToggleButton) return;
         playToggleButton.transform.Find("Sprite").gameObject.SetActive(!isPlaying);
         playToggleButton.transform.Find("Sprite2").gameObject.SetActive(isPlaying);

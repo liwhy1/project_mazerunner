@@ -117,21 +117,21 @@ public class InventoryManager : MonoBehaviour
         var allTransforms = mapIndividualViewPage.transform.Cast<Transform>().Concat(MenuManager.Instance.individualMapsObject.transform.Cast<Transform>());
         foreach (Transform child in allTransforms)
         {
-            Sprite targetSprite = child.name.Contains("Correct") ? mapSprite : correctMapSprite;
-            if (!targetSprite) break;
-            child.Find("Background").GetComponent<Image>().sprite = targetSprite;
+            Sprite targetSprite = child.name.Contains("Correct") ? correctMapSprite : mapSprite;
+            Image targetBackground = child.Find("Background")?.GetComponent<Image>();
+            if (!targetSprite || !targetBackground) continue;
+            targetBackground.sprite = targetSprite;
         }
 
         // setup journal
         journalPages = Resources.LoadAll<TextAsset>("Information/" + activeStory).ToList();
-        journalPages.RemoveAll(p => !p.name.Contains("info" + GameManager.Instance.FetchPersistentPlayerId().ToString()));
+        if (!GameManager.Instance.isMaster) journalPages.RemoveAll(p => !p.name.Contains("info" + GameManager.Instance.FetchPersistentPlayerId().ToString()));
         TMP_InputField textComponent = journalObject.GetComponentInChildren<TMP_InputField>();
         textComponent.text = journalPages[0].text;
         int currentIndex = journalPages.IndexOf(journalPages.FirstOrDefault(p => p.text == textComponent.text));
-        journalPageNumber.text = "Page " + currentIndex + 1;
-        journalNextPageButton.SetActive(false);
+        journalPageNumber.text = "Page " + (currentIndex + 1);
         OnJournalEnable();
-        OnJournalDisablePaging();
+        if (GameManager.Instance.isMaster) UIManager.Instance.DisableJournalPagingClientRpc();
         textComponent.textComponent.ForceMeshUpdate();
     }
 
@@ -141,13 +141,13 @@ public class InventoryManager : MonoBehaviour
         int currentIndex = journalPages.IndexOf(journalPages.FirstOrDefault(p => p.text == textComponent.text));
         int nextIndex = (currentIndex + 1) % journalPages.Count;
         textComponent.text = journalPages[nextIndex].text;
-        journalPageNumber.text = "Page " + nextIndex + 1;
+        journalPageNumber.text = "Page " + (nextIndex + 1);
     }
 
     public void OnJournalDisable() => journalBlocker.SetActive(true);
     public void OnJournalEnable() => journalBlocker.SetActive(false);
-    public void OnJournalDisablePaging() => journalNextPageButton.SetActive(true);
-    public void OnJournalEnablePaging() => journalNextPageButton.SetActive(false);
+    public void OnJournalDisablePaging() => journalNextPageButton.SetActive(false);
+    public void OnJournalEnablePaging() => journalNextPageButton.SetActive(true);
 
     public void OnOpenMap() 
     {

@@ -46,7 +46,7 @@ public class MenuManager : NetworkBehaviour
     public GameObject lobbyPlayerListObject;
     [SerializeField] private TMP_Text lobbyWaitingText;
     [SerializeField] private UIProgressBar gameStateProgressBar;
-    [SerializeField] private GameObject lobbyFinishButton;
+    [SerializeField] private GameObject lobbyContinueButton;
     [SerializeField] private GameObject timerObject;
     public GameObject individualMapsObject;
 
@@ -127,8 +127,8 @@ public class MenuManager : NetworkBehaviour
         // lobby
         UIManager.Instance.AddEventTrigger(lobbyReadyButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnLobbyToggleReady);
         UIManager.Instance.AddEventTrigger(lobbyReadyButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnLobbyToggleReady);
-        UIManager.Instance.AddEventTrigger(lobbyFinishButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnMasterFinishButton);
-        UIManager.Instance.AddEventTrigger(lobbyFinishButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnMasterFinishButton);
+        UIManager.Instance.AddEventTrigger(lobbyContinueButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnMasterContinueButton);
+        UIManager.Instance.AddEventTrigger(lobbyContinueButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnMasterContinueButton);
         UIManager.Instance.AddEventTrigger(lobbyQuitButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, UIManager.Instance.OnQuitButton);
         UIManager.Instance.AddEventTrigger(lobbyQuitButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, UIManager.Instance.OnQuitButton);
         UIManager.Instance.AddEventTrigger(lobbySettingsButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnLobbyToggleSettings);
@@ -263,8 +263,8 @@ public class MenuManager : NetworkBehaviour
         lobbyPlayerListObject.SetActive(!GameManager.Instance.isMaster);
         UIManager.Instance.pausePlayerListObject.SetActive(!GameManager.Instance.isMaster);
         individualMapsObject.SetActive(false);
-        lobbyFinishButton.SetActive(false);
-        lobbyFinishButton.transform.Find("Text").GetComponent<TMP_Text>().text = UIManager.Instance.GetLocalUIString("MENU_SAVE_BUTTON");
+        lobbyContinueButton.SetActive(false);
+        lobbyContinueButton.transform.Find("Text").GetComponent<TMP_Text>().text = UIManager.Instance.GetLocalUIString("MENU_CONTINUE_SUBSTRING");
         timerObject.SetActive(false);
         lobbySettingsButton.SetActive(IsHost || GameManager.Instance.isMaster);
 
@@ -313,6 +313,7 @@ public class MenuManager : NetworkBehaviour
         // master
         timerObject.SetActive(GameManager.Instance.isMaster);
         gameStateProgressBar.gameObject.SetActive(GameManager.Instance.isMaster);
+        lobbyContinueButton.SetActive(GameManager.Instance.isMaster);
         SetMasterGameState(1);
     }
 
@@ -344,9 +345,14 @@ public class MenuManager : NetworkBehaviour
         gameStateProgressBar.OnProgressUpdate(targetLevel);
     }
 
-    private void OnMasterFinishButton()
+    private void OnMasterContinueButton()
     {
-        if (MapNetworkManager.Instance.mapState.Value == MapState.Shared)
+        if (MapNetworkManager.Instance.mapState.Value == MapState.Own)
+        {
+            UIManager.Instance.EnableJournalPagingClientRpc();
+            lobbyContinueButton.SetActive(false);
+        }
+        else if (MapNetworkManager.Instance.mapState.Value == MapState.Shared)
         {
             OnMasterSharedMapReady();
         }
@@ -361,7 +367,7 @@ public class MenuManager : NetworkBehaviour
         SetMasterGameState(3);
         UIManager.Instance.OnSyncTimerClientRpc(0f, false, false);
         MapNetworkManager.Instance.SetMapStateServerRpc(MapState.Explore);
-        lobbyFinishButton.transform.Find("Text").GetComponent<TMP_Text>().text = UIManager.Instance.GetLocalUIString("MENU_END_BUTTON");
+        lobbyContinueButton.transform.Find("Text").GetComponent<TMP_Text>().text = UIManager.Instance.GetLocalUIString("MENU_END_BUTTON");
         timerObject.SetActive(false);
     }
 
@@ -370,14 +376,15 @@ public class MenuManager : NetworkBehaviour
         SetMasterGameState(4);
         MapManager.SharedInstance.mapObject.SetActive(false);
         individualMapsObject.SetActive(true);
-        lobbyFinishButton.SetActive(false);
+        lobbyContinueButton.SetActive(false);
         MapNetworkManager.Instance.SetMapStateServerRpc(MapState.Individual);
     }
 
     public void OnMasterSharedMapEnabled()
     {
         SetMasterGameState(2);
-        lobbyFinishButton.SetActive(true);
+        lobbyContinueButton.SetActive(true);
+        lobbyContinueButton.transform.Find("Text").GetComponent<TMP_Text>().text = UIManager.Instance.GetLocalUIString("MENU_SAVE_BUTTON");
         MapManager.SharedInstance.mapObject.SetActive(true);
         MapManager.SharedInstance.iconPile.SetActive(true);
         MapManager.SharedInstance.OnMapToggleReady(false, false);

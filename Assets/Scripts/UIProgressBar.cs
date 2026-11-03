@@ -44,6 +44,6 @@ public class UIProgressBar : MonoBehaviour
         // TODO: this is hardcoded af
         // update individual map ready count
         string readyText = targetLevel == 1 ? GameManager.Instance.playerList.Count(p => p.IsMapReady.Value == true) + "/" + GameManager.Instance.playerList.Count : "";
-        levelObjects[0].GetComponentInChildren<TMP_Text>().text = "Individual Mapping " + readyText;
+        levelObjects[0].GetComponentInChildren<TMP_Text>().text = UIManager.Instance.GetLocalUIString("MENU_MAP_INDIVIDUAL_SUBSTRING") + " " + readyText;
     }
 }

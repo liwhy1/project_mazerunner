@@ -169,6 +169,7 @@ GameObject:
   - component: {fileID: 7649205038051315778}
   - component: {fileID: 3943403069645556016}
   - component: {fileID: 3883516877260189624}
+  - component: {fileID: 5493412164710749565}
   m_Layer: 5
   m_Name: TimerTitle
   m_TagString: Untagged
@@ -232,8 +233,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4278190080
-  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
+    rgba: 4291545814
+  m_fontColor: {r: 0.83921576, g: 0.79215693, b: 0.7960785, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -309,6 +310,46 @@ MonoBehaviour:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.ContentSizeFitter
   m_HorizontalFit: 0
   m_VerticalFit: 2
+--- !u!114 &5493412164710749565
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1567939390311606723}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56eb0353ae6e5124bb35b17aff880f16, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Components.LocalizeStringEvent
+  m_StringReference:
+    m_TableReference:
+      m_TableCollectionName: GUID:8fb0a5c209553c042b10e047e5262444
+    m_TableEntryReference:
+      m_KeyId: 1802329969459200
+      m_Key: 
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  m_FormatArguments: []
+  m_UpdateString:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 3943403069645556016}
+        m_TargetAssemblyTypeName: TMPro.TMP_Text, Unity.TextMeshPro
+        m_MethodName: set_text
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 1
+  references:
+    version: 2
+    RefIds: []
 --- !u!1 &7751797572968671574
 GameObject:
   m_ObjectHideFlags: 0
@@ -564,34 +605,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 510940957362036939}
     m_Modifications:
-    - target: {fileID: 2086946289739451685, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
-      propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_Target
-      value: 
-      objectReference: {fileID: 4080630182297125997}
-    - target: {fileID: 2086946289739451685, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
-      propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: OnResetTimer
-      objectReference: {fileID: 0}
-    - target: {fileID: 2086946289739451685, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
-      propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
-      value: TimerManager, Assembly-CSharp
-      objectReference: {fileID: 0}
-    - target: {fileID: 4225448069585388808, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
-      propertyPath: m_Material
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 5305203647810308332, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
-      propertyPath: m_Sprite
-      value: 
-      objectReference: {fileID: 410279458, guid: b456d4660b8986c429eb21e4b4499747, type: 3}
-    - target: {fileID: 5606770867723176913, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
-      propertyPath: enableGrow
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5606770867723176913, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
-      propertyPath: resetOnClick
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 1721184665956098932, guid: c4c4b3045a3f6cc428c92ba28fc0f2a9, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -724,6 +737,34 @@ PrefabInstance:
       propertyPath: m_Sprite
       value: 
       objectReference: {fileID: 410279458, guid: b456d4660b8986c429eb21e4b4499747, type: 3}
+    - target: {fileID: 2086946289739451685, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
+      propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 4080630182297125997}
+    - target: {fileID: 2086946289739451685, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
+      propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: OnResetTimer
+      objectReference: {fileID: 0}
+    - target: {fileID: 2086946289739451685, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
+      propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: TimerManager, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 4225448069585388808, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
+      propertyPath: m_Material
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 5305203647810308332, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 410279458, guid: b456d4660b8986c429eb21e4b4499747, type: 3}
+    - target: {fileID: 5606770867723176913, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
+      propertyPath: enableGrow
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5606770867723176913, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
+      propertyPath: resetOnClick
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -742,34 +783,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 510940957362036939}
     m_Modifications:
-    - target: {fileID: 2086946289739451685, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
-      propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_Target
-      value: 
-      objectReference: {fileID: 4080630182297125997}
-    - target: {fileID: 2086946289739451685, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
-      propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: OnTogglePause
-      objectReference: {fileID: 0}
-    - target: {fileID: 2086946289739451685, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
-      propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
-      value: TimerManager, Assembly-CSharp
-      objectReference: {fileID: 0}
-    - target: {fileID: 4225448069585388808, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
-      propertyPath: m_Material
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 5305203647810308332, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
-      propertyPath: m_Sprite
-      value: 
-      objectReference: {fileID: -1920834429, guid: fc68ced5c18d2024cb374bd01bd8dc82, type: 3}
-    - target: {fileID: 5606770867723176913, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
-      propertyPath: enableGrow
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5606770867723176913, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
-      propertyPath: resetOnClick
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 1721184665956098932, guid: c4c4b3045a3f6cc428c92ba28fc0f2a9, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -898,6 +911,34 @@ PrefabInstance:
       propertyPath: m_Sprite
       value: 
       objectReference: {fileID: -1920834429, guid: fc68ced5c18d2024cb374bd01bd8dc82, type: 3}
+    - target: {fileID: 2086946289739451685, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
+      propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 4080630182297125997}
+    - target: {fileID: 2086946289739451685, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
+      propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: OnTogglePause
+      objectReference: {fileID: 0}
+    - target: {fileID: 2086946289739451685, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
+      propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: TimerManager, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 4225448069585388808, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
+      propertyPath: m_Material
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 5305203647810308332, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: -1920834429, guid: fc68ced5c18d2024cb374bd01bd8dc82, type: 3}
+    - target: {fileID: 5606770867723176913, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
+      propertyPath: enableGrow
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5606770867723176913, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
+      propertyPath: resetOnClick
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
@@ -924,42 +965,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 510940957362036939}
     m_Modifications:
-    - target: {fileID: 2086946289739451685, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
-      propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
-      value: 3
-      objectReference: {fileID: 0}
-    - target: {fileID: 2086946289739451685, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
-      propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_Target
-      value: 
-      objectReference: {fileID: 4080630182297125997}
-    - target: {fileID: 2086946289739451685, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
-      propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: OnModifyTime
-      objectReference: {fileID: 0}
-    - target: {fileID: 2086946289739451685, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
-      propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
-      value: TimerManager, Assembly-CSharp
-      objectReference: {fileID: 0}
-    - target: {fileID: 2086946289739451685, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
-      propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_IntArgument
-      value: 60
-      objectReference: {fileID: 0}
-    - target: {fileID: 4225448069585388808, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
-      propertyPath: m_Material
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 5305203647810308332, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
-      propertyPath: m_Sprite
-      value: 
-      objectReference: {fileID: -1253755746, guid: cf94f7ac6b5827d49bf1c91a4f4d1bf2, type: 3}
-    - target: {fileID: 5606770867723176913, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
-      propertyPath: enableGrow
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5606770867723176913, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
-      propertyPath: resetOnClick
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 1721184665956098932, guid: c4c4b3045a3f6cc428c92ba28fc0f2a9, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -1096,24 +1101,6 @@ PrefabInstance:
       propertyPath: m_Sprite
       value: 
       objectReference: {fileID: -1253755746, guid: cf94f7ac6b5827d49bf1c91a4f4d1bf2, type: 3}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: c4c4b3045a3f6cc428c92ba28fc0f2a9, type: 3}
---- !u!224 &4779747747159591996 stripped
-RectTransform:
-  m_CorrespondingSourceObject: {fileID: 1721184665956098932, guid: c4c4b3045a3f6cc428c92ba28fc0f2a9, type: 3}
-  m_PrefabInstance: {fileID: 6176672689344900936}
-  m_PrefabAsset: {fileID: 0}
---- !u!1001 &6926959379619267148
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 510940957362036939}
-    m_Modifications:
     - target: {fileID: 2086946289739451685, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
       propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
       value: 3
@@ -1132,7 +1119,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2086946289739451685, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
       propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_IntArgument
-      value: -60
+      value: 60
       objectReference: {fileID: 0}
     - target: {fileID: 4225448069585388808, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
       propertyPath: m_Material
@@ -1141,7 +1128,7 @@ PrefabInstance:
     - target: {fileID: 5305203647810308332, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 2076652261, guid: 02348ab63f71167459b4ed9aa2420194, type: 3}
+      objectReference: {fileID: -1253755746, guid: cf94f7ac6b5827d49bf1c91a4f4d1bf2, type: 3}
     - target: {fileID: 5606770867723176913, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
       propertyPath: enableGrow
       value: 0
@@ -1150,6 +1137,24 @@ PrefabInstance:
       propertyPath: resetOnClick
       value: 0
       objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: c4c4b3045a3f6cc428c92ba28fc0f2a9, type: 3}
+--- !u!224 &4779747747159591996 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 1721184665956098932, guid: c4c4b3045a3f6cc428c92ba28fc0f2a9, type: 3}
+  m_PrefabInstance: {fileID: 6176672689344900936}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1001 &6926959379619267148
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 510940957362036939}
+    m_Modifications:
     - target: {fileID: 1721184665956098932, guid: c4c4b3045a3f6cc428c92ba28fc0f2a9, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -1286,6 +1291,42 @@ PrefabInstance:
       propertyPath: m_Sprite
       value: 
       objectReference: {fileID: 2076652261, guid: 02348ab63f71167459b4ed9aa2420194, type: 3}
+    - target: {fileID: 2086946289739451685, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
+      propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 2086946289739451685, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
+      propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 4080630182297125997}
+    - target: {fileID: 2086946289739451685, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
+      propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: OnModifyTime
+      objectReference: {fileID: 0}
+    - target: {fileID: 2086946289739451685, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
+      propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: TimerManager, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 2086946289739451685, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
+      propertyPath: m_Delegates.Array.data[0].callback.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_IntArgument
+      value: -60
+      objectReference: {fileID: 0}
+    - target: {fileID: 4225448069585388808, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
+      propertyPath: m_Material
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 5305203647810308332, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 2076652261, guid: 02348ab63f71167459b4ed9aa2420194, type: 3}
+    - target: {fileID: 5606770867723176913, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
+      propertyPath: enableGrow
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5606770867723176913, guid: 0c8fd49a87115d44f85e5a09af0c1239, type: 3}
+      propertyPath: resetOnClick
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

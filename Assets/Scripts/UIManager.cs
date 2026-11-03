@@ -445,6 +445,9 @@ public class UIManager : NetworkBehaviour
     [ClientRpc]
     public void EnableJournalPagingClientRpc() => InventoryManager.Instance.OnJournalEnablePaging();
 
+    [ClientRpc]
+    public void DisableJournalPagingClientRpc() => InventoryManager.Instance.OnJournalDisablePaging();
+
     private void MistEffectHandler()
     {
         mistOverlay.gameObject.SetActive(!InventoryManager.Instance.isInventoryActive && !GameManager.Instance.isPaused);
