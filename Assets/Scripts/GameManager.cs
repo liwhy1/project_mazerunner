@@ -228,6 +228,17 @@ public class GameManager : NetworkBehaviour
                 }
             }
 
+            // conditionally apply custom material to terrain
+            Material terrainMaterial = Resources.Load<Material>("Information/" + activeStory.Value + "/Terrain");
+
+            if (terrainMaterial)
+            {
+                foreach (Transform child in terrainObject.transform)
+                {
+                    child.GetComponent<Renderer>().material = terrainMaterial;
+                }
+            }
+
             // hide start platform
             navMeshObject.GetComponent<NavMeshSurface>().GetComponent<Renderer>().enabled = false;
 
