@@ -1,6 +1,6 @@
-using System;
 using System.Collections;
-using System.Text.RegularExpressions;
+using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -21,12 +21,10 @@ public class InventoryManager : MonoBehaviour
     [SerializeField] private GameObject editorObject;
 
     [Header("Journal Data")]
-    [SerializeField] private ScrollRect journalPageView;
     [SerializeField] private TMP_Text journalPageNumber;
-    [SerializeField] private GameObject journalText;
-    [SerializeField] private GameObject journalImage;
-    [SerializeField] private GameObject journalPage1Layout;
-    [SerializeField] private GameObject journalPage2Layout;
+    [SerializeField] private GameObject journalBlocker;
+    [SerializeField] private GameObject journalNextPageButton;
+    [SerializeField] private List<TextAsset> journalPages;
 
     [Header("Map Data")]
     [SerializeField] private GameObject mapOwnViewButton;
@@ -114,79 +112,42 @@ public class InventoryManager : MonoBehaviour
         MapManager.Instance.mapBackground.GetComponent<Image>().sprite = mapSprite;
         MapManager.SharedInstance.mapBackground.GetComponent<Image>().sprite = mapSprite;
         UIManager.Instance.minimapObject.transform.Find("Background").GetComponent<Image>().sprite = mapSprite;
-        foreach (Transform child in mapIndividualViewPage.transform)
+
+        // setup individual maps
+        var allTransforms = mapIndividualViewPage.transform.Cast<Transform>().Concat(MenuManager.Instance.individualMapsObject.transform.Cast<Transform>());
+        foreach (Transform child in allTransforms)
         {
-            if (child.name.Contains("MapP")) child.Find("Background").GetComponent<Image>().sprite = mapSprite;
-            if (child.name.Contains("Correct") && correctMapSprite) child.Find("Background").GetComponent<Image>().sprite = correctMapSprite;
-        }
-        foreach (Transform child in MenuManager.Instance.individualMapsObject.transform)
-        {
-            if (child.name.Contains("MapP")) child.Find("Background").GetComponent<Image>().sprite = mapSprite;
-            if (child.name.Contains("Correct") && correctMapSprite) child.Find("Background").GetComponent<Image>().sprite = correctMapSprite;
+            Sprite targetSprite = child.name.Contains("Correct") ? mapSprite : correctMapSprite;
+            if (!targetSprite) break;
+            child.Find("Background").GetComponent<Image>().sprite = targetSprite;
         }
 
         // setup journal
-        journalPage1Layout.SetActive(true);
-        journalPage2Layout.SetActive(false);
-        journalPageView.content = journalPage1Layout.GetComponent<RectTransform>();
-        journalPageNumber.text = "Page 1";
-
-        // generate pages
-        GenerateJournalPage(journalPage1Layout, 1);
-        GenerateJournalPage(journalPage2Layout, 2);
-        journalPageView.transform.Find("Blocker").gameObject.SetActive(false);
-    }
-
-    private void GenerateJournalPage(GameObject targetView, int targetPage)
-    {
-        string activeStory = GameManager.Instance.activeStory.Value.ToString();
-        int persistentId = GameManager.Instance.FetchPersistentPlayerId();
-        string textTargetPath = "Information/" + activeStory + "/info" + persistentId.ToString();
-        string imageTargetPath = "Information/" + activeStory + "/image" + persistentId.ToString();
-
-        // don't generate page if the path target doesn't exist
-        if (!Resources.Load<TextAsset>(textTargetPath + "_" + targetPage))
-        {
-            Destroy(targetView);
-            journalPageNumber.transform.Find("NextPageButton").gameObject.SetActive(false);
-            return;
-        }
-
-        string loadedText = Resources.Load<TextAsset>(textTargetPath + "_" + targetPage).text;
-        string[] loadedTextBlocks = Regex.Split(loadedText, @"(\[image[12345]\])");
-
-        foreach (string block in loadedTextBlocks)
-        {
-            // generate image blocks
-            if (block.Contains("[image"))
-            {
-                GameObject newComponent = Instantiate(journalImage, targetView.transform);
-                newComponent.SetActive(true);
-                newComponent.GetComponent<Image>().sprite = Resources.Load<Sprite>(imageTargetPath+ "_" + block[block.Length - 2]);
-
-                newComponent.GetComponent<Image>().preserveAspect = true;
-                newComponent.GetComponent<Image>().SetNativeSize();
-            }
-            // generate text blocks
-            else
-            {
-                //GameObject newComponent = Instantiate(journalText, targetView.transform);
-                //newComponent.SetActive(true);
-                //TMP_InputField textComponent = newComponent.GetComponent<TMP_InputField>();
-                TMP_InputField textComponent = journalObject.GetComponentInChildren<TMP_InputField>();
-                textComponent.text = block;
-                textComponent.textComponent.ForceMeshUpdate();
-            }
-        }
+        journalPages = Resources.LoadAll<TextAsset>("Information/" + activeStory).ToList();
+        journalPages.RemoveAll(p => !p.name.Contains("info" + GameManager.Instance.FetchPersistentPlayerId().ToString()));
+        TMP_InputField textComponent = journalObject.GetComponentInChildren<TMP_InputField>();
+        textComponent.text = journalPages[0].text;
+        int currentIndex = journalPages.IndexOf(journalPages.FirstOrDefault(p => p.text == textComponent.text));
+        journalPageNumber.text = "Page " + currentIndex + 1;
+        journalNextPageButton.SetActive(false);
+        OnJournalEnable();
+        OnJournalDisablePaging();
+        textComponent.textComponent.ForceMeshUpdate();
     }
 
     public void OnJournalNextPage()
     {
-        journalPage1Layout.SetActive(!journalPage1Layout.activeSelf);
-        journalPage2Layout.SetActive(!journalPage2Layout.activeSelf);
-        journalPageView.content = journalPage1Layout.activeSelf ? journalPage1Layout.GetComponent<RectTransform>() : journalPage2Layout.GetComponent<RectTransform>();
-        journalPageNumber.text = "Page " + (journalPage1Layout.activeSelf ? "1" : "2");
+        TMP_InputField textComponent = journalObject.GetComponentInChildren<TMP_InputField>();
+        int currentIndex = journalPages.IndexOf(journalPages.FirstOrDefault(p => p.text == textComponent.text));
+        int nextIndex = (currentIndex + 1) % journalPages.Count;
+        textComponent.text = journalPages[nextIndex].text;
+        journalPageNumber.text = "Page " + nextIndex + 1;
     }
+
+    public void OnJournalDisable() => journalBlocker.SetActive(true);
+    public void OnJournalEnable() => journalBlocker.SetActive(false);
+    public void OnJournalDisablePaging() => journalNextPageButton.SetActive(true);
+    public void OnJournalEnablePaging() => journalNextPageButton.SetActive(false);
 
     public void OnOpenMap() 
     {
@@ -297,9 +258,6 @@ public class InventoryManager : MonoBehaviour
         StartCoroutine(UIManager.Instance.UIAnimator(mapIndividualViewButton.GetComponent<RectTransform>(), targetPosition));
     }
 
-    public void OnJournalDisable() => journalPageView.transform.Find("Blocker").gameObject.SetActive(true);
-    public void OnJournalEnable() => journalPageView.transform.Find("Blocker").gameObject.SetActive(false);
-
     public void OnMapStateChanged(MapState oldValue, MapState newValue)
     {
         OnToggleSharedView(false);
@@ -308,6 +266,7 @@ public class InventoryManager : MonoBehaviour
         {
             case MapState.Shared:
                 OnToggleSharedView(true);
+                if (GameManager.Instance.lockJournalAfterOwnMap) OnJournalDisable();
                 break;
             case MapState.Explore:
                 OnToggleSharedView(true);
@@ -318,6 +277,7 @@ public class InventoryManager : MonoBehaviour
                 OnToggleSharedView(true);
                 SetMapPage(mapIndividualViewPage);
                 OnJournalEnable();
+                OnJournalEnablePaging();
             break;
         }
     }

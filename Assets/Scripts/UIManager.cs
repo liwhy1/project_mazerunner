@@ -442,6 +442,9 @@ public class UIManager : NetworkBehaviour
         timerText.GetComponent<UITimer>().OnSetTime(currentTime);
     }
 
+    [ClientRpc]
+    public void EnableJournalPagingClientRpc() => InventoryManager.Instance.OnJournalEnablePaging();
+
     private void MistEffectHandler()
     {
         mistOverlay.gameObject.SetActive(!InventoryManager.Instance.isInventoryActive && !GameManager.Instance.isPaused);
