@@ -8,8 +8,8 @@ OcclusionCullingSettings:
     smallestOccluder: 5
     smallestHole: 0.25
     backfaceThreshold: 100
-  m_SceneGUID: 00000000000000000000000000000000
-  m_OcclusionCullingData: {fileID: 0}
+  m_SceneGUID: 3695eca6a44c9ad45b656bfe493dad71
+  m_OcclusionCullingData: {fileID: 36300000, guid: 85c14e0233084314eab766c5a9359a0f, type: 2}
 --- !u!104 &2
 RenderSettings:
   m_ObjectHideFlags: 0
@@ -6969,6 +6969,7 @@ GameObject:
   - component: {fileID: 33669922}
   - component: {fileID: 33669924}
   - component: {fileID: 33669923}
+  - component: {fileID: 33669925}
   m_Layer: 0
   m_Name: Mist 1(Clone)
   m_TagString: Untagged
@@ -7048,6 +7049,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 33669921}
   m_Mesh: {fileID: -455389521632547594, guid: c94a2c1949c26b04480f10d18f01176a, type: 3}
+--- !u!65 &33669925
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 33669921}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 44.163597, y: 7.2018394, z: 24.42093}
+  m_Center: {x: -0.00006106198, y: 3.6009195, z: 0.000000026828937}
 --- !u!1 &34464069
 GameObject:
   m_ObjectHideFlags: 0
@@ -8432,6 +8454,7 @@ GameObject:
   - component: {fileID: 37721501}
   - component: {fileID: 37721503}
   - component: {fileID: 37721502}
+  - component: {fileID: 37721504}
   m_Layer: 0
   m_Name: Mist 1(Clone)
   m_TagString: Untagged
@@ -8511,6 +8534,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 37721500}
   m_Mesh: {fileID: -455389521632547594, guid: c94a2c1949c26b04480f10d18f01176a, type: 3}
+--- !u!65 &37721504
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 37721500}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 44.163616, y: 7.201839, z: 24.420942}
+  m_Center: {x: -0.000030517578, y: 3.600919, z: 0.000000053657875}
 --- !u!1 &37735170
 GameObject:
   m_ObjectHideFlags: 0
@@ -19407,6 +19451,7 @@ GameObject:
   - component: {fileID: 77282504}
   - component: {fileID: 77282506}
   - component: {fileID: 77282505}
+  - component: {fileID: 77282507}
   m_Layer: 0
   m_Name: Mist 2(Clone)
   m_TagString: Untagged
@@ -19486,6 +19531,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 77282503}
   m_Mesh: {fileID: -2838557043604309118, guid: fe5fe836fd1aa6341b4e7a45922809c4, type: 3}
+--- !u!65 &77282507
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 77282503}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 45.807514, y: 9.94803, z: 16.148973}
+  m_Center: {x: -0.000055498404, y: 4.9740367, z: 0.000000074118404}
 --- !u!1 &77624193
 GameObject:
   m_ObjectHideFlags: 0
@@ -39810,6 +39876,7 @@ GameObject:
   - component: {fileID: 169582545}
   - component: {fileID: 169582547}
   - component: {fileID: 169582546}
+  - component: {fileID: 169582548}
   m_Layer: 0
   m_Name: Mist 3(Clone)
   m_TagString: Untagged
@@ -39889,6 +39956,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 169582544}
   m_Mesh: {fileID: -3067846377082452896, guid: e503bd42a687bcd41894dec0f04159a0, type: 3}
+--- !u!65 &169582548
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 169582544}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 41.95449, y: 10.373488, z: 10.104021}
+  m_Center: {x: -0.00006201781, y: 5.1867414, z: -0.0000018976875}
 --- !u!1 &169719103
 GameObject:
   m_ObjectHideFlags: 0
@@ -49591,6 +49679,7 @@ GameObject:
   - component: {fileID: 210715450}
   - component: {fileID: 210715452}
   - component: {fileID: 210715451}
+  - component: {fileID: 210715453}
   m_Layer: 0
   m_Name: Mist 2(Clone)
   m_TagString: Untagged
@@ -49670,6 +49759,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 210715449}
   m_Mesh: {fileID: -2838557043604309118, guid: fe5fe836fd1aa6341b4e7a45922809c4, type: 3}
+--- !u!65 &210715453
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 210715449}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 45.80751, y: 9.948029, z: 16.148972}
+  m_Center: {x: 0.0000669425, y: 4.9740205, z: 0.000000074118745}
 --- !u!1 &211358642
 GameObject:
   m_ObjectHideFlags: 0
@@ -50671,6 +50781,7 @@ GameObject:
   - component: {fileID: 216818449}
   - component: {fileID: 216818451}
   - component: {fileID: 216818450}
+  - component: {fileID: 216818452}
   m_Layer: 0
   m_Name: Mist 1(Clone)
   m_TagString: Untagged
@@ -50750,6 +50861,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 216818448}
   m_Mesh: {fileID: -455389521632547594, guid: c94a2c1949c26b04480f10d18f01176a, type: 3}
+--- !u!65 &216818452
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 216818448}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 44.163605, y: 7.201838, z: 24.420937}
+  m_Center: {x: -0.000000013414469, y: 3.6009188, z: 0.00003055782}
 --- !u!1 &217015130
 GameObject:
   m_ObjectHideFlags: 0
@@ -60748,6 +60880,7 @@ GameObject:
   - component: {fileID: 258306505}
   - component: {fileID: 258306507}
   - component: {fileID: 258306506}
+  - component: {fileID: 258306508}
   m_Layer: 0
   m_Name: Mist 3(Clone)
   m_TagString: Untagged
@@ -60827,6 +60960,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 258306504}
   m_Mesh: {fileID: -3067846377082452896, guid: e503bd42a687bcd41894dec0f04159a0, type: 3}
+--- !u!65 &258306508
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 258306504}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 41.954506, y: 10.373488, z: 10.104022}
+  m_Center: {x: -0.0000008763861, y: 5.186736, z: -0.000017156477}
 --- !u!1 &258307009
 GameObject:
   m_ObjectHideFlags: 0
@@ -73933,6 +74087,7 @@ GameObject:
   - component: {fileID: 311563316}
   - component: {fileID: 311563318}
   - component: {fileID: 311563317}
+  - component: {fileID: 311563319}
   m_Layer: 0
   m_Name: Mist 1(Clone)
   m_TagString: Untagged
@@ -74012,6 +74167,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 311563315}
   m_Mesh: {fileID: -455389521632547594, guid: c94a2c1949c26b04480f10d18f01176a, type: 3}
+--- !u!65 &311563319
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 311563315}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 44.16359, y: 7.201838, z: 24.42093}
+  m_Center: {x: 0.00007630736, y: 3.6009302, z: 0.000000053657875}
 --- !u!1 &311867292
 GameObject:
   m_ObjectHideFlags: 0
@@ -76745,6 +76921,7 @@ GameObject:
   - component: {fileID: 321354412}
   - component: {fileID: 321354414}
   - component: {fileID: 321354413}
+  - component: {fileID: 321354415}
   m_Layer: 0
   m_Name: Mist 3(Clone)
   m_TagString: Untagged
@@ -76824,6 +77001,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 321354411}
   m_Mesh: {fileID: -3067846377082452896, guid: e503bd42a687bcd41894dec0f04159a0, type: 3}
+--- !u!65 &321354415
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 321354411}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 41.954494, y: 10.373487, z: 10.104026}
+  m_Center: {x: 0.00006013945, y: 5.186736, z: -0.00000948874}
 --- !u!1 &321790165
 GameObject:
   m_ObjectHideFlags: 0
@@ -85609,6 +85807,7 @@ GameObject:
   - component: {fileID: 355768459}
   - component: {fileID: 355768461}
   - component: {fileID: 355768460}
+  - component: {fileID: 355768462}
   m_Layer: 0
   m_Name: Mist 3(Clone)
   m_TagString: Untagged
@@ -85688,6 +85887,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 355768458}
   m_Mesh: {fileID: -3067846377082452896, guid: e503bd42a687bcd41894dec0f04159a0, type: 3}
+--- !u!65 &355768462
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 355768458}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 41.95449, y: 10.373488, z: 10.104021}
+  m_Center: {x: -0.00012306264, y: 5.186746, z: -0.000001931501}
 --- !u!1 &355865472
 GameObject:
   m_ObjectHideFlags: 0
@@ -96340,6 +96560,7 @@ GameObject:
   - component: {fileID: 394883585}
   - component: {fileID: 394883587}
   - component: {fileID: 394883586}
+  - component: {fileID: 394883588}
   m_Layer: 0
   m_Name: Mist 3(Clone)
   m_TagString: Untagged
@@ -96419,6 +96640,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 394883584}
   m_Mesh: {fileID: -3067846377082452896, guid: e503bd42a687bcd41894dec0f04159a0, type: 3}
+--- !u!65 &394883588
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 394883584}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 41.954487, y: 10.373488, z: 10.104023}
+  m_Center: {x: 0.000060081482, y: 5.1867514, z: 0.000013312796}
 --- !u!1 &395012563
 GameObject:
   m_ObjectHideFlags: 0
@@ -101758,6 +102000,7 @@ GameObject:
   - component: {fileID: 413100048}
   - component: {fileID: 413100050}
   - component: {fileID: 413100049}
+  - component: {fileID: 413100051}
   m_Layer: 0
   m_Name: Mist 2(Clone)
   m_TagString: Untagged
@@ -101837,6 +102080,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 413100047}
   m_Mesh: {fileID: -2838557043604309118, guid: fe5fe836fd1aa6341b4e7a45922809c4, type: 3}
+--- !u!65 &413100051
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 413100047}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 45.8075, y: 9.948026, z: 16.148966}
+  m_Center: {x: -0.000024800165, y: 4.9740133, z: -0.000061030525}
 --- !u!1 &413432931
 GameObject:
   m_ObjectHideFlags: 0
@@ -104344,6 +104608,7 @@ GameObject:
   - component: {fileID: 424519219}
   - component: {fileID: 424519221}
   - component: {fileID: 424519220}
+  - component: {fileID: 424519222}
   m_Layer: 0
   m_Name: Mist 2(Clone)
   m_TagString: Untagged
@@ -104423,6 +104688,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 424519218}
   m_Mesh: {fileID: -2838557043604309118, guid: fe5fe836fd1aa6341b4e7a45922809c4, type: 3}
+--- !u!65 &424519222
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 424519218}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 45.8075, y: 9.948027, z: 16.14897}
+  m_Center: {x: 0.0001277553, y: 4.9740057, z: -0.000000018529303}
 --- !u!1 &424849746
 GameObject:
   m_ObjectHideFlags: 0
@@ -115722,6 +116008,7 @@ GameObject:
   - component: {fileID: 471871350}
   - component: {fileID: 471871352}
   - component: {fileID: 471871351}
+  - component: {fileID: 471871353}
   m_Layer: 0
   m_Name: Mist 1(Clone)
   m_TagString: Untagged
@@ -115801,6 +116088,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 471871349}
   m_Mesh: {fileID: -455389521632547594, guid: c94a2c1949c26b04480f10d18f01176a, type: 3}
+--- !u!65 &471871353
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 471871349}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 44.16359, y: 7.20184, z: 24.420929}
+  m_Center: {x: -0.000030510872, y: 3.6009195, z: -0.000061035156}
 --- !u!1 &472012919
 GameObject:
   m_ObjectHideFlags: 0
@@ -124552,6 +124860,72 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 510107707}
   m_Mesh: {fileID: 4462692036897443310, guid: 9367980f21e1f524b9ba4ba52a1d3613, type: 3}
+--- !u!1001 &510375633
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 1250843222}
+    m_Modifications:
+    - target: {fileID: 3074116668058527280, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: landmarkType
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 8952467296336816114, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -71.7
+      objectReference: {fileID: 0}
+    - target: {fileID: 8952467296336816114, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 6.79
+      objectReference: {fileID: 0}
+    - target: {fileID: 8952467296336816114, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 26.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 8952467296336816114, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.9321559
+      objectReference: {fileID: 0}
+    - target: {fileID: 8952467296336816114, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8952467296336816114, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0.36205724
+      objectReference: {fileID: 0}
+    - target: {fileID: 8952467296336816114, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8952467296336816114, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8952467296336816114, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8952467296336816114, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9198639263344674948, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+      propertyPath: m_Name
+      value: VillageLandmark
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+--- !u!4 &510375634 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 8952467296336816114, guid: 87aae9d4c5452904a83be52911df7073, type: 3}
+  m_PrefabInstance: {fileID: 510375633}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &510589312
 GameObject:
   m_ObjectHideFlags: 0
@@ -140441,6 +140815,7 @@ GameObject:
   - component: {fileID: 585727054}
   - component: {fileID: 585727056}
   - component: {fileID: 585727055}
+  - component: {fileID: 585727057}
   m_Layer: 0
   m_Name: Mist 3(Clone)
   m_TagString: Untagged
@@ -140520,6 +140895,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 585727053}
   m_Mesh: {fileID: -3067846377082452896, guid: e503bd42a687bcd41894dec0f04159a0, type: 3}
+--- !u!65 &585727057
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 585727053}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 41.954487, y: 10.373488, z: 10.104022}
+  m_Center: {x: 0.000060004193, y: 5.1867366, z: -0.00003243459}
 --- !u!1 &585957481
 GameObject:
   m_ObjectHideFlags: 0
@@ -142465,6 +142861,7 @@ GameObject:
   - component: {fileID: 593368149}
   - component: {fileID: 593368151}
   - component: {fileID: 593368150}
+  - component: {fileID: 593368152}
   m_Layer: 0
   m_Name: Mist 2(Clone)
   m_TagString: Untagged
@@ -142544,6 +142941,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 593368148}
   m_Mesh: {fileID: -2838557043604309118, guid: fe5fe836fd1aa6341b4e7a45922809c4, type: 3}
+--- !u!65 &593368152
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 593368148}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 45.807495, y: 9.948029, z: 16.148968}
+  m_Center: {x: 0.000005647927, y: 4.974006, z: 0.000000037059117}
 --- !u!1 &593510995
 GameObject:
   m_ObjectHideFlags: 0
@@ -151860,6 +152278,7 @@ GameObject:
   - component: {fileID: 638652092}
   - component: {fileID: 638652094}
   - component: {fileID: 638652093}
+  - component: {fileID: 638652095}
   m_Layer: 0
   m_Name: Mist 3(Clone)
   m_TagString: Untagged
@@ -151939,6 +152358,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 638652091}
   m_Mesh: {fileID: -3067846377082452896, guid: e503bd42a687bcd41894dec0f04159a0, type: 3}
+--- !u!65 &638652095
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 638652091}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 41.954502, y: 10.373488, z: 10.104023}
+  m_Center: {x: -0.00000093435233, y: 5.186744, z: 0.00005914713}
 --- !u!1 &639107481
 GameObject:
   m_ObjectHideFlags: 0
@@ -154566,7 +155006,8 @@ PrefabInstance:
       propertyPath: m_LocalPosition.z
       value: 0.571
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 3930580598729276012, guid: 917e46657f4f9b34195f9fb57632cf80, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -161030,142 +161471,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 683035123}
   m_Mesh: {fileID: 3968542145766780954, guid: 31859d7ed4e72094993507751c16583e, type: 3}
---- !u!1 &683603116
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 683603117}
-  - component: {fileID: 683603121}
-  - component: {fileID: 683603120}
-  - component: {fileID: 683603119}
-  - component: {fileID: 683603118}
-  m_Layer: 0
-  m_Name: Outer Terrain
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 2147483647
-  m_IsActive: 1
---- !u!4 &683603117
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 683603116}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.5, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 1446125277}
-  m_Father: {fileID: 1027317036}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!64 &683603118
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 683603116}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: -8536193521158468224, guid: 332a6367a8e4c1f4d9656d274f936f79, type: 3}
---- !u!114 &683603119
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 683603116}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f9bbf906cd3805e40bb04d7e3359b1c5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::AssetSpawner
-  targetMeshFilter: {fileID: 683603121}
-  prefabsToSpawn:
-  - {fileID: 2621835838819092366, guid: 65d4d4586e77f434b9e672471dc85dc4, type: 3}
-  - {fileID: 5021286275575686071, guid: f4f658b3771e41f4c8a6889c2cc11970, type: 3}
-  - {fileID: 4901093039166020578, guid: 5d43d3cd5c727484088058d356e6a699, type: 3}
-  - {fileID: 7096719265263567202, guid: d974731518ee0764b8344eee351ae0b3, type: 3}
-  spawnCount: 2500
-  alignWithNormals: 1
-  spawnOffset: {x: 0, y: -0.1, z: 0}
---- !u!23 &683603120
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 683603116}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
-  m_ForceMeshLod: -1
-  m_MeshLodSelectionBias: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: b8eae8c81ae3db34fb794fe4f4847af0, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_MaskInteraction: 0
-  m_AdditionalVertexStreams: {fileID: 0}
---- !u!33 &683603121
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 683603116}
-  m_Mesh: {fileID: -8536193521158468224, guid: 332a6367a8e4c1f4d9656d274f936f79, type: 3}
 --- !u!1 &683933978
 GameObject:
   m_ObjectHideFlags: 0
@@ -163179,6 +163484,7 @@ GameObject:
   - component: {fileID: 692724788}
   - component: {fileID: 692724790}
   - component: {fileID: 692724789}
+  - component: {fileID: 692724791}
   m_Layer: 0
   m_Name: Mist 1(Clone)
   m_TagString: Untagged
@@ -163258,6 +163564,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 692724787}
   m_Mesh: {fileID: -455389521632547594, guid: c94a2c1949c26b04480f10d18f01176a, type: 3}
+--- !u!65 &692724791
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 692724787}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 44.163593, y: 7.201839, z: 24.420933}
+  m_Center: {x: -0.000053399053, y: 3.6009266, z: -0.00006108882}
 --- !u!1 &693206901
 GameObject:
   m_ObjectHideFlags: 0
@@ -183816,6 +184143,7 @@ GameObject:
   - component: {fileID: 779429552}
   - component: {fileID: 779429554}
   - component: {fileID: 779429553}
+  - component: {fileID: 779429555}
   m_Layer: 0
   m_Name: Mist 3(Clone)
   m_TagString: Untagged
@@ -183895,6 +184223,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 779429551}
   m_Mesh: {fileID: -3067846377082452896, guid: e503bd42a687bcd41894dec0f04159a0, type: 3}
+--- !u!65 &779429555
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 779429551}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 41.95449, y: 10.373488, z: 10.104021}
+  m_Center: {x: 0.000029602548, y: 5.186759, z: 0.000028571585}
 --- !u!1 &779435967
 GameObject:
   m_ObjectHideFlags: 0
@@ -188633,6 +188982,7 @@ GameObject:
   - component: {fileID: 797422518}
   - component: {fileID: 797422520}
   - component: {fileID: 797422519}
+  - component: {fileID: 797422521}
   m_Layer: 0
   m_Name: Mist 2(Clone)
   m_TagString: Untagged
@@ -188712,6 +189062,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 797422517}
   m_Mesh: {fileID: -2838557043604309118, guid: fe5fe836fd1aa6341b4e7a45922809c4, type: 3}
+--- !u!65 &797422521
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 797422517}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 45.80751, y: 9.948028, z: 16.148973}
+  m_Center: {x: 0.00006696103, y: 4.9740205, z: 0.000000018530155}
 --- !u!1 &797720216
 GameObject:
   m_ObjectHideFlags: 0
@@ -205101,6 +205472,7 @@ GameObject:
   - component: {fileID: 859087009}
   - component: {fileID: 859087011}
   - component: {fileID: 859087010}
+  - component: {fileID: 859087012}
   m_Layer: 0
   m_Name: Mist 2(Clone)
   m_TagString: Untagged
@@ -205180,6 +205552,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 859087008}
   m_Mesh: {fileID: -2838557043604309118, guid: fe5fe836fd1aa6341b4e7a45922809c4, type: 3}
+--- !u!65 &859087012
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 859087008}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 45.807503, y: 9.948027, z: 16.148966}
+  m_Center: {x: 0.00006676647, y: 4.974013, z: 0.000000009264651}
 --- !u!1 &859375469
 GameObject:
   m_ObjectHideFlags: 0
@@ -206923,6 +207316,7 @@ GameObject:
   - component: {fileID: 867470305}
   - component: {fileID: 867470307}
   - component: {fileID: 867470306}
+  - component: {fileID: 867470308}
   m_Layer: 0
   m_Name: Mist 3(Clone)
   m_TagString: Untagged
@@ -207002,6 +207396,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 867470304}
   m_Mesh: {fileID: -3067846377082452896, guid: e503bd42a687bcd41894dec0f04159a0, type: 3}
+--- !u!65 &867470308
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 867470304}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 41.954494, y: 10.373488, z: 10.104021}
+  m_Center: {x: 0.000060042836, y: 5.186744, z: -0.000032386284}
 --- !u!1 &867539687
 GameObject:
   m_ObjectHideFlags: 0
@@ -244729,8 +245144,9 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 19998385}
-  - {fileID: 683603117}
-  - {fileID: 2128708870}
+  - {fileID: 1446125277}
+  - {fileID: 2063383653}
+  - {fileID: 2075464470}
   m_Father: {fileID: 2124107411}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1028183310
@@ -248140,6 +248556,7 @@ GameObject:
   - component: {fileID: 1043802571}
   - component: {fileID: 1043802573}
   - component: {fileID: 1043802572}
+  - component: {fileID: 1043802574}
   m_Layer: 0
   m_Name: Mist 3(Clone)
   m_TagString: Untagged
@@ -248219,6 +248636,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1043802570}
   m_Mesh: {fileID: -3067846377082452896, guid: e503bd42a687bcd41894dec0f04159a0, type: 3}
+--- !u!65 &1043802574
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1043802570}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 41.95449, y: 10.373488, z: 10.104023}
+  m_Center: {x: -0.00000091503006, y: 5.186746, z: -0.00003246357}
 --- !u!1 &1044404109
 GameObject:
   m_ObjectHideFlags: 0
@@ -265239,6 +265677,7 @@ GameObject:
   - component: {fileID: 1111105458}
   - component: {fileID: 1111105460}
   - component: {fileID: 1111105459}
+  - component: {fileID: 1111105461}
   m_Layer: 0
   m_Name: Mist 2(Clone)
   m_TagString: Untagged
@@ -265318,6 +265757,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1111105457}
   m_Mesh: {fileID: -2838557043604309118, guid: fe5fe836fd1aa6341b4e7a45922809c4, type: 3}
+--- !u!65 &1111105461
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1111105457}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 45.8075, y: 9.948027, z: 16.148968}
+  m_Center: {x: 0.000005833224, y: 4.9740286, z: -0.00006110928}
 --- !u!1 &1111499283
 GameObject:
   m_ObjectHideFlags: 0
@@ -279435,6 +279895,7 @@ GameObject:
   - component: {fileID: 1173818969}
   - component: {fileID: 1173818971}
   - component: {fileID: 1173818970}
+  - component: {fileID: 1173818972}
   m_Layer: 0
   m_Name: Mist 1(Clone)
   m_TagString: Untagged
@@ -279514,6 +279975,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1173818968}
   m_Mesh: {fileID: -455389521632547594, guid: c94a2c1949c26b04480f10d18f01176a, type: 3}
+--- !u!65 &1173818972
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1173818968}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 44.163605, y: 7.201838, z: 24.420935}
+  m_Center: {x: -0.0000610754, y: 3.6009343, z: -0.000000053657875}
 --- !u!1 &1174078953
 GameObject:
   m_ObjectHideFlags: 0
@@ -281257,6 +281739,7 @@ GameObject:
   - component: {fileID: 1182157859}
   - component: {fileID: 1182157861}
   - component: {fileID: 1182157860}
+  - component: {fileID: 1182157862}
   m_Layer: 0
   m_Name: Mist 2(Clone)
   m_TagString: Untagged
@@ -281336,6 +281819,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1182157858}
   m_Mesh: {fileID: -2838557043604309118, guid: fe5fe836fd1aa6341b4e7a45922809c4, type: 3}
+--- !u!65 &1182157862
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1182157858}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 45.80751, y: 9.948028, z: 16.148972}
+  m_Center: {x: -0.000040026527, y: 4.9740133, z: 0.00006110928}
 --- !u!1 &1183133987
 GameObject:
   m_ObjectHideFlags: 0
@@ -281617,6 +282121,7 @@ GameObject:
   - component: {fileID: 1183733617}
   - component: {fileID: 1183733619}
   - component: {fileID: 1183733618}
+  - component: {fileID: 1183733620}
   m_Layer: 0
   m_Name: Mist 3(Clone)
   m_TagString: Untagged
@@ -281696,6 +282201,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1183733616}
   m_Mesh: {fileID: -3067846377082452896, guid: e503bd42a687bcd41894dec0f04159a0, type: 3}
+--- !u!65 &1183733620
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1183733616}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 41.954494, y: 10.373489, z: 10.104024}
+  m_Center: {x: -0.00000083774154, y: 5.186748, z: -0.00003246357}
 --- !u!1 &1183754482
 GameObject:
   m_ObjectHideFlags: 0
@@ -285575,6 +286101,7 @@ GameObject:
   - component: {fileID: 1196695364}
   - component: {fileID: 1196695366}
   - component: {fileID: 1196695365}
+  - component: {fileID: 1196695367}
   m_Layer: 0
   m_Name: Mist 3(Clone)
   m_TagString: Untagged
@@ -285654,6 +286181,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1196695363}
   m_Mesh: {fileID: -3067846377082452896, guid: e503bd42a687bcd41894dec0f04159a0, type: 3}
+--- !u!65 &1196695367
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1196695363}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 41.95449, y: 10.373488, z: 10.104021}
+  m_Center: {x: 0.000060100803, y: 5.186744, z: -0.000032386284}
 --- !u!1 &1198170120
 GameObject:
   m_ObjectHideFlags: 0
@@ -286835,6 +287383,7 @@ GameObject:
   - component: {fileID: 1200992830}
   - component: {fileID: 1200992832}
   - component: {fileID: 1200992831}
+  - component: {fileID: 1200992833}
   m_Layer: 0
   m_Name: Mist 1(Clone)
   m_TagString: Untagged
@@ -286914,6 +287463,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1200992829}
   m_Mesh: {fileID: -455389521632547594, guid: c94a2c1949c26b04480f10d18f01176a, type: 3}
+--- !u!65 &1200992833
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1200992829}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 44.163605, y: 7.2018385, z: 24.42093}
+  m_Center: {x: -0.00006106198, y: 3.6009266, z: 0.000000026828937}
 --- !u!1 &1201386631
 GameObject:
   m_ObjectHideFlags: 0
@@ -298202,6 +298772,7 @@ Transform:
   - {fileID: 1678248164}
   - {fileID: 247130232}
   - {fileID: 2098806334}
+  - {fileID: 510375634}
   - {fileID: 280722387}
   - {fileID: 491278237}
   - {fileID: 900160454}
@@ -298584,6 +299155,7 @@ GameObject:
   - component: {fileID: 1253241914}
   - component: {fileID: 1253241916}
   - component: {fileID: 1253241915}
+  - component: {fileID: 1253241917}
   m_Layer: 0
   m_Name: Mist 1(Clone)
   m_TagString: Untagged
@@ -298663,6 +299235,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1253241913}
   m_Mesh: {fileID: -455389521632547594, guid: c94a2c1949c26b04480f10d18f01176a, type: 3}
+--- !u!65 &1253241917
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1253241913}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 44.163605, y: 7.2018385, z: 24.420933}
+  m_Center: {x: 0.00006095467, y: 3.6009266, z: 0.000000026828937}
 --- !u!1 &1254195482
 GameObject:
   m_ObjectHideFlags: 0
@@ -312973,6 +313566,7 @@ GameObject:
   - component: {fileID: 1304988985}
   - component: {fileID: 1304988987}
   - component: {fileID: 1304988986}
+  - component: {fileID: 1304988988}
   m_Layer: 0
   m_Name: Mist 3(Clone)
   m_TagString: Untagged
@@ -313052,6 +313646,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1304988984}
   m_Mesh: {fileID: -3067846377082452896, guid: e503bd42a687bcd41894dec0f04159a0, type: 3}
+--- !u!65 &1304988988
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1304988984}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 41.954494, y: 10.373488, z: 10.104022}
+  m_Center: {x: -0.0000009150303, y: 5.186746, z: 0.0000057365373}
 --- !u!1 &1305348129
 GameObject:
   m_ObjectHideFlags: 0
@@ -323164,6 +323779,7 @@ GameObject:
   - component: {fileID: 1352655485}
   - component: {fileID: 1352655487}
   - component: {fileID: 1352655486}
+  - component: {fileID: 1352655488}
   m_Layer: 0
   m_Name: Mist 2(Clone)
   m_TagString: Untagged
@@ -323243,6 +323859,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1352655484}
   m_Mesh: {fileID: -2838557043604309118, guid: fe5fe836fd1aa6341b4e7a45922809c4, type: 3}
+--- !u!65 &1352655488
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1352655484}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 45.8075, y: 9.948027, z: 16.148966}
+  m_Center: {x: 0.000043797216, y: 4.9740167, z: 0.000060998096}
 --- !u!1 &1352678191
 GameObject:
   m_ObjectHideFlags: 0
@@ -331217,6 +331854,7 @@ GameObject:
   - component: {fileID: 1380957071}
   - component: {fileID: 1380957073}
   - component: {fileID: 1380957072}
+  - component: {fileID: 1380957074}
   m_Layer: 0
   m_Name: Mist 1(Clone)
   m_TagString: Untagged
@@ -331296,6 +331934,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1380957070}
   m_Mesh: {fileID: -455389521632547594, guid: c94a2c1949c26b04480f10d18f01176a, type: 3}
+--- !u!65 &1380957074
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1380957070}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 44.163597, y: 7.201839, z: 24.42093}
+  m_Center: {x: -0.000061035156, y: 3.6009214, z: 0.000015267173}
 --- !u!1 &1381639486
 GameObject:
   m_ObjectHideFlags: 0
@@ -340462,6 +341121,7 @@ GameObject:
   - component: {fileID: 1416094973}
   - component: {fileID: 1416094975}
   - component: {fileID: 1416094974}
+  - component: {fileID: 1416094976}
   m_Layer: 0
   m_Name: Mist 1(Clone)
   m_TagString: Untagged
@@ -340541,6 +341201,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1416094972}
   m_Mesh: {fileID: -455389521632547594, guid: c94a2c1949c26b04480f10d18f01176a, type: 3}
+--- !u!65 &1416094976
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1416094972}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 44.163593, y: 7.201839, z: 24.42093}
+  m_Center: {x: 0.000000026828937, y: 3.6009266, z: 0.000000026828937}
 --- !u!1 &1416388215
 GameObject:
   m_ObjectHideFlags: 0
@@ -347989,7 +348670,7 @@ Transform:
   m_GameObject: {fileID: 1446125276}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.5, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -348527,7 +349208,7 @@ Transform:
   - {fileID: 979190304}
   - {fileID: 626906445}
   - {fileID: 1331571293}
-  m_Father: {fileID: 683603117}
+  m_Father: {fileID: 1027317036}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1446206552
 GameObject:
@@ -349170,6 +349851,7 @@ GameObject:
   - component: {fileID: 1449103782}
   - component: {fileID: 1449103784}
   - component: {fileID: 1449103783}
+  - component: {fileID: 1449103785}
   m_Layer: 0
   m_Name: Mist 1(Clone)
   m_TagString: Untagged
@@ -349249,6 +349931,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1449103781}
   m_Mesh: {fileID: -455389521632547594, guid: c94a2c1949c26b04480f10d18f01176a, type: 3}
+--- !u!65 &1449103785
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1449103781}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 44.163605, y: 7.20184, z: 24.420935}
+  m_Center: {x: -0.00006095467, y: 3.600927, z: 0.000000013414469}
 --- !u!1 &1449211042
 GameObject:
   m_ObjectHideFlags: 0
@@ -353173,6 +353876,7 @@ GameObject:
   - component: {fileID: 1465684946}
   - component: {fileID: 1465684948}
   - component: {fileID: 1465684947}
+  - component: {fileID: 1465684949}
   m_Layer: 0
   m_Name: Mist 2(Clone)
   m_TagString: Untagged
@@ -353252,6 +353956,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1465684945}
   m_Mesh: {fileID: -2838557043604309118, guid: fe5fe836fd1aa6341b4e7a45922809c4, type: 3}
+--- !u!65 &1465684949
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1465684945}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 45.8075, y: 9.948026, z: 16.148964}
+  m_Center: {x: 0.00003624194, y: 4.974013, z: -0.000000009264822}
 --- !u!1 &1466121560
 GameObject:
   m_ObjectHideFlags: 0
@@ -368625,6 +369350,7 @@ GameObject:
   - component: {fileID: 1535728455}
   - component: {fileID: 1535728457}
   - component: {fileID: 1535728456}
+  - component: {fileID: 1535728458}
   m_Layer: 0
   m_Name: Mist 1(Clone)
   m_TagString: Untagged
@@ -368704,6 +369430,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1535728454}
   m_Mesh: {fileID: -455389521632547594, guid: c94a2c1949c26b04480f10d18f01176a, type: 3}
+--- !u!65 &1535728458
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1535728454}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 44.16361, y: 7.2018394, z: 24.42094}
+  m_Center: {x: 0, y: 3.6009114, z: 0}
 --- !u!1 &1535740563
 GameObject:
   m_ObjectHideFlags: 0
@@ -376275,6 +377022,7 @@ GameObject:
   - component: {fileID: 1564818079}
   - component: {fileID: 1564818081}
   - component: {fileID: 1564818080}
+  - component: {fileID: 1564818082}
   m_Layer: 0
   m_Name: Mist 1(Clone)
   m_TagString: Untagged
@@ -376354,6 +377102,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1564818078}
   m_Mesh: {fileID: -455389521632547594, guid: c94a2c1949c26b04480f10d18f01176a, type: 3}
+--- !u!65 &1564818082
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1564818078}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 44.163593, y: 7.2018385, z: 24.42093}
+  m_Center: {x: 0.00006106198, y: 3.600919, z: 0.000030517578}
 --- !u!1 &1565182005
 GameObject:
   m_ObjectHideFlags: 0
@@ -406704,6 +407473,7 @@ GameObject:
   - component: {fileID: 1684644345}
   - component: {fileID: 1684644347}
   - component: {fileID: 1684644346}
+  - component: {fileID: 1684644348}
   m_Layer: 0
   m_Name: Mist 1(Clone)
   m_TagString: Untagged
@@ -406783,6 +407553,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1684644344}
   m_Mesh: {fileID: -455389521632547594, guid: c94a2c1949c26b04480f10d18f01176a, type: 3}
+--- !u!65 &1684644348
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1684644344}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 44.163616, y: 7.201839, z: 24.420942}
+  m_Center: {x: 0.000000053657875, y: 3.6009169, z: 0.00012212397}
 --- !u!1 &1685403999
 GameObject:
   m_ObjectHideFlags: 0
@@ -417477,6 +418268,7 @@ GameObject:
   - component: {fileID: 1730275297}
   - component: {fileID: 1730275299}
   - component: {fileID: 1730275298}
+  - component: {fileID: 1730275300}
   m_Layer: 0
   m_Name: Mist 1(Clone)
   m_TagString: Untagged
@@ -417556,6 +418348,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1730275296}
   m_Mesh: {fileID: -455389521632547594, guid: c94a2c1949c26b04480f10d18f01176a, type: 3}
+--- !u!65 &1730275300
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1730275296}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 44.163593, y: 7.2018385, z: 24.420935}
+  m_Center: {x: -0.000000026828937, y: 3.6009264, z: -0.0000609815}
 --- !u!1 &1730734581
 GameObject:
   m_ObjectHideFlags: 0
@@ -429439,6 +430252,7 @@ GameObject:
   - component: {fileID: 1779254464}
   - component: {fileID: 1779254466}
   - component: {fileID: 1779254465}
+  - component: {fileID: 1779254467}
   m_Layer: 0
   m_Name: Mist 1(Clone)
   m_TagString: Untagged
@@ -429518,6 +430332,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1779254463}
   m_Mesh: {fileID: -455389521632547594, guid: c94a2c1949c26b04480f10d18f01176a, type: 3}
+--- !u!65 &1779254467
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1779254463}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 44.163605, y: 7.2018385, z: 24.42094}
+  m_Center: {x: -0.00006108882, y: 3.6009262, z: -0.000030366666}
 --- !u!1 &1779547299
 GameObject:
   m_ObjectHideFlags: 0
@@ -429799,6 +430634,7 @@ GameObject:
   - component: {fileID: 1780609268}
   - component: {fileID: 1780609270}
   - component: {fileID: 1780609269}
+  - component: {fileID: 1780609271}
   m_Layer: 0
   m_Name: Mist 2(Clone)
   m_TagString: Untagged
@@ -429878,6 +430714,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1780609267}
   m_Mesh: {fileID: -2838557043604309118, guid: fe5fe836fd1aa6341b4e7a45922809c4, type: 3}
+--- !u!65 &1780609271
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1780609267}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 45.8075, y: 9.948028, z: 16.148972}
+  m_Center: {x: -0.00011631121, y: 4.9740133, z: 5.1159077e-13}
 --- !u!1 &1781092515
 GameObject:
   m_ObjectHideFlags: 0
@@ -438304,6 +439161,7 @@ GameObject:
   - component: {fileID: 1814240507}
   - component: {fileID: 1814240509}
   - component: {fileID: 1814240508}
+  - component: {fileID: 1814240510}
   m_Layer: 0
   m_Name: Mist 1(Clone)
   m_TagString: Untagged
@@ -438383,6 +439241,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1814240506}
   m_Mesh: {fileID: -455389521632547594, guid: c94a2c1949c26b04480f10d18f01176a, type: 3}
+--- !u!65 &1814240510
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1814240506}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 44.16359, y: 7.2018385, z: 24.420935}
+  m_Center: {x: -0.00003054441, y: 3.6009114, z: -0.00006114247}
 --- !u!1 &1815111969
 GameObject:
   m_ObjectHideFlags: 0
@@ -439294,6 +440173,7 @@ GameObject:
   - component: {fileID: 1820052636}
   - component: {fileID: 1820052638}
   - component: {fileID: 1820052637}
+  - component: {fileID: 1820052639}
   m_Layer: 0
   m_Name: Mist 2(Clone)
   m_TagString: Untagged
@@ -439373,6 +440253,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1820052635}
   m_Mesh: {fileID: -2838557043604309118, guid: fe5fe836fd1aa6341b4e7a45922809c4, type: 3}
+--- !u!65 &1820052639
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1820052635}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 45.80752, y: 9.948027, z: 16.148975}
+  m_Center: {x: -0.000024723728, y: 4.9740167, z: 0.00006106295}
 --- !u!1 &1820393169
 GameObject:
   m_ObjectHideFlags: 0
@@ -446851,6 +447752,7 @@ GameObject:
   - component: {fileID: 1847365256}
   - component: {fileID: 1847365258}
   - component: {fileID: 1847365257}
+  - component: {fileID: 1847365259}
   m_Layer: 0
   m_Name: Mist 2(Clone)
   m_TagString: Untagged
@@ -446930,6 +447832,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1847365255}
   m_Mesh: {fileID: -2838557043604309118, guid: fe5fe836fd1aa6341b4e7a45922809c4, type: 3}
+--- !u!65 &1847365259
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1847365255}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 45.8075, y: 9.948027, z: 16.148966}
+  m_Center: {x: 0.000005722046, y: 4.974017, z: -0.000000009264822}
 --- !u!1 &1848163046
 GameObject:
   m_ObjectHideFlags: 0
@@ -451331,6 +452254,7 @@ GameObject:
   - component: {fileID: 1867543930}
   - component: {fileID: 1867543932}
   - component: {fileID: 1867543931}
+  - component: {fileID: 1867543933}
   m_Layer: 0
   m_Name: Mist 1(Clone)
   m_TagString: Untagged
@@ -451410,6 +452334,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1867543929}
   m_Mesh: {fileID: -455389521632547594, guid: c94a2c1949c26b04480f10d18f01176a, type: 3}
+--- !u!65 &1867543933
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1867543929}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 44.163597, y: 7.201839, z: 24.420933}
+  m_Center: {x: 0.00000006707234, y: 3.600919, z: 0.00012207031}
 --- !u!1 &1868072087
 GameObject:
   m_ObjectHideFlags: 0
@@ -453673,13 +454618,43 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3569950741002596651, guid: 7c1e0b05fd5265b4383a45475390c89f, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1874662290}
   m_SourcePrefab: {fileID: 100100000, guid: 7c1e0b05fd5265b4383a45475390c89f, type: 3}
 --- !u!4 &1874662288 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4233616627237284753, guid: 7c1e0b05fd5265b4383a45475390c89f, type: 3}
   m_PrefabInstance: {fileID: 1874662287}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1874662289 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3569950741002596651, guid: 7c1e0b05fd5265b4383a45475390c89f, type: 3}
+  m_PrefabInstance: {fileID: 1874662287}
+  m_PrefabAsset: {fileID: 0}
+--- !u!64 &1874662290
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1874662289}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 4677789230266233728, guid: 8d9ef77b1c09b4a4eb92e5ae6cafe0e7, type: 3}
 --- !u!1 &1876175844
 GameObject:
   m_ObjectHideFlags: 0
@@ -463946,6 +464921,7 @@ GameObject:
   - component: {fileID: 1923456502}
   - component: {fileID: 1923456504}
   - component: {fileID: 1923456503}
+  - component: {fileID: 1923456505}
   m_Layer: 0
   m_Name: Mist 1(Clone)
   m_TagString: Untagged
@@ -464025,6 +465001,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1923456501}
   m_Mesh: {fileID: -455389521632547594, guid: c94a2c1949c26b04480f10d18f01176a, type: 3}
+--- !u!65 &1923456505
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1923456501}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 44.16359, y: 7.201838, z: 24.420923}
+  m_Center: {x: 0.00006104857, y: 3.6009226, z: 0}
 --- !u!1 &1923573347
 GameObject:
   m_ObjectHideFlags: 0
@@ -465430,6 +466427,7 @@ GameObject:
   - component: {fileID: 1928234338}
   - component: {fileID: 1928234340}
   - component: {fileID: 1928234339}
+  - component: {fileID: 1928234341}
   m_Layer: 0
   m_Name: Mist 2(Clone)
   m_TagString: Untagged
@@ -465509,6 +466507,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1928234337}
   m_Mesh: {fileID: -2838557043604309118, guid: fe5fe836fd1aa6341b4e7a45922809c4, type: 3}
+--- !u!65 &1928234341
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1928234337}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 45.8075, y: 9.948028, z: 16.148966}
+  m_Center: {x: 0.000051513467, y: 4.9740214, z: -0.000061035156}
 --- !u!1 &1928555359
 GameObject:
   m_ObjectHideFlags: 0
@@ -478252,6 +479271,7 @@ GameObject:
   - component: {fileID: 1977043558}
   - component: {fileID: 1977043560}
   - component: {fileID: 1977043559}
+  - component: {fileID: 1977043561}
   m_Layer: 0
   m_Name: Mist 3(Clone)
   m_TagString: Untagged
@@ -478331,6 +479351,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1977043557}
   m_Mesh: {fileID: -3067846377082452896, guid: e503bd42a687bcd41894dec0f04159a0, type: 3}
+--- !u!65 &1977043561
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1977043557}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 41.954506, y: 10.373488, z: 10.104025}
+  m_Center: {x: 0.000060081482, y: 5.1867433, z: -0.000011318499}
 --- !u!1 &1977519862
 GameObject:
   m_ObjectHideFlags: 0
@@ -494487,6 +495528,7 @@ GameObject:
   - component: {fileID: 2036981211}
   - component: {fileID: 2036981213}
   - component: {fileID: 2036981212}
+  - component: {fileID: 2036981214}
   m_Layer: 0
   m_Name: Mist 3(Clone)
   m_TagString: Untagged
@@ -494566,6 +495608,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2036981210}
   m_Mesh: {fileID: -3067846377082452896, guid: e503bd42a687bcd41894dec0f04159a0, type: 3}
+--- !u!65 &2036981214
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2036981210}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 41.954494, y: 10.373488, z: 10.104021}
+  m_Center: {x: -0.00000087638614, y: 5.186752, z: -0.000032386284}
 --- !u!1 &2037368023
 GameObject:
   m_ObjectHideFlags: 0
@@ -497097,6 +498160,7 @@ GameObject:
   - component: {fileID: 2048669456}
   - component: {fileID: 2048669458}
   - component: {fileID: 2048669457}
+  - component: {fileID: 2048669459}
   m_Layer: 0
   m_Name: Mist 2(Clone)
   m_TagString: Untagged
@@ -497176,6 +498240,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2048669455}
   m_Mesh: {fileID: -2838557043604309118, guid: fe5fe836fd1aa6341b4e7a45922809c4, type: 3}
+--- !u!65 &2048669459
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2048669455}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 45.8075, y: 9.948026, z: 16.148966}
+  m_Center: {x: 0.000005759105, y: 4.9740205, z: -0.000091571266}
 --- !u!1 &2049567742
 GameObject:
   m_ObjectHideFlags: 0
@@ -501271,14 +502356,14 @@ Transform:
   m_GameObject: {fileID: 2063383652}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: -6.8204346, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2064789365}
   - {fileID: 1855877505}
   - {fileID: 2025743453}
-  m_Father: {fileID: 2128708870}
+  m_Father: {fileID: 1027317036}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2063868372
 GameObject:
@@ -508536,13 +509621,13 @@ Transform:
   m_GameObject: {fileID: 2075464469}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: -6.8204346, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1219881490}
   - {fileID: 170380559}
-  m_Father: {fileID: 2128708870}
+  m_Father: {fileID: 1027317036}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &2075464471
 MonoBehaviour:
@@ -514603,6 +515688,7 @@ GameObject:
   - component: {fileID: 2098418652}
   - component: {fileID: 2098418654}
   - component: {fileID: 2098418653}
+  - component: {fileID: 2098418655}
   m_Layer: 0
   m_Name: Mist 1(Clone)
   m_TagString: Untagged
@@ -514682,6 +515768,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2098418651}
   m_Mesh: {fileID: -455389521632547594, guid: c94a2c1949c26b04480f10d18f01176a, type: 3}
+--- !u!65 &2098418655
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2098418651}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 44.16359, y: 7.2018385, z: 24.420933}
+  m_Center: {x: -0.000000026828937, y: 3.600919, z: -0.00006108882}
 --- !u!1 &2098678935
 GameObject:
   m_ObjectHideFlags: 0
@@ -518943,6 +520050,7 @@ GameObject:
   - component: {fileID: 2117469925}
   - component: {fileID: 2117469927}
   - component: {fileID: 2117469926}
+  - component: {fileID: 2117469928}
   m_Layer: 0
   m_Name: Mist 3(Clone)
   m_TagString: Untagged
@@ -519022,6 +520130,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2117469924}
   m_Mesh: {fileID: -3067846377082452896, guid: e503bd42a687bcd41894dec0f04159a0, type: 3}
+--- !u!65 &2117469928
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2117469924}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 41.954506, y: 10.373488, z: 10.104025}
+  m_Center: {x: -0.0000009150302, y: 5.1867423, z: -0.0000075418416}
 --- !u!1 &2117611514
 GameObject:
   m_ObjectHideFlags: 0
@@ -519797,6 +520926,7 @@ GameObject:
   - component: {fileID: 2119674828}
   - component: {fileID: 2119674830}
   - component: {fileID: 2119674829}
+  - component: {fileID: 2119674831}
   m_Layer: 0
   m_Name: Mist 1(Clone)
   m_TagString: Untagged
@@ -519876,6 +521006,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2119674827}
   m_Mesh: {fileID: -455389521632547594, guid: c94a2c1949c26b04480f10d18f01176a, type: 3}
+--- !u!65 &2119674831
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2119674827}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 44.163593, y: 7.201838, z: 24.420935}
+  m_Center: {x: 0.00006106198, y: 3.6009226, z: 0.000015185009}
 --- !u!1 &2119696347
 GameObject:
   m_ObjectHideFlags: 0
@@ -521002,7 +522153,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2124107410}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
   m_LocalPosition: {x: 0, y: 0, z: -46.02553}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -521011,7 +522162,7 @@ Transform:
   - {fileID: 1027317036}
   - {fileID: 1250843222}
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
 --- !u!1 &2124225244
 GameObject:
   m_ObjectHideFlags: 0
@@ -522586,142 +523737,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2128603993}
   m_Mesh: {fileID: -9148515125748023482, guid: acb656c57e0784845be45567ca7275ac, type: 3}
---- !u!1 &2128708869
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2128708870}
-  - component: {fileID: 2128708874}
-  - component: {fileID: 2128708873}
-  - component: {fileID: 2128708872}
-  - component: {fileID: 2128708871}
-  m_Layer: 0
-  m_Name: Inner terrain
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 2147483647
-  m_IsActive: 1
---- !u!4 &2128708870
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2128708869}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0, y: 6.8204346, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 2063383653}
-  - {fileID: 2075464470}
-  m_Father: {fileID: 1027317036}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!64 &2128708871
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2128708869}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: -7095870524988753167, guid: 332a6367a8e4c1f4d9656d274f936f79, type: 3}
---- !u!114 &2128708872
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2128708869}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f9bbf906cd3805e40bb04d7e3359b1c5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::AssetSpawner
-  targetMeshFilter: {fileID: 2128708874}
-  prefabsToSpawn:
-  - {fileID: 4103978385865792710, guid: 5140d265c062f044bb5fd74c241339af, type: 3}
-  - {fileID: 4456149746751088082, guid: c82897aadea043d469ccfaa8e99f0cd0, type: 3}
-  - {fileID: 953158789304906795, guid: 63b16beb5a5c8eb4786d4757540ba765, type: 3}
-  spawnCount: 2000
-  alignWithNormals: 1
-  spawnOffset: {x: 0, y: -0.15, z: 0}
---- !u!23 &2128708873
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2128708869}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
-  m_ForceMeshLod: -1
-  m_MeshLodSelectionBias: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: ed006d0fc0d20434fb55d2a34a71822e, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_MaskInteraction: 0
-  m_AdditionalVertexStreams: {fileID: 0}
---- !u!33 &2128708874
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2128708869}
-  m_Mesh: {fileID: -7095870524988753167, guid: 332a6367a8e4c1f4d9656d274f936f79, type: 3}
 --- !u!1 &2129987992
 GameObject:
   m_ObjectHideFlags: 0
@@ -524803,6 +525818,7 @@ GameObject:
   - component: {fileID: 2138674791}
   - component: {fileID: 2138674793}
   - component: {fileID: 2138674792}
+  - component: {fileID: 2138674794}
   m_Layer: 0
   m_Name: Mist 2(Clone)
   m_TagString: Untagged
@@ -524882,6 +525898,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2138674790}
   m_Mesh: {fileID: -2838557043604309118, guid: fe5fe836fd1aa6341b4e7a45922809c4, type: 3}
+--- !u!65 &2138674794
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2138674790}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 45.80751, y: 9.948027, z: 16.148972}
+  m_Center: {x: 0.00012790354, y: 4.974028, z: -0.0000152032}
 --- !u!1 &2138786966
 GameObject:
   m_ObjectHideFlags: 0

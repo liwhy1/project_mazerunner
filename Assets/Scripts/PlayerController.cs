@@ -138,7 +138,7 @@ public class PlayerController : NetworkBehaviour
         {
             GameManager.Instance.OnLandmarkEntered(other.gameObject);
         }
-        else if (FindObjectsByType<ChainliftController>().Any(c => c.chainliftObject == other.gameObject))
+        else if (other.name == "ChainLift")
         {
             currentPlatform = other.transform;
             lastPlatformPosition = currentPlatform.position;
