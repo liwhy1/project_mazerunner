@@ -272,7 +272,7 @@ public class UIManager : NetworkBehaviour
     public void OnUpdateLandmarkText()
     {
         // setup display text
-        string targetText = GetLocalUIString("MENU_TRAVEL_COST_SUBSTRING") + " <b>" + GameManager.Instance.currentTravelCost.Value + "</b>\n";
+        string targetText = GetLocalUIString("MENU_TRAVEL_COST_SUBSTRING") + " <b>" + GameManager.Instance.currentTravelCost.Value + " " + GetLocalUIString("MISC_HOURS_SUBSTRING") + "</b>\n";
         foreach (var landmark in GameManager.Instance.visitedLandmarks)
         {
             targetText += (GameManager.Instance.visitedLandmarks.IndexOf(landmark) == 0 ? "<b>" : " --> <b>") + GetLocalLandmarkString("LANDMARK_" + landmark.GetComponent<LandmarkObject>().landmarkType) + "</b>";

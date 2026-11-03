@@ -43,7 +43,7 @@ public class UIDialog : MonoBehaviour
         dialogTitle.GetComponent<TMP_Text>().text = dialogEntry.title;
         dialogText.GetComponent<TMP_Text>().text = dialogEntry.text;
         dialogSprite.SetActive(!string.IsNullOrEmpty(dialogEntry.imageId));
-        dialogSprite.GetComponent<Image>().sprite = dialogSprites.FirstOrDefault(s => s.name.Contains(dialogEntry.imageId));
+        if (dialogSprite.activeSelf) dialogSprite.GetComponent<Image>().sprite = dialogSprites.FirstOrDefault(s => s.name.Contains(dialogEntry.imageId));
         mainButton.SetActive(!string.IsNullOrEmpty(dialogEntry.button));
         mainButton.transform.Find("Text").GetComponent<TMP_Text>().text = dialogEntry.button;
         closeButton.transform.Find("Text").GetComponent<TMP_Text>().text = UIManager.Instance.GetLocalDialogString("DIALOG_OPTION_CLOSE");
