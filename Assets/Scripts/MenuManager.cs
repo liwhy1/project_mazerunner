@@ -93,7 +93,6 @@ public class MenuManager : NetworkBehaviour
         hostPlayerNameInput.text = "";
         joinPlayerNameInput.text = "";
         joinCodeInput.text = "";
-        OnPlayerModeSelectorChanged(playerModeSelector.currentSelection);
         UIManager.Instance.pauseIcon.gameObject.SetActive(GameManager.Instance.isLobbyStarted.Value);
     }
 
@@ -244,6 +243,7 @@ public class MenuManager : NetworkBehaviour
     {
         ResetUIState();
         hostObject.SetActive(true);
+        OnPlayerModeSelectorChanged(playerModeSelector.currentSelection);
         UIManager.Instance.eventSystem.SetSelectedGameObject(hostPlayerNameInput.gameObject);
     }
 
