@@ -1,13 +1,25 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Localization.Settings;
 using UnityEngine.SceneManagement;
 
 public class LandingManager : MonoBehaviour
 {
-    [SerializeField] private GameObject LoadIcon;
-    void Start()
+    [SerializeField] private GameObject loadIcon;
+
+    private async void Start()
     {
-        LoadIcon.SetActive(false);
+        loadIcon.SetActive(true);
+
+        // wait for settings initialization
+        await LocalizationSettings.InitializationOperation.Task;
+
+        // preload localization tables
+        await LocalizationSettings.StringDatabase.GetTableAsync("UI_Strings").Task;
+        await LocalizationSettings.AssetDatabase.GetTableAsync("Dialog_Strings").Task;
+        await LocalizationSettings.AssetDatabase.GetTableAsync("Landmark_Strings").Task;
+
+        // load scene
         LoadScene(1);
     }
 
@@ -17,7 +29,7 @@ public class LandingManager : MonoBehaviour
     {
         Time.timeScale = 1f;
         yield return new WaitForSeconds(2f);
-        LoadIcon.SetActive(true);
+        loadIcon.SetActive(true);
 
         AsyncOperation ao = SceneManager.LoadSceneAsync(sceneIndex);
         ao.allowSceneActivation = false;

@@ -200,14 +200,14 @@ public class MenuManager : NetworkBehaviour
 
     private void OnPlayerModeSelectorChanged(string newValue)
     {
-        hostPlayerNameInput.gameObject.SetActive(newValue == "Player");
+        hostPlayerNameInput.gameObject.SetActive(newValue == UIManager.Instance.GetLocalUIString("MENU_PLAYER_SUBTITLE"));
         UIManager.Instance.eventSystem.SetSelectedGameObject(hostPlayerNameInput.gameObject);
     }
 
     private void OnStartHost()
     {
         startHostButton.GetComponent<UIElement>().OnElementDisable();
-        GameManager.Instance.OnStartHost(playerModeSelector.currentSelection != "Player");
+        GameManager.Instance.OnStartHost(playerModeSelector.currentSelection != UIManager.Instance.GetLocalUIString("MENU_PLAYER_SUBTITLE"));
     }
 
     private void OnStartClient()
