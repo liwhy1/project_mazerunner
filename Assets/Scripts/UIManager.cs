@@ -27,6 +27,7 @@ public class UIManager : NetworkBehaviour
 
     [Header("Settings Data")]
     [SerializeField] private GameObject settingsObject;
+    [SerializeField] private UIHorizontalSelector languageSelector;
     [SerializeField] private Slider uiVolumeSlider;
     [SerializeField] private Slider environmentVolumeSlider;
     [SerializeField] private GameObject settingsBackButton;
@@ -73,8 +74,30 @@ public class UIManager : NetworkBehaviour
         // setup event triggers
         SetupEventTriggers();
 
+        // subscribe to language change events
+        languageSelector.onValueChanged += OnLanguageChanged;
+
+        // load languages
+        LoadLanguages();
+
         // setup menumanager
         MenuManager.Instance.OnSetup();
+    }
+
+    private void LoadLanguages()
+    {
+        var availableLocales = LocalizationSettings.AvailableLocales.Locales.Select(locale => locale.Identifier.Code).ToList();
+        languageSelector.selectorItems = availableLocales;
+        languageSelector.OnUpdateSelection(0);
+    }
+
+    private void OnLanguageChanged()
+    {
+        var targetLocale = LocalizationSettings.AvailableLocales.GetLocale(languageSelector.currentSelection);
+        if (targetLocale != null)
+        {
+            LocalizationSettings.SelectedLocale = targetLocale;
+        }
     }
 
     private void SetupEventTriggers()
