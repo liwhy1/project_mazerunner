@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
@@ -58,8 +59,8 @@ public class UIDialog : MonoBehaviour
     private void SetupTriggers(GameObject closeButton, GameObject mainButton, string targetAction, bool forceAction)
     {
         // main button
-        UIManager.Instance.AddEventTrigger(mainButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, DialogActionHandler, targetAction);
-        UIManager.Instance.AddEventTrigger(mainButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, DialogActionHandler, targetAction);
+        UIManager.Instance.AddEventTrigger(mainButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, () => StartCoroutine(DialogActionHandler(targetAction)));
+        UIManager.Instance.AddEventTrigger(mainButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, () => StartCoroutine(DialogActionHandler(targetAction)));
 
         // close button
         UIManager.Instance.AddEventTrigger(closeButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnCloseDialog);
@@ -68,13 +69,15 @@ public class UIDialog : MonoBehaviour
         // conditionally assign forced action to close button
         if (forceAction)
         {
-            UIManager.Instance.AddEventTrigger(closeButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, DialogActionHandler, targetAction);
-            UIManager.Instance.AddEventTrigger(closeButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, DialogActionHandler, targetAction);
+            UIManager.Instance.AddEventTrigger(closeButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, () => StartCoroutine(DialogActionHandler(targetAction)));
+            UIManager.Instance.AddEventTrigger(closeButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, () => StartCoroutine(DialogActionHandler(targetAction)));
         }
     }
 
-    private void DialogActionHandler(string targetAction)
+    private IEnumerator DialogActionHandler(string targetAction)
     {
+        OnCloseDialog();
+        yield return new WaitForSeconds(.33f);
         switch (targetAction)
         {
             case "mapclear":
@@ -92,14 +95,28 @@ public class UIDialog : MonoBehaviour
             case "selfdisconnect":
                 GameManager.Instance.OnDisconnectClient();
                 break;
-            case "maptutorial":
-                InventoryManager.Instance.SetMapTutorialState(1);
-                break;
             case "sessionconnectfail":
                 MenuManager.Instance.OnSessionConnectFailed();
                 break;
+            case "maptutorial":
+                OnOpenDialog(DialogId.MapTutorial);
+                break;
+            case "maptutorial1":
+                OnOpenDialog(DialogId.MapTutorial1);
+                break;
+            case "maptutorial2":
+                OnOpenDialog(DialogId.MapTutorial2);
+                break;
+            case "maptutorial3":
+                OnOpenDialog(DialogId.MapTutorial3);
+                break;
+            case "maptutorial4":
+                OnOpenDialog(DialogId.MapTutorial4);
+                break;
+            case "maptutorial5":
+                OnOpenDialog(DialogId.MapTutorial5);
+                break;
         }
-        OnCloseDialog();
     }
 
     public void OnCloseDialog()

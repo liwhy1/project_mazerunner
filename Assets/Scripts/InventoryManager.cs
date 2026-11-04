@@ -298,15 +298,4 @@ public class InventoryManager : MonoBehaviour
         if (targetState) mapIndividualViewButton.GetComponent<UIElement>().OnElementEnable();
         else mapIndividualViewButton.GetComponent<UIElement>().OnElementDisable();
     }
-
-    public void SetMapTutorialState(int targetState)
-    {
-        /*
-        highlightImage.SetActive(true);
-        highlightImage.GetComponent<RectTransform>().sizeDelta = journalObject.GetComponent<RectTransform>().sizeDelta;
-        highlightImage.GetComponent<RectTransform>().position = journalObject.GetComponent<RectTransform>().position;
-        highlightImage.GetComponent<RectTransform>().sizeDelta = MapManager.Instance.mapBackground.GetComponent<RectTransform>().sizeDelta;
-        highlightImage.GetComponent<RectTransform>().position = MapManager.Instance.mapBackground.GetComponent<RectTransform>().position;
-        */
-    }
 }
