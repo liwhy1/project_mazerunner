@@ -133,6 +133,8 @@ public class PlayerController : NetworkBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
+        if (!IsOwner) return;
+
         if (other.name.Contains("River")) SetPlayerPosition(lastSafePosition);
         else if (other.GetComponent<LandmarkObject>() && GameManager.Instance.FetchPersistentPlayerId() == 0)
         {
@@ -148,6 +150,8 @@ public class PlayerController : NetworkBehaviour
 
     private void OnTriggerExit(Collider other)
     {
+        if (!IsOwner) return;
+
         if (other.GetComponent<LandmarkObject>() && GameManager.Instance.FetchPersistentPlayerId() == 0)
         {
             GameManager.Instance.OnLandmarkExited(other.gameObject);
