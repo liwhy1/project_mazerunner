@@ -9,6 +9,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 
+public enum GameType {Master, Player};
 public class GameManager : NetworkBehaviour
 {
     public static GameManager Instance;
@@ -17,6 +18,7 @@ public class GameManager : NetworkBehaviour
     public bool isMaster;
 
     [Header("Network vars")]
+    public NetworkVariable<GameType> gameType = new NetworkVariable<GameType>(GameType.Player, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     public NetworkVariable<FixedString64Bytes> activeStory = new NetworkVariable<FixedString64Bytes>("Prototype3", NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     public NetworkVariable<FixedString64Bytes> joinCode = new NetworkVariable<FixedString64Bytes>("######", NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     public NetworkVariable<bool> isLobbyStarted = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
@@ -392,6 +394,8 @@ public class GameManager : NetworkBehaviour
     public async void OnStartHost(bool masterStart)
     {
         isMaster = masterStart;
+        gameType.Value = masterStart ? GameType.Master : GameType.Player;
+        int targetPlayerCount = masterStart ? 4 : 3;
         if (string.IsNullOrEmpty(MenuManager.Instance.hostPlayerNameInput.text) && !isMaster) 
         {
             UIDialog.Instance.OnOpenDialog(DialogId.InvalidPlayerName);
@@ -399,7 +403,7 @@ public class GameManager : NetworkBehaviour
         }
 
         UIManager.Instance.loadingIcon.SetActive(true);
-        string relayCode = await RelayManager.Instance.StartHost(4);
+        string relayCode = await RelayManager.Instance.StartHost(targetPlayerCount);
 
         if (!string.IsNullOrEmpty(relayCode))
         {

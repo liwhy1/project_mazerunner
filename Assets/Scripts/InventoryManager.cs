@@ -131,7 +131,11 @@ public class InventoryManager : MonoBehaviour
         int currentIndex = journalPages.IndexOf(journalPages.FirstOrDefault(p => p.text == textComponent.text));
         journalPageNumber.text = "Page " + (currentIndex + 1);
         OnJournalEnable();
-        OnJournalDisablePaging();
+        // reserver manual paging to master mode
+        if (GameManager.Instance.gameType.Value == GameType.Master)
+        {
+            OnJournalDisablePaging();
+        }
         textComponent.textComponent.ForceMeshUpdate();
     }
 
