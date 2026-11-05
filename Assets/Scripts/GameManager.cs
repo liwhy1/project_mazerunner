@@ -21,6 +21,7 @@ public class GameManager : NetworkBehaviour
     public NetworkVariable<FixedString64Bytes> joinCode = new NetworkVariable<FixedString64Bytes>("######", NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     public NetworkVariable<bool> isLobbyStarted = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     public NetworkVariable<int> currentTravelCost = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    public NetworkVariable<bool> isChainliftMoving = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
     [Header("Reference data")]
     [SerializeField] private GameObject mainCamera;
@@ -584,10 +585,16 @@ public class GameManager : NetworkBehaviour
 
     GameObject chainLift;
 
-    [ClientRpc]
-    public void SyncLiftPositionClientRpc(Vector3 targetPosition)
+    [Rpc(SendTo.Everyone, InvokePermission = RpcInvokePermission.Everyone)]
+    public void SyncLiftPositionRpc(Vector3 targetPosition)
     {
-        if (!chainLift) chainLift = FindAnyObjectByType<ChainliftController>().chainliftObject;
+        if (!chainLift) chainLift = FindAnyObjectByType<ChainliftController>()?.chainliftObject;
         else chainLift.transform.localPosition = targetPosition;
+    }
+
+    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+    public void SetChainliftStateServerRpc(bool targetState)
+    {
+        isChainliftMoving.Value = targetState;
     }
 }
