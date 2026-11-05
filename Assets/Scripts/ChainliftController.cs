@@ -1,5 +1,4 @@
 using System.Collections;
-using Unity.Netcode;
 using UnityEngine;
 
 public class ChainliftController : MonoBehaviour
@@ -26,15 +25,9 @@ public class ChainliftController : MonoBehaviour
         {
             time += Time.deltaTime;
             Vector3 newPosition = Vector3.Lerp(startPosition, targetPosition, time / movementSpeed);
-            SyncLiftPositionClientRpc(newPosition);
+            GameManager.Instance.SyncLiftPositionClientRpc(newPosition);
             yield return new WaitForEndOfFrame();
         }
         liftMoveRoutine = null;
-    }
-
-    [ClientRpc]
-    public void SyncLiftPositionClientRpc(Vector3 targetPosition)
-    {
-        chainliftObject.transform.localPosition = targetPosition;
     }
 }

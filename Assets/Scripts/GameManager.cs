@@ -581,4 +581,13 @@ public class GameManager : NetworkBehaviour
     {
         return FindObjectsByType<PlayerData>(FindObjectsInactive.Include).FirstOrDefault(p => p.OwnerClientId == playerId);
     }
+
+    GameObject chainLift;
+
+    [ClientRpc]
+    public void SyncLiftPositionClientRpc(Vector3 targetPosition)
+    {
+        if (!chainLift) chainLift = FindAnyObjectByType<ChainliftController>().chainliftObject;
+        else chainLift.transform.localPosition = targetPosition;
+    }
 }
