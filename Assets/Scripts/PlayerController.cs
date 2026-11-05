@@ -135,6 +135,8 @@ public class PlayerController : NetworkBehaviour
     {
         if (!IsOwner) return;
 
+        // hardcoded as usual
+        // TODO: Make a class for these pls :)
         if (other.name.Contains("River")) SetPlayerPosition(lastSafePosition);
         else if (other.GetComponent<LandmarkObject>() && GameManager.Instance.FetchPersistentPlayerId() == 0)
         {
@@ -145,6 +147,7 @@ public class PlayerController : NetworkBehaviour
             currentPlatform = other.transform;
             lastPlatformPosition = currentPlatform.position;
         }
+        if (other.name.Contains("Purple")) GameManager.Instance.RespawnPlayer(); 
         if (other.name.Contains("Mist")) isInMist = true;
     }
 
