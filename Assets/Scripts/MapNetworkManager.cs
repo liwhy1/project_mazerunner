@@ -44,7 +44,7 @@ public class MapNetworkManager : NetworkBehaviour
                 if (GameManager.Instance.isMaster) MenuManager.Instance.OnMasterSharedMapEnabled();
                 break;
             case MapState.Explore:
-                if (oldValue != MapState.Null && !GameManager.Instance.isMaster) GameManager.Instance.OnExploreGameState();
+                if (oldValue != MapState.Null && !GameManager.Instance.isMaster) StartCoroutine(GameManager.Instance.OnExploreGameState());
                 UIManager.Instance.MirrorSharedmaptoMinimap();
                 if (!GameManager.Instance.isMaster && AudioManager.Instance.environmentAudioSource) AudioManager.Instance.OnGameStarted();
                 break;

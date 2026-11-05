@@ -16,6 +16,7 @@ public enum DialogId
     MapClear,
     PlayerTutorial,
     TreasureReached,
+    TreasureNotReached,
     EditorOpen,
     MapTutorial,
     MapTutorial1,
@@ -42,7 +43,7 @@ public class DialogDatabase : MonoBehaviour
     public static DialogDatabase Instance;
     private List<DialogEntry> dialogs;
 
-    private void Awake()
+    private void Start()
     {
         LocalizationSettings.SelectedLocaleChanged += Setup;
         Setup(null);
@@ -61,7 +62,8 @@ public class DialogDatabase : MonoBehaviour
             new DialogEntry() { id = DialogId.MapClear,             title = UIManager.Instance.GetLocalDialogString("DIALOG_TITLE_NOTICE"),     text = UIManager.Instance.GetLocalDialogString("DIALOG_MAP_CLEAR"),                                                                                                                                           button = UIManager.Instance.GetLocalDialogString("DIALOG_OPTION_YES"),          action = "mapclear",                       forceAction = false},
             new DialogEntry() { id = DialogId.SharedMapClear,       title = UIManager.Instance.GetLocalDialogString("DIALOG_TITLE_NOTICE"),     text = UIManager.Instance.GetLocalDialogString("DIALOG_MAP_CLEAR"),                                                                                                                                           button = UIManager.Instance.GetLocalDialogString("DIALOG_OPTION_YES"),          action = "sharedmapclear",                 forceAction = false},
             new DialogEntry() { id = DialogId.PlayerTutorial,       title = UIManager.Instance.GetLocalDialogString("DIALOG_TITLE_TUTORIAL"),   text = UIManager.Instance.GetLocalDialogString("DIALOG_TUTORIAL_MOVEMENT"),                                                                                                                                   button = "",                                                                    action = "",                               forceAction = false,                imageId = "TutorialPlayer"},
-            new DialogEntry() { id = DialogId.TreasureReached,      title = UIManager.Instance.GetLocalDialogString("DIALOG_TITLE_END"),        text = UIManager.Instance.GetLocalDialogString("DIALOG_TREASURE_REACH") + " " + GameManager.Instance.currentTravelCost.Value + " " + UIManager.Instance.GetLocalUIString("MISC_HOURS_SUBSTRING"),             button = "",                                                                    action = "",                               forceAction = false},
+            new DialogEntry() { id = DialogId.TreasureReached,      title = UIManager.Instance.GetLocalDialogString("DIALOG_TITLE_END"),        text = UIManager.Instance.GetLocalDialogString("DIALOG_TREASURE_REACH"),                                                                                                                                      button = "",                                                                    action = "",                               forceAction = false},
+            new DialogEntry() { id = DialogId.TreasureNotReached,   title = UIManager.Instance.GetLocalDialogString("DIALOG_TITLE_END"),        text = UIManager.Instance.GetLocalDialogString("DIALOG_TREASURE_NOTREACH"),                                                                                                                                   button = "",                                                                    action = "",                               forceAction = false},
             new DialogEntry() { id = DialogId.EditorOpen,           title = UIManager.Instance.GetLocalDialogString("DIALOG_TITLE_NOTICE"),     text = UIManager.Instance.GetLocalDialogString("DIALOG_OPEN_EDITOR"),                                                                                                                                         button = UIManager.Instance.GetLocalDialogString("DIALOG_OPTION_YES"),          action = "openeditor",                     forceAction = false},
             new DialogEntry() { id = DialogId.MapTutorial,          title = UIManager.Instance.GetLocalDialogString("DIALOG_TITLE_TUTORIAL"),   text = UIManager.Instance.GetLocalDialogString("DIALOG_TUTORIAL_MAP"),                                                                                                                                        button = UIManager.Instance.GetLocalDialogString("DIALOG_OPTION_YES"),          action = "maptutorial1",                   forceAction = false},
             new DialogEntry() { id = DialogId.MapTutorial1,         title = UIManager.Instance.GetLocalDialogString("DIALOG_TITLE_TUTORIAL"),   text = UIManager.Instance.GetLocalDialogString("DIALOG_TUTORIAL_MAP_1"),                                                                                                                                      button = UIManager.Instance.GetLocalDialogString("DIALOG_OPTION_CONTINUE"),     action = "maptutorial2",                   forceAction = false,                imageId = "BookIcon"},

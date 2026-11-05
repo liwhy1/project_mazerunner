@@ -251,7 +251,7 @@ public class GameManager : NetworkBehaviour
             // start using the player's camera
             mainCamera.SetActive(false);
 
-            if (MapNetworkManager.Instance.mapState.Value == MapState.Explore) OnExploreGameState();
+            if (MapNetworkManager.Instance.mapState.Value == MapState.Explore) StartCoroutine(OnExploreGameState());
 
             // update player renderstates
             UpdatePlayerRenderStateRpc();
@@ -262,25 +262,29 @@ public class GameManager : NetworkBehaviour
         Debug.Log("GameManager: Map loaded: " + loadedScene.name);
     }
 
-    public void OnExploreGameState()
+    public IEnumerator OnExploreGameState()
     {
-        // start environment audio
-        if (MapNetworkManager.Instance.mapState.Value == MapState.Explore || MapNetworkManager.Instance.mapState.Value == MapState.Individual) AudioManager.Instance.OnGameStarted();
+        UIManager.Instance.loadingIcon.SetActive(true);
 
         // enable terrain renderers
         foreach (Transform child in terrainObject.transform)
         {
             child.GetComponent<Renderer>().enabled = true;
+            yield return new WaitForFixedUpdate();
         }
         riverObject.GetComponent<Renderer>().enabled = true;
         terrainEdgeObject.GetComponent<Renderer>().enabled = true;
-        foreach (Transform child in AudioManager.Instance.environmentAudioSource.transform.parent.parent) child.gameObject.SetActive(true);
-
-        // build navmesh
-        navMeshObject.GetComponent<NavMeshSurface>().BuildNavMesh();
+        foreach (Transform child in AudioManager.Instance.environmentAudioSource.transform.parent.parent) 
+        {
+            child.gameObject.SetActive(true);
+            yield return new WaitForFixedUpdate();
+        }
 
         // move player to map
         RespawnPlayer();
+
+        // build navmesh
+        navMeshObject.GetComponent<NavMeshSurface>().BuildNavMesh();
 
         // update player renderstates
         UpdatePlayerRenderStateRpc();
@@ -288,8 +292,13 @@ public class GameManager : NetworkBehaviour
         // reset player camera
         PlayerController.Instance.playerCamera.GetComponent<Camera>().farClipPlane = 100f;
 
+        // start environment audio
+        if (MapNetworkManager.Instance.mapState.Value == MapState.Explore || MapNetworkManager.Instance.mapState.Value == MapState.Individual) AudioManager.Instance.OnGameStarted();
+
         // close inventory
         if (InventoryManager.Instance.isLocked) InventoryManager.Instance.OnToggleInventoryLock();
+
+        UIManager.Instance.loadingIcon.SetActive(false);
     }
 
     public int GetSceneBuildIndex(string sceneName)

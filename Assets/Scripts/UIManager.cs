@@ -78,7 +78,7 @@ public class UIManager : NetworkBehaviour
         languageSelector.onValueChanged += OnLanguageChanged;
 
         // load languages
-        LoadLanguages();
+        StartCoroutine(DelayLocalLoader());
 
         // setup menumanager
         MenuManager.Instance.OnSetup();
@@ -86,9 +86,19 @@ public class UIManager : NetworkBehaviour
 
     private void LoadLanguages()
     {
-        var availableLocales = LocalizationSettings.AvailableLocales.Locales.Select(locale => locale.Identifier.Code).ToList();
-        languageSelector.selectorItems = availableLocales;
-        languageSelector.OnUpdateSelection(0);
+        try
+        {
+            var availableLocales = LocalizationSettings.AvailableLocales.Locales.Select(locale => locale.Identifier.Code).ToList();
+            languageSelector.selectorItems = availableLocales;
+            languageSelector.OnUpdateSelection(0);
+        }
+        catch { StartCoroutine(DelayLocalLoader()); }
+    }
+
+    private IEnumerator DelayLocalLoader()
+    {
+        yield return new WaitForSeconds(1f);
+        LoadLanguages();
     }
 
     private void OnLanguageChanged()
@@ -316,7 +326,17 @@ public class UIManager : NetworkBehaviour
     [Rpc(SendTo.Everyone, InvokePermission = RpcInvokePermission.Everyone)]
     public void OnTreasureReachedRpc()
     {
-        if (!GameManager.Instance.isMaster) UIDialog.Instance.OnOpenDialog(DialogId.TreasureReached);
+        if (!GameManager.Instance.isMaster) 
+        {
+            if (GameManager.Instance.currentTravelCost.Value < 7)
+            {
+                UIDialog.Instance.OnOpenDialog(DialogId.TreasureReached);                
+            }
+            else
+            {
+                UIDialog.Instance.OnOpenDialog(DialogId.TreasureNotReached);                
+            }
+        }
         if (IsHost) MapNetworkManager.Instance.SetMapStateServerRpc(MapState.Individual);
     }
 

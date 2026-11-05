@@ -146,8 +146,17 @@ public class InventoryManager : MonoBehaviour
 
     public void OnJournalDisable() => journalBlocker.SetActive(true);
     public void OnJournalEnable() => journalBlocker.SetActive(false);
-    public void OnJournalDisablePaging() => journalNextPageButton.SetActive(false);
-    public void OnJournalEnablePaging() => journalNextPageButton.SetActive(true);
+    public void OnJournalDisablePaging() 
+    {
+        MapManager.Instance.saveIcon.GetComponent<UIElement>().OnElementDisable();
+        journalNextPageButton.SetActive(false);
+    }
+    public void OnJournalEnablePaging() 
+    {
+        MapManager.Instance.saveIcon.GetComponent<UIElement>().OnElementEnable();
+        journalNextPageButton.SetActive(true);
+        OnJournalNextPage();
+    }
 
     public void OnOpenMap() 
     {

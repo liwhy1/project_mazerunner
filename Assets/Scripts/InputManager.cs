@@ -107,6 +107,7 @@ public class InputManager : MonoBehaviour
                 {
                     if (GameManager.Instance.FetchPersistentPlayerId() != 0) return;
                     UIManager.Instance.OnTreasureReachedRpc();
+                    hit.collider.enabled = false;
                 }
                 else if (hit.collider.gameObject.name == "BellObject")
                 {
