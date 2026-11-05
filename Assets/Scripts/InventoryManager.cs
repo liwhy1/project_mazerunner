@@ -131,7 +131,7 @@ public class InventoryManager : MonoBehaviour
         int currentIndex = journalPages.IndexOf(journalPages.FirstOrDefault(p => p.text == textComponent.text));
         journalPageNumber.text = "Page " + (currentIndex + 1);
         OnJournalEnable();
-        if (GameManager.Instance.isMaster) UIManager.Instance.DisableJournalPagingClientRpc();
+        OnJournalDisablePaging();
         textComponent.textComponent.ForceMeshUpdate();
     }
 
@@ -276,10 +276,12 @@ public class InventoryManager : MonoBehaviour
             case MapState.Shared:
                 OnToggleSharedView(true);
                 if (GameManager.Instance.lockJournalAfterOwnMap) OnJournalDisable();
+                OnJournalEnablePaging();
                 break;
             case MapState.Explore:
                 OnToggleSharedView(true);
                 if (GameManager.Instance.lockJournalAfterOwnMap) OnJournalDisable();
+                OnJournalEnablePaging();
                 break;
             case MapState.Individual:
                 OnToggleIndividualView(true);
