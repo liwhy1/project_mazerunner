@@ -502,13 +502,13 @@ public class UIManager : NetworkBehaviour
         if (PlayerController.Instance && PlayerController.Instance.isInMist)
         {
             Color tempColor = mistOverlay.color;
-            if (tempColor.a < 0.92f) tempColor.a += Time.deltaTime / 10f;
+            if (tempColor.a < 0.92f) tempColor.a += Time.deltaTime / 5f;
             mistOverlay.color = tempColor;
         }
         else
         {
             Color tempColor = mistOverlay.color;
-            tempColor.a -= Time.deltaTime / 20f;
+            if (tempColor.a > 0) tempColor.a -= Time.deltaTime / 20f;
             mistOverlay.color = tempColor;
         }
     }
