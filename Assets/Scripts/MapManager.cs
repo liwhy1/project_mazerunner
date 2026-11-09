@@ -45,6 +45,7 @@ public class MapManager : NetworkBehaviour
     [SerializeField] private Sprite pointerPencilSprite;
     public GameObject saveIcon;
     public bool isLoaded;
+    public bool isCentered;
 
     public override void OnNetworkSpawn() => OnSetup();
 
@@ -95,23 +96,23 @@ public class MapManager : NetworkBehaviour
     {
         if (!mapBackground) mapBackground = mapObject.transform.Find("Background(Clone)").gameObject;
         mapBackground.transform.SetSiblingIndex(1);
-        mapBackground.GetComponent<RectTransform>().anchoredPosition = new Vector2(307.85f, 0f);
-        mapObject.transform.Find("InnerLayer").GetComponent<RectTransform>().anchoredPosition = new Vector2(307.85f, -40f);
-        mapObject.GetComponent<RectTransform>().anchoredPosition = new Vector2(-307.85f, mapObject.GetComponent<RectTransform>().anchoredPosition.y);
+        mapBackground.GetComponent<RectTransform>().anchoredPosition = new Vector2(307f, 0f);
+        mapObject.transform.Find("InnerLayer").GetComponent<RectTransform>().anchoredPosition = new Vector2(307f, -40f);
+        mapObject.GetComponent<RectTransform>().anchoredPosition = new Vector2(-307f, mapObject.GetComponent<RectTransform>().anchoredPosition.y);
         mapObject.GetComponent<RectTransform>().localScale = Vector2.one;
         pointerCircle.SetActive(false);
+        if (isNetworked) isLoaded = true;
     }
 
     private void Update()
     {
         bool isMapActive = InventoryManager.Instance.isInventoryActive && InventoryManager.Instance.mapSharedViewPage.activeSelf;
         bool isMasterActive = GameManager.Instance.isMaster && (MapNetworkManager.Instance.mapState.Value == MapState.Shared || MapNetworkManager.Instance.mapState.Value == MapState.Explore);
-        if (isNetworked && mapBackground) mapObject.transform.localPosition = new Vector2(-307.85f, isMapActive || isMasterActive ? 40f : -3000f);
-
         if (!mapBackground && transform.Find("Background(Clone)"))
         {
             SetupLayout();
         }
+        if (isNetworked && mapBackground) mapObject.transform.localPosition = new Vector2(mapObject.transform.localPosition.x, isMapActive || isMasterActive ? 40f : -3000f);
 
         if (InventoryManager.Instance.isInventoryActive)
         {
@@ -330,22 +331,38 @@ public class MapManager : NetworkBehaviour
         iconPile.transform.localPosition = Vector2.Lerp(iconPile.transform.localPosition, new Vector2(iconPile.transform.localPosition.x, targetY), Time.deltaTime * 10f);
     }
 
-    public IEnumerator MapMoveHandler(bool shouldCenter)
+    public void MapMoveHandler(bool shouldCenter, bool shouldReset = false)
     {
-        StartCoroutine(InventoryManager.Instance.JournalMoveHandler(shouldCenter));
-        yield return new WaitForSeconds(shouldCenter ? .1f : 0f);
+        //Debug.Log("MapManager: Target center state: " + shouldCenter + " last center state: " + isCentered);
+        isCentered = shouldCenter;
         InventoryManager.Instance.MapTabMoveHandler(shouldCenter);
+        RectTransform mapRect = mapObject.transform.GetComponent<RectTransform>();
+        RectTransform backgroundRect = mapObject.transform.Find("InnerLayer").GetComponent<RectTransform>();
 
-        Vector2 targetPosition = new Vector2(shouldCenter ? -307f : 0f, mapObject.transform.GetComponent<RectTransform>().anchoredPosition.y);
-        StartCoroutine(UIManager.Instance.UIAnimator(mapObject.transform.GetComponent<RectTransform>(), targetPosition));
+        // reset y
+        mapRect.anchoredPosition = new Vector2(mapRect.anchoredPosition.x, 40);
+        backgroundRect.anchoredPosition = new Vector2(backgroundRect.anchoredPosition.x, -40);
 
-        targetPosition = new Vector2(shouldCenter ? -307f : 0f, mapObject.transform.Find("InnerLayer").GetComponent<RectTransform>().anchoredPosition.y);
-        StartCoroutine(UIManager.Instance.UIAnimator(mapObject.transform.Find("InnerLayer").GetComponent<RectTransform>(), targetPosition));
+        // conditionally reset x
+        if (shouldReset)
+        {
+            mapRect.anchoredPosition = new Vector2(shouldCenter ? 0f : -307f, 40f);
+            backgroundRect.anchoredPosition = new Vector2(shouldCenter ? 0f : 307f, -40f);            
+        }
+
+        // set map target pos
+        Vector2 targetPosition = new Vector2(shouldCenter ? -307f : 0f, 40f);
+        StartCoroutine(UIManager.Instance.UIAnimator(mapRect, targetPosition));
+
+        // set background target pos
+        targetPosition = new Vector2(shouldCenter ? 307f : 0f, -40);
+        StartCoroutine(UIManager.Instance.UIAnimator(backgroundRect, targetPosition));
     }
 
     public void MapLoadAnimator()
     {
-        MapManager.Instance.OnMapToggleReady(false);
+        Debug.Log("MapManager: Running load animation");
+        MapManager.Instance.OnMapToggleReady(false, true);
         isLoaded = true;
         if (MapNetworkManager.Instance.mapState.Value == MapState.Own) UIDialog.Instance.OnOpenDialog(DialogId.MapTutorial);
     }
@@ -478,30 +495,34 @@ public class MapManager : NetworkBehaviour
 
     public void OnMapToggleReady(bool sendToServer = true, bool shouldAnimate = true)
     {
-        bool isMapready = iconPile.activeSelf;
-        iconPile.SetActive(!isMapready);
-        placeIcon.GetComponent<UIElement>().OnElementToggleEnable(!isMapready);
-        pencilIcon.GetComponent<UIElement>().OnElementToggleEnable(!isMapready);
-        eraserIcon.GetComponent<UIElement>().OnElementToggleEnable(!isMapready);
-        trashIcon.GetComponent<UIElement>().OnElementToggleEnable(!isMapready);
-        SetActiveTool(!isMapready ? placeIcon : null);
-        if (shouldAnimate) StartCoroutine(MapMoveHandler(isMapready));
+        bool isMapReady = iconPile.activeSelf;
+        iconPile.SetActive(!isMapReady);
+        placeIcon.GetComponent<UIElement>().OnElementToggleEnable(!isMapReady);
+        pencilIcon.GetComponent<UIElement>().OnElementToggleEnable(!isMapReady);
+        eraserIcon.GetComponent<UIElement>().OnElementToggleEnable(!isMapReady);
+        trashIcon.GetComponent<UIElement>().OnElementToggleEnable(!isMapReady);
+        SetActiveTool(!isMapReady ? placeIcon : null);
+        if (shouldAnimate) 
+        {
+            MapMoveHandler(isMapReady);
+            InventoryManager.Instance.JournalMoveHandler(!isMapReady);
+        }
 
         // handle behaviour based on map type
         if (isNetworked)
         {
-            saveIcon.SetActive(!isMapready);
+            saveIcon.SetActive(!isMapReady);
 
             // send ready state
             if (!GameManager.Instance.isMaster && sendToServer) MapNetworkManager.Instance.SetMapStateServerRpc(MapState.Explore);
         }
         else
         {
-            saveIcon.transform.GetChild(1).gameObject.SetActive(isMapready);
-            saveIcon.transform.GetChild(0).gameObject.SetActive(!isMapready);
+            saveIcon.transform.GetChild(1).gameObject.SetActive(isMapReady);
+            saveIcon.transform.GetChild(0).gameObject.SetActive(!isMapReady);
 
             // send ready state
-            if (!GameManager.Instance.isMaster && sendToServer) MapNetworkManager.Instance.SetPlayerMapStateServerRpc(isMapready);
+            if (!GameManager.Instance.isMaster && sendToServer) MapNetworkManager.Instance.SetPlayerMapStateServerRpc(isMapReady);
         }
     }
 

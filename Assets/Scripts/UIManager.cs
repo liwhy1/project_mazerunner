@@ -24,6 +24,7 @@ public class UIManager : NetworkBehaviour
     [SerializeField] private GameObject pauseQuitButton;
     public TMP_Text pauseJoinCodeText;
     public GameObject pausePlayerListObject;
+    [SerializeField] private GameObject debugLayout;
 
     [Header("Settings Data")]
     [SerializeField] private GameObject settingsObject;
@@ -47,6 +48,7 @@ public class UIManager : NetworkBehaviour
     public TMP_Text landmarkText;
     [SerializeField] private TMP_Text timerText;
     [SerializeField] private Image mistOverlay;
+    public bool isAnimating;
 
     [Header("Minimap Data")]
     public GameObject minimapObject;
@@ -85,6 +87,9 @@ public class UIManager : NetworkBehaviour
 
         // setup menumanager
         MenuManager.Instance.OnSetup();
+
+        // toggle map debug layout
+        debugLayout.SetActive(IsHost);
     }
 
     private void LoadLanguages()
@@ -431,6 +436,7 @@ public class UIManager : NetworkBehaviour
         Vector2 startPosition = targetObject.anchoredPosition;
         float duration = .6f;
         float elapsed = 0f;
+        isAnimating = true;
 
         while (elapsed < duration)
         {
@@ -442,6 +448,7 @@ public class UIManager : NetworkBehaviour
         }
 
         targetObject.anchoredPosition = targetPosition;
+        isAnimating = false;
     }
 
     public float EaseInOutQuart(float x)
@@ -491,10 +498,10 @@ public class UIManager : NetworkBehaviour
     }
 
     [ClientRpc]
-    public void EnableJournalPagingClientRpc() => InventoryManager.Instance.OnJournalEnablePaging();
+    public void ToggleJournalPagingClientRpc(bool targetState) => InventoryManager.Instance.OnJournalTogglePaging(targetState);
 
     [ClientRpc]
-    public void DisableJournalPagingClientRpc() => InventoryManager.Instance.OnJournalDisablePaging();
+    public void ToggleJournalClientRpc(bool targetState) => InventoryManager.Instance.OnJournalToggle(targetState);
 
     private void MistEffectHandler()
     {
