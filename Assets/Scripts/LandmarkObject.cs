@@ -20,7 +20,6 @@ public enum LandmarkType
 public class LandmarkObject : MonoBehaviour
 {
     public List<LandmarkData> travelRelations = new List<LandmarkData>();
-    [Tooltip("The name this landmark will be displayed as on the UI.")]
     public LandmarkType landmarkType;
     public bool isStartArea;
 }

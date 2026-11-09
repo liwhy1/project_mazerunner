@@ -77,6 +77,9 @@ public class UIManager : NetworkBehaviour
         // subscribe to language change events
         languageSelector.onValueChanged += OnLanguageChanged;
 
+        // subscribe to travel cost change events
+        GameManager.Instance.currentTravelCost.OnValueChanged += OnTravelCostChanged;
+
         // load languages
         StartCoroutine(DelayLocalLoader());
 
@@ -302,10 +305,12 @@ public class UIManager : NetworkBehaviour
         }
     }
 
-    public void OnUpdateLandmarkText()
+    public void OnTravelCostChanged(int oldValue, int newValue)
     {
+        if (GameManager.Instance.FetchPersistentPlayerId() != 0) return;
+
         // setup display text
-        string targetText = GetLocalUIString("MENU_TRAVEL_COST_SUBSTRING") + " <b>" + GameManager.Instance.currentTravelCost.Value + " " + GetLocalUIString("MISC_HOURS_SUBSTRING") + "</b>\n";
+        string targetText = GetLocalUIString("MENU_TRAVEL_COST_SUBSTRING") + " <b>" + newValue + " " + GetLocalUIString("MISC_HOURS_SUBSTRING") + "</b>\n";
         foreach (var landmark in GameManager.Instance.visitedLandmarks)
         {
             targetText += (GameManager.Instance.visitedLandmarks.IndexOf(landmark) == 0 ? "<b>" : " --> <b>") + GetLocalLandmarkString("LANDMARK_" + landmark.GetComponent<LandmarkObject>().landmarkType) + "</b>";

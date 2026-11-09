@@ -474,6 +474,8 @@ public class GameManager : NetworkBehaviour
                 visitedLandmarks.Clear();
                 UpdateTravelCostRpc(0);
                 visitedLandmarks.Add(targetLandmark);
+                // manually update ui at game start
+                UIManager.Instance.OnTravelCostChanged(0, 0);
             }
             // handle backtracking
             else if (allowLandmarkBacktracking && visitedLandmarks.Count > 1 && visitedLandmarks[visitedLandmarks.Count - 2] == targetLandmark)
@@ -498,8 +500,6 @@ public class GameManager : NetworkBehaviour
                 visitedLandmarks.Add(targetLandmark);
             }
         }
-
-        UIManager.Instance.OnUpdateLandmarkText();
     }
 
     public void OnLandmarkExited(GameObject targetLandmark)
@@ -514,8 +514,6 @@ public class GameManager : NetworkBehaviour
                 LandmarkData lastRelation = targetLandmark.GetComponent<LandmarkObject>().travelRelations.FirstOrDefault(t => t.connectedLandmark == visitedLandmarks.Last());
                 UpdateTravelCostRpc(currentTravelCost.Value - lastRelation.travelCost);
             }
-
-            UIManager.Instance.OnUpdateLandmarkText();
         }
     }
 
