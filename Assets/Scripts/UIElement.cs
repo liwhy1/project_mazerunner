@@ -173,6 +173,10 @@ public class UIElement : MonoBehaviour
     {
         if (!isEnabled) return;
         AudioManager.Instance.OnButtonClick();
-        if (resetOnClick) OnElementShrink();
+        if (resetOnClick)
+        {
+            OnElementShrink();
+            UITooltip.Instance.OnDestroyTooltip();
+        } 
     }
 }
