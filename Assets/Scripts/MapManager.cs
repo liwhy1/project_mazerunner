@@ -331,11 +331,11 @@ public class MapManager : NetworkBehaviour
         iconPile.transform.localPosition = Vector2.Lerp(iconPile.transform.localPosition, new Vector2(iconPile.transform.localPosition.x, targetY), Time.deltaTime * 10f);
     }
 
-    public void MapMoveHandler(bool shouldCenter, bool shouldReset = false)
+    public void MapMoveHandler(bool shouldCenter, bool shouldAnimate = true)
     {
         //Debug.Log("MapManager: Target center state: " + shouldCenter + " last center state: " + isCentered);
         isCentered = shouldCenter;
-        InventoryManager.Instance.MapTabMoveHandler(shouldCenter);
+        if (shouldAnimate) InventoryManager.Instance.MapTabMoveHandler(shouldCenter);
         RectTransform mapRect = mapObject.transform.GetComponent<RectTransform>();
         RectTransform backgroundRect = mapObject.transform.Find("InnerLayer").GetComponent<RectTransform>();
 
@@ -343,20 +343,15 @@ public class MapManager : NetworkBehaviour
         mapRect.anchoredPosition = new Vector2(mapRect.anchoredPosition.x, 40);
         backgroundRect.anchoredPosition = new Vector2(backgroundRect.anchoredPosition.x, -40);
 
-        // conditionally reset x
-        if (shouldReset)
-        {
-            mapRect.anchoredPosition = new Vector2(shouldCenter ? 0f : -307f, 40f);
-            backgroundRect.anchoredPosition = new Vector2(shouldCenter ? 0f : 307f, -40f);            
-        }
-
         // set map target pos
         Vector2 targetPosition = new Vector2(shouldCenter ? -307f : 0f, 40f);
-        StartCoroutine(UIManager.Instance.UIAnimator(mapRect, targetPosition));
+        if (shouldAnimate) StartCoroutine(UIManager.Instance.UIAnimator(mapRect, targetPosition));
+        else mapRect.anchoredPosition = targetPosition;
 
         // set background target pos
         targetPosition = new Vector2(shouldCenter ? 307f : 0f, -40);
-        StartCoroutine(UIManager.Instance.UIAnimator(backgroundRect, targetPosition));
+        if (shouldAnimate) StartCoroutine(UIManager.Instance.UIAnimator(backgroundRect, targetPosition));
+        else backgroundRect.anchoredPosition = targetPosition;
     }
 
     public void MapLoadAnimator()

@@ -49,7 +49,6 @@ public class MenuManager : NetworkBehaviour
     [SerializeField] private GameObject lobbyContinueButton;
     [SerializeField] private GameObject timerObject;
     public GameObject individualMapsObject;
-    [SerializeField] private GameObject debugLayout;
 
     [Header("Player Customisation Data")]
     [SerializeField] private GameObject lobbyPlayerView;
@@ -264,7 +263,6 @@ public class MenuManager : NetworkBehaviour
         lobbyPlayerListObject.SetActive(!GameManager.Instance.isMaster);
         UIManager.Instance.pausePlayerListObject.SetActive(!GameManager.Instance.isMaster);
         individualMapsObject.SetActive(false);
-        debugLayout.gameObject.SetActive(false);
         lobbyContinueButton.SetActive(false);
         lobbyContinueButton.transform.Find("Text").GetComponent<TMP_Text>().text = UIManager.Instance.GetLocalUIString("MENU_CONTINUE_SUBSTRING");
         timerObject.SetActive(false);
@@ -308,7 +306,6 @@ public class MenuManager : NetworkBehaviour
     public void OnLobbyStart()
     {
         lobbyStorySelector.gameObject.SetActive(false);
-        debugLayout.gameObject.SetActive(true);
         lobbyWaitingText.text = GameManager.Instance.isMaster ? "" : UIManager.Instance.GetLocalUIString("MENU_STARTING_SUBSTRING");
         lobbyReadyButton.SetActive(false);
         foreach (Transform child in lobbyPlayerView.transform) { child.GetComponent<UIElement>().OnElementDisable(); }

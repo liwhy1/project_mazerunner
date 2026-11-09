@@ -104,7 +104,6 @@ public class InventoryManager : MonoBehaviour
         if (isLocked) return;
         isInventoryActive = !isInventoryActive;
         inventoryObject.SetActive(isInventoryActive);
-        lastMapPage = isInventoryActive ? lastMapPage : null;
         if (isInventoryActive) OnOpenMap();
         UIManager.Instance.landmarkText.gameObject.SetActive(!isInventoryActive && !string.IsNullOrEmpty(UIManager.Instance.landmarkText.text));
         UIManager.Instance.cameraZoomInIcon.gameObject.SetActive(!isInventoryActive);
@@ -181,11 +180,9 @@ public class InventoryManager : MonoBehaviour
         SetMapPage(activeMapPage, true);
     }
 
-    GameObject lastMapPage;
     public void SetMapPage(GameObject pageObject, bool forceSet = false)
     {
         if (!forceSet && (!pageObject || pageObject == activeMapPage || UIManager.Instance.isAnimating)) return;
-        lastMapPage = activeMapPage;
         activeMapPage = pageObject;
 
         mapOwnViewPage.SetActive(false);
@@ -200,19 +197,27 @@ public class InventoryManager : MonoBehaviour
         if (MapNetworkManager.Instance?.mapState.Value == MapState.Individual) MapTabMoveHandler(activeMapPage != mapOwnViewPage);
         if (pageObject == mapOwnViewPage)
         {
-            if (!MapManager.Instance.isLoaded) SetInventoryInitialState();
             mapOwnViewButton.GetComponent<UIElement>().OnElementSelect();
-            if (!MapManager.Instance.isLoaded) return;
+            if (!MapManager.Instance.isLoaded) 
+            {
+                SetInventoryInitialState();
+                return;
+            }
 
-            var showJournal = journalEnabled && (MapNetworkManager.Instance?.mapState.Value == MapState.Own || MapNetworkManager.Instance?.mapState.Value == MapState.Individual);
-            JournalMoveHandler(showJournal);
-            MapManager.Instance.MapMoveHandler(!showJournal, MapManager.SharedInstance.isCentered != !showJournal);
+            MapManager.Instance.MapMoveHandler(MapManager.SharedInstance.isCentered, false);
+            if (journalEnabled)
+            {
+                var showJournal = MapNetworkManager.Instance?.mapState.Value == MapState.Own || MapNetworkManager.Instance?.mapState.Value == MapState.Individual || !MapManager.SharedInstance.isCentered;
+                JournalMoveHandler(showJournal);
+                MapManager.Instance.MapMoveHandler(!showJournal, true);
+            }
         }
         else if (pageObject == mapSharedViewPage)
         {
             if (!MapManager.SharedInstance.isLoaded) MapManager.SharedInstance.SetupLayout();
             mapSharedViewButton.GetComponent<UIElement>().OnElementSelect();
-            MapManager.SharedInstance.MapMoveHandler(true);
+            MapManager.SharedInstance.MapMoveHandler(MapManager.Instance.isCentered, false);
+            JournalMoveHandler(!MapManager.Instance.isCentered);
         }
         else if (pageObject == mapIndividualViewPage)
         {
@@ -223,10 +228,10 @@ public class InventoryManager : MonoBehaviour
 
     private void SetInventoryInitialState()
     {
-        Debug.Log("InventoryManager: Setting inventory initial state");
         // map object
         MapManager.Instance.iconPile.SetActive(true);
         MapManager.Instance.OnMapToggleReady(false, false);
+        MapManager.SharedInstance.mapObject.GetComponent<RectTransform>().anchoredPosition = new Vector2(-307f, mapObject.GetComponent<RectTransform>().anchoredPosition.y);
         MapManager.Instance.saveIcon.SetActive(MapNetworkManager.Instance.mapState.Value == MapState.Own);
 
         // map tabs

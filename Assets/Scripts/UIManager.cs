@@ -87,9 +87,6 @@ public class UIManager : NetworkBehaviour
 
         // setup menumanager
         MenuManager.Instance.OnSetup();
-
-        // toggle map debug layout
-        debugLayout.SetActive(IsHost);
     }
 
     private void LoadLanguages()
@@ -218,6 +215,7 @@ public class UIManager : NetworkBehaviour
     {
         settingsObject.SetActive(!settingsObject.activeSelf);
         eventSystem.SetSelectedGameObject(uiVolumeSlider.gameObject);
+        debugLayout.SetActive(IsHost);
     }
 
     private void OnMinimapClicked()

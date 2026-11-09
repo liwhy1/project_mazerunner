@@ -117,6 +117,9 @@ public class GameManager : NetworkBehaviour
         // load empty map
         if (IsHost) OnLoadEmptyMap();
 
+        // set game type
+        if (IsHost) gameType.Value = isMaster ? GameType.Master : GameType.Player;
+
         // manually run load event, if the empty map is already loaded (client behaviour)
         if (FindAnyObjectByType<AssetSpawner>()) OnMapLoaded("EmptyMap", LoadSceneMode.Additive, null, null);
     }
@@ -394,7 +397,6 @@ public class GameManager : NetworkBehaviour
     public async void OnStartHost(bool masterStart)
     {
         isMaster = masterStart;
-        gameType.Value = masterStart ? GameType.Master : GameType.Player;
         int targetPlayerCount = masterStart ? 4 : 3;
         if (string.IsNullOrEmpty(MenuManager.Instance.hostPlayerNameInput.text) && !isMaster) 
         {
