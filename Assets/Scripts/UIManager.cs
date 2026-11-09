@@ -532,4 +532,9 @@ public class UIManager : NetworkBehaviour
     {
         return LocalizationSettings.StringDatabase.GetLocalizedString("Landmark_Strings", tableKey);
     }
+
+    public string GetLocalTooltipString(string tableKey)
+    {
+        return LocalizationSettings.StringDatabase.GetLocalizedString("Tooltip_Strings", tableKey);
+    }
 }

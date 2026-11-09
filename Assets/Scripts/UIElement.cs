@@ -19,6 +19,7 @@ public class UIElement : MonoBehaviour
     public bool isSelected = false;
     public bool isEnabled = true;
     public bool resetOnClick = true;
+    public string tooltipText;
 
     public void Start() => OnSetup();
 
@@ -68,6 +69,17 @@ public class UIElement : MonoBehaviour
         EventTrigger.Entry pointerExitEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerExit};
         pointerExitEntry.callback.AddListener((eventData) => { OnElementShrink(); });
         GetComponent<EventTrigger>().triggers.Add(pointerExitEntry);
+
+        if (!string.IsNullOrEmpty(tooltipText))
+        {
+            EventTrigger.Entry tooltipEnterEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerEnter};
+            pointerEnterEntry.callback.AddListener((eventData) => { UITooltip.Instance.OnCreateTooltip(this); });
+            GetComponent<EventTrigger>().triggers.Add(pointerEnterEntry);
+
+            EventTrigger.Entry tooltipExitEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerExit};
+            pointerExitEntry.callback.AddListener((eventData) => { UITooltip.Instance.OnDestroyTooltip(); });
+            GetComponent<EventTrigger>().triggers.Add(pointerExitEntry);
+        }
 
         isElementSetup = true;
     }
