@@ -129,7 +129,7 @@ public class InventoryManager : MonoBehaviour
         TMP_InputField textComponent = journalObject.GetComponentInChildren<TMP_InputField>();
         textComponent.text = journalPages[0].text;
         int currentIndex = journalPages.IndexOf(journalPages.FirstOrDefault(p => p.text == textComponent.text));
-        journalPageNumber.text = "Page " + (currentIndex + 1);
+        journalPageNumber.text = UIManager.Instance.GetLocalUIString("INVENTORY_PAGE_SUBSTRING") + " " + (currentIndex + 1);
         OnJournalEnable();
         // reserver manual paging to master mode
         if (GameManager.Instance.gameType.Value == GameType.Master)
@@ -145,7 +145,7 @@ public class InventoryManager : MonoBehaviour
         int currentIndex = journalPages.IndexOf(journalPages.FirstOrDefault(p => p.text == textComponent.text));
         int nextIndex = (currentIndex + 1) % journalPages.Count;
         textComponent.text = journalPages[nextIndex].text;
-        journalPageNumber.text = "Page " + (nextIndex + 1);
+        journalPageNumber.text = UIManager.Instance.GetLocalUIString("INVENTORY_PAGE_SUBSTRING") + " " + (nextIndex + 1);
     }
 
     public void OnJournalDisable() => journalBlocker.SetActive(true);
