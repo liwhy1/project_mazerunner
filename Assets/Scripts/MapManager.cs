@@ -128,7 +128,7 @@ public class MapManager : NetworkBehaviour
         UIManager.Instance.AddEventTrigger(pencilIcon.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, SetActiveTool, pencilIcon);
         UIManager.Instance.AddEventTrigger(eraserIcon.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, SetActiveTool, eraserIcon);
         UIManager.Instance.AddEventTrigger(trashIcon.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnMapClearRequest);
-        UIManager.Instance.AddEventTrigger(saveIcon.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, () => OnMapToggleReady(true, GameManager.Instance.lockJournalAfterOwnMap && !isNetworked ? true : false));
+        UIManager.Instance.AddEventTrigger(saveIcon.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, () => OnMapToggleReady(true, !isNetworked ? true : false));
     }
 
     private void HoverHandler()
@@ -500,7 +500,7 @@ public class MapManager : NetworkBehaviour
         if (shouldAnimate) 
         {
             MapMoveHandler(isMapReady);
-            InventoryManager.Instance.JournalMoveHandler(!isMapReady);
+            InventoryManager.Instance.OnJournalToggle(!isMapReady);
         }
 
         // handle behaviour based on map type

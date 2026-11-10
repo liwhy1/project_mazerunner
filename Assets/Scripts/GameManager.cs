@@ -40,8 +40,6 @@ public class GameManager : NetworkBehaviour
 
     [Header("Lobby data")]
     public bool allowLandmarkBacktracking = true;
-    public bool lockJournalAfterOwnMap = true;
-    public bool lockInventoryAtStart = true;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void Initialize()
@@ -249,8 +247,8 @@ public class GameManager : NetworkBehaviour
             navMeshObject.GetComponent<NavMeshSurface>().GetComponent<Renderer>().enabled = false;
 
             // reset ui
-            if (MapNetworkManager.Instance.mapState.Value == MapState.Own || MapNetworkManager.Instance.mapState.Value == MapState.Shared) InventoryManager.Instance.OnToggleInventoryLock();
-            if (lockInventoryAtStart && MapNetworkManager.Instance.mapState.Value == MapState.Own) MapManager.Instance.MapLoadAnimator();
+            if (MapNetworkManager.Instance.mapState.Value == MapState.Own || MapNetworkManager.Instance.mapState.Value == MapState.Shared) InventoryManager.Instance.OnInventoryToggleLock(true);
+            if (MapNetworkManager.Instance.mapState.Value == MapState.Own) MapManager.Instance.MapLoadAnimator();
             playerViewCamera.gameObject.SetActive(false);
             MenuManager.Instance.ResetUIState();
 
@@ -302,7 +300,7 @@ public class GameManager : NetworkBehaviour
         if (MapNetworkManager.Instance.mapState.Value == MapState.Explore || MapNetworkManager.Instance.mapState.Value == MapState.Individual) AudioManager.Instance.OnGameStarted();
 
         // close inventory
-        if (InventoryManager.Instance.isLocked) InventoryManager.Instance.OnToggleInventoryLock();
+        InventoryManager.Instance.OnInventoryToggleLock(false);
 
         UIManager.Instance.loadingIcon.SetActive(false);
     }

@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Collections;
 using UnityEngine.InputSystem;
 using UnityEngine.Localization.Settings;
+using System;
 
 public class UIManager : NetworkBehaviour
 {
@@ -24,7 +25,6 @@ public class UIManager : NetworkBehaviour
     [SerializeField] private GameObject pauseQuitButton;
     public TMP_Text pauseJoinCodeText;
     public GameObject pausePlayerListObject;
-    [SerializeField] private GameObject debugLayout;
 
     [Header("Settings Data")]
     [SerializeField] private GameObject settingsObject;
@@ -37,6 +37,16 @@ public class UIManager : NetworkBehaviour
     [SerializeField] private float fpsUpdateFrequency = 0.5f;
     private Coroutine fpsRoutine;
     private int fpsValue;
+
+    [Header("Game Settings Data")]
+    public GameObject gameSettingsPage;
+    [SerializeField] private GameObject gameSettingsButton;
+    [SerializeField] private Toggle gameLandmarkBacktrackToggle;
+    [SerializeField] private Toggle gameInventoryLockToggle;
+    [SerializeField] private Toggle gameOwnJournalToggle;
+    [SerializeField] private Toggle gameSharedJournalToggle;
+    [SerializeField] private Toggle gameJournalPagingToggle;
+    [SerializeField] private TMP_InputField gameJournalPageInputField;
 
     [Header("HUD Data")]
     public Image pauseIcon;
@@ -128,6 +138,14 @@ public class UIManager : NetworkBehaviour
         AddEventTrigger(pauseQuitButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnQuitButton);
         AddEventTrigger(settingsButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnToggleSettings);
         AddEventTrigger(settingsButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnToggleSettings);
+        AddEventTrigger(gameSettingsButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnGameToggleSettings);
+        AddEventTrigger(gameSettingsButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnGameToggleSettings);
+        gameLandmarkBacktrackToggle.onValueChanged.AddListener(delegate { GameManager.Instance.allowLandmarkBacktracking = gameLandmarkBacktrackToggle.isOn; });
+        gameInventoryLockToggle.onValueChanged.AddListener(delegate { ToggleInventoryLockClientRpc(gameInventoryLockToggle.isOn); });
+        gameOwnJournalToggle.onValueChanged.AddListener(delegate { ToggleOwnJournalClientRpc(gameOwnJournalToggle.isOn); });
+        gameSharedJournalToggle.onValueChanged.AddListener(delegate { ToggleSharedJournalClientRpc(gameSharedJournalToggle.isOn); });
+        gameJournalPagingToggle.onValueChanged.AddListener(delegate { ToggleJournalPagingClientRpc(gameJournalPagingToggle.isOn); });
+        gameJournalPageInputField.onValueChanged.AddListener(delegate { SetJournalPageClientRpc(gameJournalPageInputField.text); });
 
         // setup setting trigger
         AddEventTrigger(settingsBackButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnToggleSettings);
@@ -215,7 +233,12 @@ public class UIManager : NetworkBehaviour
     {
         settingsObject.SetActive(!settingsObject.activeSelf);
         eventSystem.SetSelectedGameObject(uiVolumeSlider.gameObject);
-        debugLayout.SetActive(IsHost);
+    }
+
+    private void OnGameToggleSettings()
+    {
+        Vector2 targetPosition = new Vector2(gameSettingsPage.GetComponent<RectTransform>().anchoredPosition.x < 210f ? 220f : -145f, -30f);
+        StartCoroutine(UIAnimator(gameSettingsPage.GetComponent<RectTransform>(), targetPosition));
     }
 
     private void OnMinimapClicked()
@@ -372,6 +395,7 @@ public class UIManager : NetworkBehaviour
         minimapIcon.transform.parent.gameObject.SetActive(false);
         inventoryIcon.gameObject.SetActive(false);
         pauseIcon.gameObject.SetActive(false);
+        gameSettingsPage.SetActive(false);
     }
 
     public void OnPauseToggle()
@@ -382,6 +406,7 @@ public class UIManager : NetworkBehaviour
         endGameButton.SetActive(IsHost);
         inventoryIcon.gameObject.SetActive(!pauseObject.activeSelf && !InventoryManager.Instance.isLocked);
         pauseIcon.gameObject.SetActive(!pauseObject.activeSelf);
+        gameSettingsPage.SetActive(pauseObject.activeSelf);
     }
 
     public void OnRefreshPlayerList()
@@ -496,10 +521,19 @@ public class UIManager : NetworkBehaviour
     }
 
     [ClientRpc]
-    public void ToggleJournalPagingClientRpc(bool targetState) => InventoryManager.Instance.OnJournalTogglePaging(targetState);
-
+    public void ToggleOwnJournalClientRpc(bool targetState) => InventoryManager.Instance.OnOwnJournalToggle(targetState);
     [ClientRpc]
-    public void ToggleJournalClientRpc(bool targetState) => InventoryManager.Instance.OnJournalToggle(targetState);
+    public void ToggleSharedJournalClientRpc(bool targetState) => InventoryManager.Instance.OnSharedJournalToggle(targetState);
+    [ClientRpc]
+    public void ToggleJournalPagingClientRpc(bool targetState) => InventoryManager.Instance.OnJournalTogglePaging(targetState);
+    [ClientRpc]
+    public void ToggleInventoryLockClientRpc(bool targetState) => InventoryManager.Instance.OnInventoryToggleLock(targetState);
+    [ClientRpc]
+    public void SetJournalPageClientRpc(string targetPage)
+    { 
+        var NormalizedValue = Mathf.Clamp(Convert.ToInt32(targetPage), 1, 2);
+        InventoryManager.Instance.OnJournalSetPage(NormalizedValue);
+    }
 
     private void MistEffectHandler()
     {

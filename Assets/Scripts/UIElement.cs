@@ -51,6 +51,8 @@ public class UIElement : MonoBehaviour
             GetComponent<RectTransform>().localScale = Vector2.one;
         }
 
+        if (!isEnabled) OnElementDisable();
+
         // setup event triggers
         if (GetComponent<EventTrigger>() == null) gameObject.AddComponent<EventTrigger>();
 

@@ -25,7 +25,8 @@ public class InventoryManager : MonoBehaviour
     [SerializeField] private GameObject journalBlocker;
     [SerializeField] private GameObject journalNextPageButton;
     [SerializeField] private List<TextAsset> journalPages;
-    private bool journalEnabled;
+    public bool enableOwnJournal;
+    public bool enableSharedJournal;
 
     [Header("Map Data")]
     [SerializeField] private GameObject mapOwnViewButton;
@@ -78,22 +79,20 @@ public class InventoryManager : MonoBehaviour
         UIManager.Instance.AddEventTrigger(mapIndividualViewButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, () => SetMapPage(mapIndividualViewPage));
     }
 
-    public void OnToggleInventoryLock()
+    public void OnInventoryToggleLock(bool targetState)
     {
         if (GameManager.Instance.isMaster) return;
-        if (isLocked)
-        {
-            isLocked = false;
-            UIManager.Instance.inventoryIcon.gameObject.SetActive(true);
-            OnToggleInventory();
-        }
-        else if (GameManager.Instance.lockInventoryAtStart)
+        if (targetState)
         {
             OnToggleInventory();
-            UIManager.Instance.inventoryIcon.gameObject.SetActive(false);
-            isLocked = true;
+            isLocked = targetState;
         }
-        backButton.SetActive(!isLocked);
+        else
+        {
+            isLocked = targetState;
+            OnToggleInventory();            
+        }
+        UIManager.Instance.inventoryIcon.gameObject.SetActive(!isLocked);
 
         // tutorial dialog
         if (!isLocked) UIDialog.Instance.OnOpenDialog(DialogId.PlayerTutorial);
@@ -141,10 +140,7 @@ public class InventoryManager : MonoBehaviour
         journalPageNumber.text = UIManager.Instance.GetLocalUIString("INVENTORY_PAGE_SUBSTRING") + " " + (currentIndex + 1);
 
         // reserve manual paging to master mode
-        if (GameManager.Instance.gameType.Value == GameType.Master)
-        {
-            OnJournalTogglePaging(false);
-        }
+        OnJournalTogglePaging(false);
         textComponent.textComponent.ForceMeshUpdate();
     }
 
@@ -157,21 +153,46 @@ public class InventoryManager : MonoBehaviour
         journalPageNumber.text = UIManager.Instance.GetLocalUIString("INVENTORY_PAGE_SUBSTRING") + " " + (nextIndex + 1);
     }
 
-    public void JournalToggleHelper(Toggle targetToggle) => UIManager.Instance.ToggleJournalClientRpc(targetToggle.isOn);
-    public void JournalPagingHelper(Toggle targetToggle) => UIManager.Instance.ToggleJournalPagingClientRpc(targetToggle.isOn);
+    public void OnJournalSetPage(int targetPage)
+    {
+        if (GameManager.Instance.isMaster) return;
+
+        TMP_InputField textComponent = journalObject.GetComponentInChildren<TMP_InputField>();
+        journalPageNumber.text = UIManager.Instance.GetLocalUIString("INVENTORY_PAGE_SUBSTRING") + " " + targetPage;
+        textComponent.text = journalPages[targetPage - 1].text;
+    }
+
     public void OnJournalToggle(bool targetState) 
     {
-        //Debug.Log("InventoryManager: Target journal show state: " + targetState + " last show state: " + journalEnabled);
-        if (targetState != journalEnabled) JournalMoveHandler(targetState);
-        journalEnabled = targetState;
+        JournalMoveHandler(targetState);
         if (activeMapPage == mapOwnViewPage) MapManager.Instance.MapMoveHandler(!targetState);
         else if (activeMapPage == mapSharedViewPage) MapManager.SharedInstance.MapMoveHandler(!targetState);
+    }
+
+    public void OnOwnJournalToggle(bool targetState)
+    {
+        enableOwnJournal = targetState;
+        if (activeMapPage == mapOwnViewPage) OnJournalToggle(targetState);
+    }
+
+    public void OnSharedJournalToggle(bool targetState)
+    {
+        enableSharedJournal = targetState;
+        if (activeMapPage == mapSharedViewPage) OnJournalToggle(targetState);
     }
 
     public void OnJournalTogglePaging(bool targetState) 
     {
         MapManager.Instance.saveIcon.GetComponent<UIElement>().OnElementToggleEnable(targetState);
         journalNextPageButton.SetActive(targetState);
+    }
+
+    public void JournalMoveHandler(bool shouldShow)
+    {
+        Vector2 targetPosition = new Vector2(shouldShow ? 30f : -700f, journalObject.GetComponent<RectTransform>().anchoredPosition.y);
+        StartCoroutine(UIManager.Instance.UIAnimator(journalObject.GetComponent<RectTransform>(), targetPosition));
+
+        journalBlocker.SetActive(!shouldShow);
     }
 
     public void OnOpenMap() 
@@ -205,24 +226,22 @@ public class InventoryManager : MonoBehaviour
             }
 
             MapManager.Instance.MapMoveHandler(MapManager.SharedInstance.isCentered, false);
-            if (journalEnabled)
-            {
-                var showJournal = MapNetworkManager.Instance?.mapState.Value == MapState.Own || MapNetworkManager.Instance?.mapState.Value == MapState.Individual || !MapManager.SharedInstance.isCentered;
-                JournalMoveHandler(showJournal);
-                MapManager.Instance.MapMoveHandler(!showJournal, true);
-            }
+            var showJournal = enableOwnJournal || MapNetworkManager.Instance?.mapState.Value == MapState.Own || MapNetworkManager.Instance?.mapState.Value == MapState.Individual;
+            OnJournalToggle(showJournal);
         }
         else if (pageObject == mapSharedViewPage)
         {
             if (!MapManager.SharedInstance.isLoaded) MapManager.SharedInstance.SetupLayout();
             mapSharedViewButton.GetComponent<UIElement>().OnElementSelect();
+
             MapManager.SharedInstance.MapMoveHandler(MapManager.Instance.isCentered, false);
-            JournalMoveHandler(!MapManager.Instance.isCentered);
+            var showJournal = enableSharedJournal || MapNetworkManager.Instance?.mapState.Value == MapState.Individual;
+            OnJournalToggle(showJournal);
         }
         else if (pageObject == mapIndividualViewPage)
         {
             mapIndividualViewButton.GetComponent<UIElement>().OnElementSelect();
-            JournalMoveHandler(false);
+            OnJournalToggle(false);
         }
     }
 
@@ -241,9 +260,6 @@ public class InventoryManager : MonoBehaviour
 
         // journal
         journalObject.GetComponent<RectTransform>().anchoredPosition = new Vector2(-700f, journalObject.GetComponent<RectTransform>().anchoredPosition.y);
-
-        // conditionally run first animation
-        if (!GameManager.Instance.lockInventoryAtStart && MapNetworkManager.Instance.mapState.Value == MapState.Own) MapManager.Instance.MapLoadAnimator();
     }
 
     public void OnToggleNote() => StartCoroutine(UIManager.Instance.UIAnimator(noteObject.GetComponent<RectTransform>(), new Vector2(noteObject.GetComponent<RectTransform>().anchoredPosition.x < -20f ? 370f : -30f, 0f)));
@@ -278,14 +294,6 @@ public class InventoryManager : MonoBehaviour
         if (EditorManager.Instance) EditorManager.Instance.OnEnableEditor();
     }
 
-    public void JournalMoveHandler(bool shouldShow)
-    {
-        Vector2 targetPosition = new Vector2(shouldShow ? 30f : -700f, journalObject.GetComponent<RectTransform>().anchoredPosition.y);
-        StartCoroutine(UIManager.Instance.UIAnimator(journalObject.GetComponent<RectTransform>(), targetPosition));
-
-        journalBlocker.SetActive(!shouldShow);
-    }
-
     public void MapTabMoveHandler(bool shouldCenter)
     {
         Vector2 targetPosition = new Vector2(!shouldCenter ? 340f : 36f, mapOwnViewButton.GetComponent<RectTransform>().anchoredPosition.y);
@@ -316,7 +324,8 @@ public class InventoryManager : MonoBehaviour
                 OnToggleSharedView(true);
                 OnToggleIndividualView(true);
                 SetMapPage(mapIndividualViewPage);
-                OnJournalToggle(true);
+                enableOwnJournal = true;
+                enableSharedJournal = true;
                 OnJournalTogglePaging(true);
             break;
         }
