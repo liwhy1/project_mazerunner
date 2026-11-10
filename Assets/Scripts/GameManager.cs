@@ -481,8 +481,8 @@ public class GameManager : NetworkBehaviour
             else if (allowLandmarkBacktracking && visitedLandmarks.Count > 1 && visitedLandmarks[visitedLandmarks.Count - 2] == targetLandmark)
             {
                 int targetCost = visitedLandmarks.Last().GetComponent<LandmarkObject>().travelRelations.FirstOrDefault(t => t.connectedLandmark == targetLandmark).travelCost;
-                UpdateTravelCostRpc(currentTravelCost.Value - targetCost);
                 visitedLandmarks.Remove(visitedLandmarks.Last());
+                UpdateTravelCostRpc(currentTravelCost.Value - targetCost);
             }
         }
         else
@@ -493,6 +493,13 @@ public class GameManager : NetworkBehaviour
             {
                 visitedLandmarks.Add(targetLandmark);
                 UpdateTravelCostRpc(currentTravelCost.Value + landmarkData.travelCost);
+
+                // run treasure reach event upon enter the treasure landmark, if the taken path was legal
+                if (landmarkObject.landmarkType == LandmarkType.TREASURE && landmarkObject.travelRelations.Any(r => r.connectedLandmark == visitedLandmarks[visitedLandmarks.Count - 2]))
+                {
+                    if (MapNetworkManager.Instance.mapState.Value == MapState.Individual) return;
+                    UIManager.Instance.OnTreasureReachedRpc();
+                }
             }
             // store start landmark (no relations)
             else if (landmarkObject.isStartArea)
@@ -583,6 +590,13 @@ public class GameManager : NetworkBehaviour
     public PlayerData FetchPlayerDataById(ulong playerId)
     {
         return FindObjectsByType<PlayerData>(FindObjectsInactive.Include).FirstOrDefault(p => p.OwnerClientId == playerId);
+    }
+
+    [Rpc(SendTo.Everyone, InvokePermission = RpcInvokePermission.Everyone)]
+    public void TreasureAnimationRpc()
+    {
+        var targetParticles = FindAnyObjectByType<ParticleSystem>();
+        if (targetParticles) targetParticles.Play();
     }
 
     GameObject chainLift;

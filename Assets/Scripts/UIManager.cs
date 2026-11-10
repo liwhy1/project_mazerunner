@@ -352,6 +352,10 @@ public class UIManager : NetworkBehaviour
         if (GameManager.Instance.isMaster) return;
         landmarkText.text = targetText;
         landmarkText.gameObject.SetActive(!string.IsNullOrEmpty(landmarkText.text) && !InventoryManager.Instance.isInventoryActive);
+
+        // TODO: not this
+        var chestObject = FindObjectsByType<InteractableObject>().FirstOrDefault(o => o.interactableType == InteractableType.Chest).gameObject;
+        chestObject.transform.parent.GetComponentsInChildren<Renderer>().All(c => c.enabled = GameManager.Instance.currentTravelCost.Value < 7);
     }
 
     [Rpc(SendTo.Everyone, InvokePermission = RpcInvokePermission.Everyone)]
@@ -359,14 +363,8 @@ public class UIManager : NetworkBehaviour
     {
         if (!GameManager.Instance.isMaster) 
         {
-            if (GameManager.Instance.currentTravelCost.Value < 7)
-            {
-                UIDialog.Instance.OnOpenDialog(DialogId.TreasureReached);                
-            }
-            else
-            {
-                UIDialog.Instance.OnOpenDialog(DialogId.TreasureNotReached);                
-            }
+            var targetDialog = GameManager.Instance.currentTravelCost.Value < 7 ? DialogId.TreasureReached : DialogId.TreasureNotReached;
+            UIDialog.Instance.OnOpenDialog(targetDialog);
         }
         if (IsHost) MapNetworkManager.Instance.SetMapStateServerRpc(MapState.Individual);
     }

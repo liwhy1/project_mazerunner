@@ -98,24 +98,8 @@ public class InputManager : MonoBehaviour
             Ray ray = PlayerController.Instance.playerCamera.GetComponent<Camera>().ScreenPointToRay(Pointer.current.position.ReadValue());
             if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
             {
-                if (hit.collider.GetComponent<ChainliftController>())
-                {
-                    hit.collider.GetComponent<ChainliftController>().OnMoveLift();
-                }
-                else if (hit.collider.gameObject.name == "ChestObject")
-                {
-                    if (GameManager.Instance.FetchPersistentPlayerId() != 0) return;
-                    UIManager.Instance.OnTreasureReachedRpc();
-                    hit.collider.enabled = false;
-                }
-                else if (hit.collider.gameObject.name == "BellObject")
-                {
-                    AudioManager.Instance.OnBellHit();
-                }
-                else
-                {
-                    PlayerController.Instance.OnMove(hit.point);                    
-                }
+                if (hit.collider.GetComponent<InteractableObject>()) hit.collider.GetComponent<InteractableObject>().OnInteract();
+                else PlayerController.Instance.OnMove(hit.point);
             }
         }
         else if (EditorManager.Instance && InventoryManager.Instance.isInventoryActive)
