@@ -35,14 +35,14 @@ public class UITooltip : MonoBehaviour
 
             // apply transform
             tooltipRect.position = new Vector3(clampedX, clampedY, tooltipRect.position.z);
+            tooltipRect.localScale = Vector2.one;
         }
     }
 
     public void OnCreateTooltip(UIElement targetElement)
     {
         OnDestroyTooltip();
-        activeTooltip = Instantiate(tooltipObject);
-        activeTooltip.transform.SetParent(UIManager.Instance.transform);
+        activeTooltip = Instantiate(tooltipObject, UIManager.Instance.transform);
         string targetText = UIManager.Instance.GetLocalTooltipString(targetElement.tooltipText);
         tooltipObject.GetComponentInChildren<TMP_Text>().text = targetText;
     }

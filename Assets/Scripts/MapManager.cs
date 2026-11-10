@@ -338,6 +338,7 @@ public class MapManager : NetworkBehaviour
         if (shouldAnimate) InventoryManager.Instance.MapTabMoveHandler(shouldCenter);
         RectTransform mapRect = mapObject.transform.GetComponent<RectTransform>();
         RectTransform backgroundRect = mapObject.transform.Find("InnerLayer").GetComponent<RectTransform>();
+        mapObject.GetComponent<RectTransform>().localScale = Vector2.one;
 
         // reset y
         mapRect.anchoredPosition = new Vector2(mapRect.anchoredPosition.x, 40);
