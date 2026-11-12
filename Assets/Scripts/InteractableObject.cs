@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public enum InteractableType { Chest, Bell, Lever, Log, }
+public enum InteractableType { Chest, Bell, Lever, Log, Chainlift, River, Mist, PurpleMist}
 public class InteractableObject : MonoBehaviour
 {
     public InteractableType interactableType;
@@ -16,6 +16,9 @@ public class InteractableObject : MonoBehaviour
                 break;
             case InteractableType.Bell:
                 AudioManager.Instance.OnBellHit();
+                break;
+            case InteractableType.PurpleMist:
+                GameManager.Instance.RespawnPlayer();
                 break;
         }
     }

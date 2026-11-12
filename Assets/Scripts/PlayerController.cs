@@ -40,6 +40,7 @@ public class PlayerController : NetworkBehaviour
     private Material savedMaterial;
     private GameObject savedObject;
     public bool isInMist;
+    private Material tempTransparentMat;
 
     public override void OnNetworkSpawn()
     {
@@ -63,6 +64,7 @@ public class PlayerController : NetworkBehaviour
 
     private void OnSetup()
     {
+        // setup vars
         Instance = this;
         playerRigidbody = GetComponent<Rigidbody>();
         playerAgent = GetComponent<NavMeshAgent>();
@@ -70,13 +72,16 @@ public class PlayerController : NetworkBehaviour
         enableCamera = true;
         gameObject.name = "Player_" + GetComponent<NetworkObject>().OwnerClientId;
 
+        // setup camera
         playerCamera = Instantiate(Resources.Load<GameObject>("GameComponents/PlayerCamera"));
         playerCamera.name = "PlayerCamera";
         GameManager.Instance.playerViewCamera.transform.SetParent(transform);
         GameManager.Instance.playerViewCamera.transform.localPosition = Vector3.zero + Vector3.forward;
         GameManager.Instance.playerViewCamera.transform.LookAt(transform);
-        playerCamera.GetComponent<Camera>().farClipPlane = 5f;
+        SetCameraFarClipPlane(5f);
+        playerCamera.SetActive(true);
 
+        // place player on start platform
         SetPlayerPosition(new Vector3(0f, 100f, 0f), true);
     }
 
@@ -99,25 +104,11 @@ public class PlayerController : NetworkBehaviour
         // handle animations
         AnimationHandler();
 
-        // toggle camera based on shared map view activity
-        playerCamera.gameObject.SetActive(!(EditorManager.Instance && EditorManager.Instance.editorMapInstance && EditorManager.Instance.editorMapInstance.activeSelf));
-
-        // set player animation state
-        isAgentNavigating = !(!playerAgent.pathPending && (!playerAgent.hasPath || playerAgent.velocity.sqrMagnitude == 0f));
-
         // handle platform movement
-        if (currentPlatform)
-        {
-            Vector3 platformDelta = currentPlatform.position - lastPlatformPosition;
-            playerRigidbody.MovePosition(playerRigidbody.position + platformDelta);
-            lastPlatformPosition = currentPlatform.position;
-        }
+        PlatformMovementHandler();
 
         // handle safe area
-        if (!GameManager.Instance.terrainObject) return;
-        MeshCollider riverCollider = GameManager.Instance.riverObject.transform.GetChild(0)?.GetComponent<MeshCollider>();
-        float currentDistance = Vector3.Distance(transform.position, riverCollider.ClosestPoint(transform.position));
-        lastSafePosition = isGrounded && currentDistance > 2.5f ? transform.position : lastSafePosition;
+        SafeAreaHandler();
     }
 
     private void LateUpdate()
@@ -131,43 +122,86 @@ public class PlayerController : NetworkBehaviour
         CameraHandler();
     }
 
+    public void SetCameraFarClipPlane(float targetValue) => playerCamera.GetComponent<Camera>().farClipPlane = targetValue;
+
+    private void PlatformMovementHandler()
+    {
+        if (!currentPlatform) return;
+        Vector3 platformDelta = currentPlatform.position - lastPlatformPosition;
+        playerRigidbody.MovePosition(playerRigidbody.position + platformDelta);
+        lastPlatformPosition = currentPlatform.position;
+    }
+
+    private void SafeAreaHandler()
+    {
+        if (!GameManager.Instance.terrainObject) return;
+        MeshCollider riverCollider = GameManager.Instance.riverObject.transform.GetChild(0)?.GetComponent<MeshCollider>();
+        float currentDistance = Vector3.Distance(transform.position, riverCollider.ClosestPoint(transform.position));
+        lastSafePosition = isGrounded && currentDistance > 2.5f ? transform.position : lastSafePosition;
+    }
+
     private void OnTriggerEnter(Collider other)
     {
         if (!IsOwner) return;
 
-        // hardcoded as usual
-        // TODO: Make a class for these pls :)
-        if (other.name.Contains("River")) SetPlayerPosition(lastSafePosition);
-        else if (other.GetComponent<LandmarkObject>() && GameManager.Instance.FetchPersistentPlayerId() == 0)
+        // handle interactables
+        if (other.GetComponent<InteractableObject>())
+        {
+            switch (other.GetComponent<InteractableObject>().interactableType)
+            {
+                case InteractableType.Chainlift:
+                    currentPlatform = other.transform;
+                    lastPlatformPosition = currentPlatform.position;
+                    break;
+                case InteractableType.River:
+                    SetPlayerPosition(lastSafePosition);
+                    break;
+                case InteractableType.Mist:
+                    isInMist = true;
+                    break;
+                default:
+                    other.GetComponent<InteractableObject>().OnInteract();
+                    break;
+            }
+        }
+        
+        // handle landmarks
+        if (other.GetComponent<LandmarkObject>() && GameManager.Instance.FetchPersistentPlayerId() == 0 && NetworkManager.IsConnectedClient)
         {
             GameManager.Instance.OnLandmarkEntered(other.gameObject);
         }
-        else if (other.name == "ChainLift")
-        {
-            currentPlatform = other.transform;
-            lastPlatformPosition = currentPlatform.position;
-        }
-        if (other.name.Contains("Purple")) GameManager.Instance.RespawnPlayer(); 
-        if (other.name.Contains("Mist")) isInMist = true;
     }
 
     private void OnTriggerExit(Collider other)
     {
         if (!IsOwner) return;
 
+        // handle landmarks
         if (other.GetComponent<LandmarkObject>() && GameManager.Instance.FetchPersistentPlayerId() == 0)
         {
             GameManager.Instance.OnLandmarkExited(other.gameObject);
         }
-        else if (FindObjectsByType<ChainliftController>().Any(c => c.chainliftObject == other.gameObject))
+
+        // handle interactables
+        if (other.GetComponent<InteractableObject>())
         {
-            if (currentPlatform == other.transform) currentPlatform = null;
+            switch (other.GetComponent<InteractableObject>().interactableType)
+            {
+                case InteractableType.Chainlift:
+                    if (currentPlatform == other.transform) currentPlatform = null;
+                    break;
+                case InteractableType.Mist:
+                    isInMist = false;
+                    break;
+            }
         }
-        if (other.name.Contains("Mist")) isInMist = false;
     }
 
     private void AnimationHandler()
     {
+        // handle navigation state
+        isAgentNavigating = !(!playerAgent.pathPending && (!playerAgent.hasPath || playerAgent.velocity.sqrMagnitude == 0f));
+
         // falling state
         playerAnimator.SetBool("isGrounded", playerRigidbody.isKinematic ? true : isGrounded);
 
@@ -189,27 +223,33 @@ public class PlayerController : NetworkBehaviour
 
     private void CameraObstructionHandler()
     {
-        Ray ray = new Ray(playerCamera.transform.position, transform.position - playerCamera.transform.position);
-        if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+        // TODO: This doesn't clean up cloned mats
+        Vector3 toPlayer = transform.position - playerCamera.transform.position;
+        float distanceToPlayer = toPlayer.magnitude;
+
+        if (Physics.Raycast(playerCamera.transform.position, toPlayer.normalized, out RaycastHit hit, distanceToPlayer, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
         {
+            GameObject hitObj = hit.collider.gameObject;
+
             // reset previous object
-            if (savedObject != null && savedObject != hit.collider.gameObject)
+            if (savedObject != null && savedObject != hitObj)
             {
                 savedObject.GetComponent<Renderer>().material = savedMaterial;
                 savedObject = null;
+                Destroy(tempTransparentMat);
             }
 
-            // prevent applying to player or terrain
-            if (hit.collider.gameObject == gameObject || hit.collider.gameObject.transform.IsChildOf(transform) || hit.collider.name.ToLower().Contains("terrain") || savedObject == hit.collider.gameObject) return;
+            // prevent applying to unsuitable objects && reappling
+            if (hitObj == gameObject || hitObj.transform.IsChildOf(transform) || hitObj.name.ToLower().Contains("terrain") || !hitObj.TryGetComponent<Renderer>(out var renderer) || savedObject == hitObj) return;
 
             // save object & material
-            savedObject = hit.collider.gameObject;
+            savedObject = hitObj;
             savedMaterial = savedObject.GetComponent<Renderer>().material;
 
             // apply new mat with transparent shader
-            Material clonedMaterial = new Material(savedMaterial);
-            clonedMaterial.shader = GameManager.Instance.transparentShader;
-            savedObject.GetComponent<Renderer>().material = clonedMaterial;
+            tempTransparentMat = new Material(savedMaterial);
+            tempTransparentMat.shader = GameManager.Instance.transparentShader;
+            savedObject.GetComponent<Renderer>().material = tempTransparentMat;
         }
     }
 
@@ -370,9 +410,14 @@ public class PlayerController : NetworkBehaviour
         jumpRoutine = null;
     }
 
+    private static Material[] skinMaterials;
     public void SetPlayerSkinData(SkinData skinData)
     {
-        var skinMaterials = Resources.LoadAll<Material>("Customisation/PlayerSkins");
-        transform.Find("Model").Find("Character_Body").GetComponent<Renderer>().material = skinMaterials[skinData.colorId];
+        var playerRenderer = transform.Find("Model").Find("Character_Body").GetComponent<Renderer>();
+        if (skinMaterials == null) skinMaterials = Resources.LoadAll<Material>("Customisation/PlayerSkins");
+
+        // apply
+        if (skinMaterials.Length == 0 || !playerRenderer) return;
+        playerRenderer.sharedMaterial = skinMaterials[skinData.colorId];
     }
 }

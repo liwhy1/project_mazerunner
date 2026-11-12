@@ -172,7 +172,7 @@ public class EditorManager : MonoBehaviour
         if (targetStructure.transform.childCount == 0) SettleObjectToGround(targetStructure);
         foreach (Transform part in targetStructure.transform)
         {
-            // TODO: this should be based on names
+            // TODO: this should not be based on names
             if (part.name.Contains("Lift")) continue;
             SettleObjectToGround(part.gameObject);
         }

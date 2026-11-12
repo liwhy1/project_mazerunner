@@ -29,6 +29,7 @@ public class MapManager : NetworkBehaviour
     [SerializeField] private GameObject pointerCircle;
 
     [Header("UI Data")]
+    public bool isMapActive;
     public GameObject mapBackground;
     public GameObject toolBar;
     public bool isPileHovered;
@@ -46,6 +47,8 @@ public class MapManager : NetworkBehaviour
     public GameObject saveIcon;
     public bool isLoaded;
     public bool isCentered;
+    private float nextPositionSyncTime;
+    private const float positionSyncInterval = 0.1f;
 
     public override void OnNetworkSpawn() => OnSetup();
 
@@ -106,12 +109,16 @@ public class MapManager : NetworkBehaviour
 
     private void Update()
     {
-        bool isMapActive = InventoryManager.Instance.isInventoryActive && InventoryManager.Instance.mapSharedViewPage.activeSelf;
+        isMapActive = InventoryManager.Instance.isInventoryActive && ((isNetworked && InventoryManager.Instance.mapSharedViewPage.activeSelf) || (!isNetworked && InventoryManager.Instance.mapOwnViewPage.activeSelf));
         bool isMasterActive = GameManager.Instance.isMaster && (MapNetworkManager.Instance.mapState.Value == MapState.Shared || MapNetworkManager.Instance.mapState.Value == MapState.Explore);
+
+        // handle map setup on clients
         if (!mapBackground && transform.Find("Background(Clone)"))
         {
             SetupLayout();
         }
+
+        // handle shared map visibility
         if (isNetworked && mapBackground) mapObject.transform.localPosition = new Vector2(mapObject.transform.localPosition.x, isMapActive || isMasterActive ? 40f : -3000f);
 
         if (InventoryManager.Instance.isInventoryActive)
@@ -137,7 +144,6 @@ public class MapManager : NetworkBehaviour
 
         List<RaycastResult> castResults = new List<RaycastResult>();
         EventSystem.current.RaycastAll(pointerData, castResults);
-
 
         // handle hover states
         bool isSliderHovered = castResults.Any(r => r.gameObject.GetComponentInParent<Slider>());
@@ -246,7 +252,11 @@ public class MapManager : NetworkBehaviour
         if (targetElement.GetComponent<NetworkObject>()) targetElement.GetComponent<NetworkObject>().TrySetParent(mapObject.transform, true);
         else targetElement.transform.SetParent(mapObject.transform, true);
 
-        SetElementPosition(targetElement, targetPosition);
+        if (!isNetworked || Time.unscaledTime >= nextPositionSyncTime)
+        {
+            nextPositionSyncTime = Time.unscaledTime + positionSyncInterval;
+            SetElementPosition(targetElement, targetPosition, true);
+        }
     }
 
     private void OnStopElementDrag(GameObject targetElement)
@@ -527,10 +537,10 @@ public class MapManager : NetworkBehaviour
         SetActiveTool(null);
         iconPile.SetActive(false);
         saveIcon.SetActive(false);
-        placeIcon.GetComponent<UIElement>().OnElementDisable();
-        pencilIcon.GetComponent<UIElement>().OnElementDisable();
-        eraserIcon.GetComponent<UIElement>().OnElementDisable();
-        trashIcon.GetComponent<UIElement>().OnElementDisable();
+        placeIcon.GetComponent<UIElement>().OnElementToggleEnable(false);
+        pencilIcon.GetComponent<UIElement>().OnElementToggleEnable(false);
+        eraserIcon.GetComponent<UIElement>().OnElementToggleEnable(false);
+        trashIcon.GetComponent<UIElement>().OnElementToggleEnable(false);
         if (GameManager.Instance.isMaster) toolBar.SetActive(false);
         ToggleColorHighlight(false);
     }
@@ -579,6 +589,9 @@ public class MapManager : NetworkBehaviour
                 break;
         }
     }
+
+    public void ToggleMapObject(bool targetState) => mapObject.SetActive(targetState);
+    public void ToggleIconPile(bool targetState) => iconPile.SetActive(targetState);
 }
 
 public struct MapElementData : INetworkSerializable

@@ -51,7 +51,7 @@ public class UIElement : MonoBehaviour
             GetComponent<RectTransform>().localScale = Vector2.one;
         }
 
-        if (!isEnabled) OnElementDisable();
+        if (!isEnabled) OnElementToggleEnable(false);
 
         // setup event triggers
         if (GetComponent<EventTrigger>() == null) gameObject.AddComponent<EventTrigger>();
@@ -102,7 +102,7 @@ public class UIElement : MonoBehaviour
         GetComponent<Image>().color = normalColor;
     }
 
-    public void OnElementEnable()
+    private void OnElementEnable()
     {
         isEnabled = true;
         GetComponents<EventTrigger>().All(p => p.enabled = true);
@@ -115,7 +115,7 @@ public class UIElement : MonoBehaviour
         }
     }
 
-    public void OnElementDisable()
+    private void OnElementDisable()
     {
         isEnabled = false;
         isSelected = false;

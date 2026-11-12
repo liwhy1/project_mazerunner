@@ -5,14 +5,14 @@ public class ChainliftController : MonoBehaviour
 {
     public GameObject chainliftObject;
     private Coroutine liftMoveRoutine;
-    public float lowLimit = 20.35f; // CHANGEME
-    public float highLimit = -17.07f; // CHANGEME
-    public float movementSpeed = 10f;
+    private float lowLimit = 20.35f; // CHANGEME
+    private float highLimit = -17.07f; // CHANGEME
+    private float movementSpeed = 10f;
 
     public void OnMoveLift()
     {
-        if (!chainliftObject || GameManager.Instance.isChainliftMoving.Value) return;
-        if (liftMoveRoutine == null) liftMoveRoutine = StartCoroutine(LiftMoveRoutine());
+        if (!chainliftObject || GameManager.Instance.isChainliftMoving.Value || liftMoveRoutine != null) return;
+        liftMoveRoutine = StartCoroutine(LiftMoveRoutine());
     }
 
     private IEnumerator LiftMoveRoutine()

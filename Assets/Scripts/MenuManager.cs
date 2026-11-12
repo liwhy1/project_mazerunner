@@ -75,6 +75,7 @@ public class MenuManager : NetworkBehaviour
     public override void OnDestroy()
     {
         GameManager.Instance.joinCode.OnValueChanged -= OnJoinCodeValueChanged;
+        base.OnDestroy();
     }
 
     public void ResetUIState()
@@ -83,11 +84,11 @@ public class MenuManager : NetworkBehaviour
         joinObject.SetActive(false);
         menuObject.SetActive(false);
         lobbyObject.SetActive(false);
-        UIManager.Instance.loadingIcon.SetActive(false);
+        UIManager.Instance.ToggleLoadIcon(false);
         hostPlayerNameInput.text = "";
         joinPlayerNameInput.text = "";
         joinCodeInput.text = "";
-        UIManager.Instance.pauseIcon.gameObject.SetActive(GameManager.Instance.isLobbyStarted.Value);
+        UIManager.Instance.TogglePauseIcon(GameManager.Instance.isLobbyStarted.Value);
     }
 
     private void SetupUITriggers()
@@ -194,20 +195,20 @@ public class MenuManager : NetworkBehaviour
 
     private void OnStartHost()
     {
-        startHostButton.GetComponent<UIElement>().OnElementDisable();
+        startHostButton.GetComponent<UIElement>().OnElementToggleEnable(false);
         GameManager.Instance.OnStartHost(playerModeSelector.currentSelection != UIManager.Instance.GetLocalUIString("MENU_PLAYER_SUBTITLE"));
     }
 
     private void OnStartClient()
     {
-        startClientButton.GetComponent<UIElement>().OnElementDisable();
+        startClientButton.GetComponent<UIElement>().OnElementToggleEnable(false);
         GameManager.Instance.OnStartClient();
     }
 
     public void OnSessionConnectFailed()
     {
-        startHostButton.GetComponent<UIElement>().OnElementEnable();
-        startClientButton.GetComponent<UIElement>().OnElementEnable();
+        startHostButton.GetComponent<UIElement>().OnElementToggleEnable(true);
+        startClientButton.GetComponent<UIElement>().OnElementToggleEnable(true);
     }
 
     private void OnOpenEditor()
@@ -250,7 +251,7 @@ public class MenuManager : NetworkBehaviour
         lobbyWaitingText.text = "";
         gameStateProgressBar.gameObject.SetActive(false);
         lobbyPlayerListObject.SetActive(!GameManager.Instance.isMaster);
-        UIManager.Instance.pausePlayerListObject.SetActive(!GameManager.Instance.isMaster);
+        UIManager.Instance.TogglePlayerList(!GameManager.Instance.isMaster);
         individualMapsObject.SetActive(false);
         lobbyContinueButton.SetActive(false);
         lobbyContinueButton.transform.Find("Text").GetComponent<TMP_Text>().text = UIManager.Instance.GetLocalUIString("MENU_CONTINUE_SUBSTRING");
@@ -270,14 +271,14 @@ public class MenuManager : NetworkBehaviour
     {
         if (GameManager.Instance.isLobbyStarted.Value == true || GameManager.Instance.isMaster) StartCoroutine(GameManager.Instance.OnLobbyStart());
 
+        // this state is the reverse of the target state
         bool isReady = GameManager.Instance.FetchPlayerDataById(NetworkManager.LocalClientId).IsLobbyReady.Value;
         TMP_Text targetText = lobbyReadyButton.transform.Find("Text").GetComponent<TMP_Text>();
-        string targetString = isReady ? UIManager.Instance.GetLocalUIString("MENU_UNREADY_BUTTON") : UIManager.Instance.GetLocalUIString("MENU_READY_BUTTON");
+        string targetString = isReady ? UIManager.Instance.GetLocalUIString("MENU_READY_BUTTON") : UIManager.Instance.GetLocalUIString("MENU_UNREADY_BUTTON");
         targetText.text = targetString;
         foreach (Transform child in lobbyPlayerView.transform)
         { 
-            if (!isReady) child.GetComponent<UIElement>()?.OnElementDisable(); 
-            else child.GetComponent<UIElement>().OnElementEnable(); 
+            child.GetComponent<UIElement>()?.OnElementToggleEnable(isReady);
         }
 
         if (!GameManager.Instance.isMaster) GameManager.Instance.SetLobbyReadyStateServerRpc(!isReady);
@@ -296,13 +297,13 @@ public class MenuManager : NetworkBehaviour
         lobbyStorySelector.gameObject.SetActive(false);
         lobbyWaitingText.text = GameManager.Instance.isMaster ? "" : UIManager.Instance.GetLocalUIString("MENU_STARTING_SUBSTRING");
         lobbyReadyButton.SetActive(false);
-        foreach (Transform child in lobbyPlayerView.transform) { child.GetComponent<UIElement>().OnElementDisable(); }
+        foreach (Transform child in lobbyPlayerView.transform) { child.GetComponent<UIElement>().OnElementToggleEnable(false); }
 
         // master
         timerObject.SetActive(GameManager.Instance.isMaster);
         gameStateProgressBar.gameObject.SetActive(GameManager.Instance.isMaster);
         lobbyContinueButton.SetActive(GameManager.Instance.isMaster);
-        UIManager.Instance.gameSettingsPage.SetActive(GameManager.Instance.isMaster);
+        UIManager.Instance.ToggleGameSettingsPage(GameManager.Instance.isMaster);
         SetMasterGameState(1);
     }
 
@@ -357,7 +358,7 @@ public class MenuManager : NetworkBehaviour
     private void OnMasterEndGame()
     {
         SetMasterGameState(4);
-        MapManager.SharedInstance.mapObject.SetActive(false);
+        MapManager.SharedInstance.ToggleMapObject(false);
         individualMapsObject.SetActive(true);
         lobbyContinueButton.SetActive(false);
         MapNetworkManager.Instance.SetMapStateServerRpc(MapState.Individual);
@@ -368,10 +369,12 @@ public class MenuManager : NetworkBehaviour
         SetMasterGameState(2);
         lobbyContinueButton.SetActive(true);
         lobbyContinueButton.transform.Find("Text").GetComponent<TMP_Text>().text = UIManager.Instance.GetLocalUIString("MENU_SAVE_BUTTON");
-        MapManager.SharedInstance.mapObject.SetActive(true);
-        MapManager.SharedInstance.iconPile.SetActive(true);
+        MapManager.SharedInstance.ToggleMapObject(true);
+        MapManager.SharedInstance.ToggleIconPile(true);
         MapManager.SharedInstance.OnMapToggleReady(false, false);
         MapManager.SharedInstance.mapObject.transform.Find("InnerLayer").gameObject.SetActive(false);
         MapManager.SharedInstance.SetupLayout();
     }
+
+    public void TogglePlayerList(bool targetState) => lobbyPlayerListObject.SetActive(targetState);
 }

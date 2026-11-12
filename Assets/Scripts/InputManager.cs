@@ -129,10 +129,11 @@ public class InputManager : MonoBehaviour
 
     public void OnScrollStop()
     {
-        if (GameManager.Instance.isPaused) return;
-
-        StopCoroutine(scrollRoutine);
-        scrollRoutine = null;
+        if (scrollRoutine != null)
+        {
+            StopCoroutine(scrollRoutine);
+            scrollRoutine = null;            
+        }
     }
 
     public void OnScrollAction(float scrollValue)

@@ -40,6 +40,7 @@ public class GameManager : NetworkBehaviour
 
     [Header("Lobby data")]
     public bool allowLandmarkBacktracking = true;
+    public int maxTravelCost = 7;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void Initialize()
@@ -80,10 +81,11 @@ public class GameManager : NetworkBehaviour
         }
     }
 
+    private void Awake() => Instance = this;
+
     private void Start()
     {
         // setup vars
-        Instance = this;
         isPaused = true;
 
         // enable wakelock
@@ -101,6 +103,7 @@ public class GameManager : NetworkBehaviour
         if (NetworkManager) NetworkManager.OnClientDisconnectCallback -= OnClientDisconnected;
         if (NetworkManager && NetworkManager.SceneManager != null) NetworkManager.SceneManager.OnLoadEventCompleted -= OnMapLoaded;
         isLobbyStarted.OnValueChanged -= OnLobbyStartValueChanged;
+        base.OnDestroy();
     }
 
     public void OnLobbyConnect()
@@ -130,7 +133,7 @@ public class GameManager : NetworkBehaviour
     public IEnumerator OnLobbyStart()
     {
         Debug.Log("GameManager: Starting lobby");
-        UIManager.Instance.loadingIcon.SetActive(true);
+        UIManager.Instance.ToggleLoadIcon(true);
 
         // setup ui
         InventoryManager.Instance.OnSetupStory();
@@ -214,7 +217,7 @@ public class GameManager : NetworkBehaviour
                     if (isMaster)
                     {
                         Destroy(rootObject);
-                        UIManager.Instance.loadingIcon.SetActive(false);
+                        UIManager.Instance.ToggleLoadIcon(false);
                         return;
                     }
 
@@ -262,13 +265,13 @@ public class GameManager : NetworkBehaviour
 
             isPaused = false;
         }
-        UIManager.Instance.loadingIcon.SetActive(false);
+        UIManager.Instance.ToggleLoadIcon(false);
         Debug.Log("GameManager: Map loaded: " + loadedScene.name);
     }
 
     public IEnumerator OnExploreGameState()
     {
-        UIManager.Instance.loadingIcon.SetActive(true);
+        UIManager.Instance.ToggleLoadIcon(true);
 
         // enable terrain renderers
         foreach (Transform child in terrainObject.transform)
@@ -294,15 +297,12 @@ public class GameManager : NetworkBehaviour
         UpdatePlayerRenderStateRpc();
 
         // reset player camera
-        PlayerController.Instance.playerCamera.GetComponent<Camera>().farClipPlane = 100f;
-
-        // start environment audio
-        if (MapNetworkManager.Instance.mapState.Value == MapState.Explore || MapNetworkManager.Instance.mapState.Value == MapState.Individual) AudioManager.Instance.OnGameStarted();
+        PlayerController.Instance.SetCameraFarClipPlane(100f);
 
         // close inventory
         InventoryManager.Instance.OnInventoryToggleLock(false);
 
-        UIManager.Instance.loadingIcon.SetActive(false);
+        UIManager.Instance.ToggleLoadIcon(false);
     }
 
     public int GetSceneBuildIndex(string sceneName)
@@ -382,7 +382,11 @@ public class GameManager : NetworkBehaviour
 
     public void OnDisconnectClient()
     {
-        NetworkManager.Shutdown();
+        AudioManager.Instance?.ResetAudioState();
+        if (NetworkManager != null && NetworkManager.IsListening)
+        {
+            NetworkManager.Shutdown();
+        }
         SceneManager.LoadScene(1);
     }
 
@@ -402,7 +406,7 @@ public class GameManager : NetworkBehaviour
             return;
         }
 
-        UIManager.Instance.loadingIcon.SetActive(true);
+        UIManager.Instance.ToggleLoadIcon(true);
         string relayCode = await RelayManager.Instance.StartHost(targetPlayerCount);
 
         if (!string.IsNullOrEmpty(relayCode))
@@ -411,7 +415,7 @@ public class GameManager : NetworkBehaviour
             return;
         }
 
-        UIManager.Instance.loadingIcon.SetActive(false);
+        UIManager.Instance.ToggleLoadIcon(false);
     }
 
     public async void OnStartClient()
@@ -430,12 +434,12 @@ public class GameManager : NetworkBehaviour
             return;
         }
 
-        UIManager.Instance.loadingIcon.SetActive(true);
+        UIManager.Instance.ToggleLoadIcon(true);
         if (!await RelayManager.Instance.JoinHost(joinCode))
         {
             Debug.Log("GameManager: Failed to join game.");
             UIDialog.Instance.OnOpenDialog(DialogId.FailedGameJoin);
-            UIManager.Instance.loadingIcon.SetActive(false);
+            UIManager.Instance.ToggleLoadIcon(false);
             return;
         }
     }
@@ -535,7 +539,7 @@ public class GameManager : NetworkBehaviour
         {
             bool isOwner = player.OwnerClientId == NetworkManager.LocalClientId;
             bool shouldRenderObject = isLobbyStarted.Value && FetchPlayerDataById(NetworkManager.LocalClientId).IsLobbyReady.Value;
-            player.transform.Find("NameCanvas").gameObject.SetActive(!isOwner && shouldRenderObject);
+            player.nameText.gameObject.SetActive(!isOwner && shouldRenderObject);
             foreach (Transform child in player.transform.Find("Model").transform)
             {
                 if (child.GetComponent<Renderer>()) child.GetComponent<Renderer>().enabled = isOwner || (!isOwner && shouldRenderObject);

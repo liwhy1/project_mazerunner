@@ -39,6 +39,7 @@ public class UIManager : NetworkBehaviour
     private int fpsValue;
 
     [Header("Game Settings Data")]
+    private bool isGameSettingsActive;
     public GameObject gameSettingsPage;
     [SerializeField] private GameObject gameSettingsButton;
     [SerializeField] private Toggle gameLandmarkBacktrackToggle;
@@ -65,12 +66,13 @@ public class UIManager : NetworkBehaviour
     [SerializeField] private Image minimapIcon;
     [SerializeField] private List<GameObject> minimapPlayerIcons;
 
+    private void Awake() => Instance = this;
+
     private void Start()
     {
         Debug.Log("UIManager: Setting up");
 
         // setup vars
-        Instance = this;
         eventSystem = FindAnyObjectByType<EventSystem>(FindObjectsInactive.Include);
         gameObject.AddComponent<DialogDatabase>();
 
@@ -92,28 +94,30 @@ public class UIManager : NetworkBehaviour
         // subscribe to travel cost change events
         GameManager.Instance.currentTravelCost.OnValueChanged += OnTravelCostChanged;
 
-        // load languages
-        StartCoroutine(DelayLocalLoader());
-
-        // setup menumanager
-        MenuManager.Instance.OnSetup();
+        // load languages & menu
+        StartCoroutine(DelayedLocalLoader());
     }
 
-    private void LoadLanguages()
+    private IEnumerator DelayedLocalLoader()
     {
+        yield return new WaitForSeconds(.3f);
+        List<string> availableLocales = new List<string>();
         try
         {
-            var availableLocales = LocalizationSettings.AvailableLocales.Locales.Select(locale => locale.Identifier.Code).ToList();
+            availableLocales = LocalizationSettings.AvailableLocales.Locales.Select(locale => locale.Identifier.Code).ToList();
             languageSelector.selectorItems = availableLocales;
             languageSelector.OnUpdateSelection(0);
         }
-        catch { StartCoroutine(DelayLocalLoader()); }
-    }
+        catch
+        {
+            StartCoroutine(DelayedLocalLoader());
+        }
 
-    private IEnumerator DelayLocalLoader()
-    {
-        yield return new WaitForSeconds(1f);
-        LoadLanguages();
+        if (availableLocales.Count > 0)
+        {
+            // setup menumanager
+            MenuManager.Instance.OnSetup();            
+        }
     }
 
     private void OnLanguageChanged()
@@ -145,7 +149,7 @@ public class UIManager : NetworkBehaviour
         gameOwnJournalToggle.onValueChanged.AddListener(delegate { ToggleOwnJournalClientRpc(gameOwnJournalToggle.isOn); });
         gameSharedJournalToggle.onValueChanged.AddListener(delegate { ToggleSharedJournalClientRpc(gameSharedJournalToggle.isOn); });
         gameJournalPagingToggle.onValueChanged.AddListener(delegate { ToggleJournalPagingClientRpc(gameJournalPagingToggle.isOn); });
-        gameJournalPageInputField.onValueChanged.AddListener(delegate { SetJournalPageClientRpc(gameJournalPageInputField.text); });
+        gameJournalPageInputField.onEndEdit.AddListener(delegate { SetJournalPageClientRpc(gameJournalPageInputField.text); });
 
         // setup setting trigger
         AddEventTrigger(settingsBackButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnToggleSettings);
@@ -237,7 +241,8 @@ public class UIManager : NetworkBehaviour
 
     private void OnGameToggleSettings()
     {
-        Vector2 targetPosition = new Vector2(gameSettingsPage.GetComponent<RectTransform>().anchoredPosition.x < 210f ? 220f : -145f, -30f);
+        isGameSettingsActive = !isGameSettingsActive;
+        Vector2 targetPosition = new Vector2(isGameSettingsActive ? -145f : 225f, -30f);
         StartCoroutine(UIAnimator(gameSettingsPage.GetComponent<RectTransform>(), targetPosition));
     }
 
@@ -353,9 +358,9 @@ public class UIManager : NetworkBehaviour
         landmarkText.text = targetText;
         landmarkText.gameObject.SetActive(!string.IsNullOrEmpty(landmarkText.text) && !InventoryManager.Instance.isInventoryActive);
 
-        // TODO: not this
+        // TODO: This shouldn't be here
         var chestObject = FindObjectsByType<InteractableObject>().FirstOrDefault(o => o.interactableType == InteractableType.Chest).gameObject;
-        chestObject.transform.parent.GetComponentsInChildren<Renderer>().All(c => c.enabled = GameManager.Instance.currentTravelCost.Value < 7);
+        chestObject.transform.parent.GetComponentsInChildren<Renderer>().ToList().ForEach(c => c.enabled = GameManager.Instance.currentTravelCost.Value < GameManager.Instance.maxTravelCost);
     }
 
     [Rpc(SendTo.Everyone, InvokePermission = RpcInvokePermission.Everyone)]
@@ -363,7 +368,7 @@ public class UIManager : NetworkBehaviour
     {
         if (!GameManager.Instance.isMaster) 
         {
-            var targetDialog = GameManager.Instance.currentTravelCost.Value < 7 ? DialogId.TreasureReached : DialogId.TreasureNotReached;
+            var targetDialog = GameManager.Instance.currentTravelCost.Value < GameManager.Instance.maxTravelCost ? DialogId.TreasureReached : DialogId.TreasureNotReached;
             UIDialog.Instance.OnOpenDialog(targetDialog);
         }
         if (IsHost) MapNetworkManager.Instance.SetMapStateServerRpc(MapState.Individual);
@@ -371,15 +376,14 @@ public class UIManager : NetworkBehaviour
 
     public void OnQuitButton()
     {
-        // destroy spawned player
-        if (PlayerController.Instance != null)
-        {
-            Destroy(PlayerController.Instance.gameObject);
-        }
-
         // reset networking
         GameManager.Instance.OnDisconnectClient();
     }
+
+    public void ToggleLoadIcon(bool targetState) => loadingIcon.SetActive(targetState);
+    public void TogglePauseIcon(bool targetState) => pauseIcon.gameObject.SetActive(targetState);
+    public void TogglePlayerList(bool targetState) => pausePlayerListObject.SetActive(targetState);
+    public void ToggleGameSettingsPage(bool targetState) => gameSettingsPage.SetActive(targetState);
 
     public void ResetUIState()
     {
@@ -393,7 +397,7 @@ public class UIManager : NetworkBehaviour
         minimapIcon.transform.parent.gameObject.SetActive(false);
         inventoryIcon.gameObject.SetActive(false);
         pauseIcon.gameObject.SetActive(false);
-        gameSettingsPage.SetActive(false);
+        ToggleGameSettingsPage(false);
     }
 
     public void OnPauseToggle()
@@ -404,7 +408,7 @@ public class UIManager : NetworkBehaviour
         endGameButton.SetActive(IsHost);
         inventoryIcon.gameObject.SetActive(!pauseObject.activeSelf && !InventoryManager.Instance.isLocked);
         pauseIcon.gameObject.SetActive(!pauseObject.activeSelf);
-        gameSettingsPage.SetActive(pauseObject.activeSelf);
+        ToggleGameSettingsPage(pauseObject.activeSelf && IsHost);
     }
 
     public void OnRefreshPlayerList()
@@ -424,7 +428,7 @@ public class UIManager : NetworkBehaviour
 
         // conditionally toggle player list visibility
         pausePlayerListObject.SetActive(GameManager.Instance.playerList.Count != 0);
-        MenuManager.Instance.lobbyPlayerListObject.SetActive(GameManager.Instance.playerList.Count != 0);
+        MenuManager.Instance.TogglePlayerList(GameManager.Instance.playerList.Count != 0);
 
         foreach (var player in GameManager.Instance.playerList)
         {
@@ -510,6 +514,15 @@ public class UIManager : NetworkBehaviour
         }
     }
 
+    public void ToggleInventoryIcon(bool targetState) => inventoryIcon.gameObject.SetActive(targetState);
+    public void ToggleHUDIcons(bool targetState)
+    {
+        landmarkText.gameObject.SetActive(targetState && !string.IsNullOrEmpty(landmarkText.text));
+        cameraZoomInIcon.gameObject.SetActive(targetState);
+        cameraZoomOutIcon.gameObject.SetActive(targetState);
+        minimapObject.SetActive(targetState);
+    }
+
     [ClientRpc]
     public void OnSyncTimerClientRpc(float currentTime, bool isPlaying, bool showTimer = true)
     {
@@ -529,8 +542,11 @@ public class UIManager : NetworkBehaviour
     [ClientRpc]
     public void SetJournalPageClientRpc(string targetPage)
     { 
-        var NormalizedValue = Mathf.Clamp(Convert.ToInt32(targetPage), 1, 2);
-        InventoryManager.Instance.OnJournalSetPage(NormalizedValue);
+        if (int.TryParse(targetPage, out int parsedPage))
+        {
+            var normalizedValue = Mathf.Clamp(Convert.ToInt32(parsedPage), 1, 2);
+            InventoryManager.Instance.OnJournalSetPage(normalizedValue);
+        }
     }
 
     private void MistEffectHandler()

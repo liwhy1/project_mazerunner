@@ -36,10 +36,12 @@ public class InventoryManager : MonoBehaviour
     public GameObject mapSharedViewPage;
     public GameObject mapIndividualViewPage;
     public GameObject activeMapPage;
+    private bool isNoteActive;
+
+    private void Awake() => Instance = this;
 
     private void Start()
     {
-        Instance = this;
         isLocked = GameManager.Instance.isMaster;
 
         // reset inventory
@@ -48,8 +50,8 @@ public class InventoryManager : MonoBehaviour
 
     private void LateUpdate()
     {
-        bool isSharedMapActive = MapManager.SharedInstance && MapManager.SharedInstance.mapObject.transform.localPosition.y != 40;
-        innerLayer.SetActive(!editorObject.activeSelf && (isSharedMapActive || !MapManager.SharedInstance));
+        // shared map doesn't have it's own background layer due to layering issues, use a generic layer here
+        innerLayer.SetActive(!editorObject.activeSelf && ((MapManager.SharedInstance && !MapManager.SharedInstance.isMapActive) || !MapManager.SharedInstance));
     }
 
     public void OnSetup()
@@ -92,7 +94,7 @@ public class InventoryManager : MonoBehaviour
             isLocked = targetState;
             OnToggleInventory();            
         }
-        UIManager.Instance.inventoryIcon.gameObject.SetActive(!isLocked);
+        UIManager.Instance.ToggleInventoryIcon(!isLocked);
 
         // tutorial dialog
         if (!isLocked) UIDialog.Instance.OnOpenDialog(DialogId.PlayerTutorial);
@@ -104,10 +106,7 @@ public class InventoryManager : MonoBehaviour
         isInventoryActive = !isInventoryActive;
         inventoryObject.SetActive(isInventoryActive);
         if (isInventoryActive) OnOpenMap();
-        UIManager.Instance.landmarkText.gameObject.SetActive(!isInventoryActive && !string.IsNullOrEmpty(UIManager.Instance.landmarkText.text));
-        UIManager.Instance.cameraZoomInIcon.gameObject.SetActive(!isInventoryActive);
-        UIManager.Instance.cameraZoomOutIcon.gameObject.SetActive(!isInventoryActive);
-        UIManager.Instance.minimapObject.SetActive(!isInventoryActive);
+        UIManager.Instance.ToggleHUDIcons(!isInventoryActive);
     }
 
     public void OnSetupStory()
@@ -132,16 +131,19 @@ public class InventoryManager : MonoBehaviour
         }
 
         // setup journal
-        journalPages = Resources.LoadAll<TextAsset>("Information/" + activeStory).ToList();
-        if (!GameManager.Instance.isMaster) journalPages.RemoveAll(p => !p.name.Contains("info" + GameManager.Instance.FetchPersistentPlayerId().ToString()));
-        TMP_InputField textComponent = journalObject.GetComponentInChildren<TMP_InputField>();
-        textComponent.text = journalPages[0].text;
-        int currentIndex = journalPages.IndexOf(journalPages.FirstOrDefault(p => p.text == textComponent.text));
-        journalPageNumber.text = UIManager.Instance.GetLocalUIString("INVENTORY_PAGE_SUBSTRING") + " " + (currentIndex + 1);
+        int persistentId = GameManager.Instance.FetchPersistentPlayerId();
+        journalPages = Resources.LoadAll<TextAsset>("Information/" + activeStory).Where(p => GameManager.Instance.isMaster || p.name.Contains("info" + persistentId)).OrderBy(p => p.name).ToList();
+        if (journalPages.Count > 0)
+        {
+            TMP_InputField textComponent = journalObject.GetComponentInChildren<TMP_InputField>();
+            textComponent.text = journalPages[0].text;
+            int currentIndex = journalPages.IndexOf(journalPages.FirstOrDefault(p => p.text == textComponent.text));
+            journalPageNumber.text = UIManager.Instance.GetLocalUIString("INVENTORY_PAGE_SUBSTRING") + " " + (currentIndex + 1);
+            textComponent.textComponent.ForceMeshUpdate();
+        }
 
         // reserve manual paging to master mode
-        OnJournalTogglePaging(false);
-        textComponent.textComponent.ForceMeshUpdate();
+        OnJournalTogglePaging(GameManager.Instance.gameType.Value == GameType.Player);
     }
 
     public void OnJournalNextPage()
@@ -155,7 +157,7 @@ public class InventoryManager : MonoBehaviour
 
     public void OnJournalSetPage(int targetPage)
     {
-        if (GameManager.Instance.isMaster) return;
+        if (GameManager.Instance.isMaster || journalPages.Count == 0) return;
 
         TMP_InputField textComponent = journalObject.GetComponentInChildren<TMP_InputField>();
         journalPageNumber.text = UIManager.Instance.GetLocalUIString("INVENTORY_PAGE_SUBSTRING") + " " + targetPage;
@@ -248,7 +250,7 @@ public class InventoryManager : MonoBehaviour
     private void SetInventoryInitialState()
     {
         // map object
-        MapManager.Instance.iconPile.SetActive(true);
+        MapManager.Instance.ToggleIconPile(true);
         MapManager.Instance.OnMapToggleReady(false, false);
         MapManager.SharedInstance.mapObject.GetComponent<RectTransform>().anchoredPosition = new Vector2(-307f, mapObject.GetComponent<RectTransform>().anchoredPosition.y);
         MapManager.Instance.saveIcon.SetActive(MapNetworkManager.Instance.mapState.Value == MapState.Own);
@@ -262,7 +264,12 @@ public class InventoryManager : MonoBehaviour
         journalObject.GetComponent<RectTransform>().anchoredPosition = new Vector2(-700f, journalObject.GetComponent<RectTransform>().anchoredPosition.y);
     }
 
-    public void OnToggleNote() => StartCoroutine(UIManager.Instance.UIAnimator(noteObject.GetComponent<RectTransform>(), new Vector2(noteObject.GetComponent<RectTransform>().anchoredPosition.x < -20f ? 370f : -30f, 0f)));
+    public void OnToggleNote() 
+    {
+        isNoteActive = !isNoteActive;
+        Vector2 targetPosition = new Vector2(isNoteActive ? -30f : 370f, 0f);
+        StartCoroutine(UIManager.Instance.UIAnimator(noteObject.GetComponent<RectTransform>(), targetPosition));
+    }
 
     public void OnInventoryBack()
     {
@@ -338,13 +345,13 @@ public class InventoryManager : MonoBehaviour
     }
     public void OnToggleSharedView(bool targetState) 
     {
-        if (targetState) mapSharedViewButton.GetComponent<UIElement>().OnElementEnable();
-        else mapSharedViewButton.GetComponent<UIElement>().OnElementDisable();
+        if (targetState) mapSharedViewButton.GetComponent<UIElement>().OnElementToggleEnable(true);
+        else mapSharedViewButton.GetComponent<UIElement>().OnElementToggleEnable(false);
     }
 
     public void OnToggleIndividualView(bool targetState) 
     {
-        if (targetState) mapIndividualViewButton.GetComponent<UIElement>().OnElementEnable();
-        else mapIndividualViewButton.GetComponent<UIElement>().OnElementDisable();
+        if (targetState) mapIndividualViewButton.GetComponent<UIElement>().OnElementToggleEnable(true);
+        else mapIndividualViewButton.GetComponent<UIElement>().OnElementToggleEnable(false);
     }
 }

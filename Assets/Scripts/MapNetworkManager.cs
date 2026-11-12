@@ -46,10 +46,10 @@ public class MapNetworkManager : NetworkBehaviour
             case MapState.Explore:
                 if (oldValue != MapState.Null && !GameManager.Instance.isMaster) StartCoroutine(GameManager.Instance.OnExploreGameState());
                 UIManager.Instance.MirrorSharedmaptoMinimap();
-                if (!GameManager.Instance.isMaster && AudioManager.Instance.environmentAudioSource) AudioManager.Instance.OnGameStarted();
+                if (AudioManager.Instance.environmentAudioSource) AudioManager.Instance.OnGameStarted();
                 break;
             case MapState.Individual:
-                if (!GameManager.Instance.isMaster && AudioManager.Instance.environmentAudioSource) AudioManager.Instance.OnGameStarted();
+                if (AudioManager.Instance.environmentAudioSource) AudioManager.Instance.OnGameStarted();
                 break;
         }
     }
@@ -80,6 +80,7 @@ public class MapNetworkManager : NetworkBehaviour
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
     public void SyncMapDataServerRpc()
     {
+        // TODO: This (and the rpcs below) should only run for a target client
         if (mapState.Value == MapState.Own) return;
 
         // sync shared map element data
@@ -91,10 +92,12 @@ public class MapNetworkManager : NetworkBehaviour
             SetMapElementPositionRpc(element.GetComponent<NetworkObject>().NetworkObjectId, normalisedPosition);
         }
         // sync individual view data
-        // NOTE: This assumes the player limit is 3
-        for (int i = 0; i < 3; i++)
+        foreach (var player in GameManager.Instance.playerList)
         {
-            GameObject targetMap = InventoryManager.Instance.FetchMapObjectById(i);
+            int id = player.PersistentPlayerId.Value;
+            if (id < 0) continue; // ignore master
+
+            GameObject targetMap = InventoryManager.Instance.FetchMapObjectById(id);
             List<MapElementData> mapElements = new List<MapElementData>();
             foreach (Transform icon in targetMap.transform.Find("Background"))
             {
@@ -104,7 +107,7 @@ public class MapNetworkManager : NetworkBehaviour
                 mapElements.Add(new MapElementData{iconPrefab = iconPrefab, iconSprite = iconSprite, iconPosition = normalisedPosition, iconScale = icon.transform.localScale});
             }
             string playerName = targetMap.transform.Find("Title").GetComponent<TMP_Text>().text;
-            SpawnMapInstanceClientRpc(i, playerName, mapElements.ToArray());
+            SpawnMapInstanceClientRpc(id, playerName, mapElements.ToArray());
         }
 
         UIManager.Instance.MirrorSharedmaptoMinimap();

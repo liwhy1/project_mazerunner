@@ -22,9 +22,10 @@ public class AudioManager : MonoBehaviour
     [SerializeField] private AudioClip pencilDrawSound;
     [SerializeField] private AudioClip bellHitSound;
 
+    private void Awake() => Instance = this;
+
     private void Start()
     {
-        Instance = this;
         uiAudioSource = GetComponent<AudioSource>();
     }
 
@@ -35,7 +36,7 @@ public class AudioManager : MonoBehaviour
 
     public void OnGameStarted()
     {
-        if (IsGameStarted) return;
+        if (IsGameStarted && !GameManager.Instance.isMaster) return;
         IsGameStarted = true;
 
         // setup environment sound
@@ -46,8 +47,16 @@ public class AudioManager : MonoBehaviour
         riverAudioSource?.PlayOneShot(riverSound);
     }
 
+    public void ResetAudioState()
+    {
+        IsGameStarted = false;
+        if (environmentAudioSource) environmentAudioSource.Stop();
+        if (riverAudioSource) riverAudioSource.Stop();
+    }
+
     private void UpdateRiverSound()
     {
+        // handle playing river sound based on player distance to the river object
         if (!IsGameStarted || !GameManager.Instance.riverObject || !PlayerController.Instance) return;
         MeshCollider riverCollider = GameManager.Instance.riverObject.transform.GetChild(0)?.GetComponent<MeshCollider>();
         if (!riverCollider) return;
