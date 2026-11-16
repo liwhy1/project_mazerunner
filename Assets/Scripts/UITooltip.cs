@@ -14,6 +14,7 @@ public class UITooltip : MonoBehaviour
     {
         if (activeTooltip)
         {
+            // keep the tooltip near the cursor and inside the screen bounds
             RectTransform tooltipRect = activeTooltip.GetComponent<RectTransform>();
             Canvas targetCanvas = GetComponentInParent<Canvas>();
             bool showAbove = Pointer.current.position.ReadValue().y < Screen.height / 2f;
@@ -41,6 +42,7 @@ public class UITooltip : MonoBehaviour
 
     public void OnCreateTooltip(UIElement targetElement)
     {
+        // replace any tooltip that is already open
         OnDestroyTooltip();
         activeTooltip = Instantiate(tooltipObject, UIManager.Instance.transform);
         string targetText = UIManager.Instance.GetLocalTooltipString(targetElement.tooltipText);

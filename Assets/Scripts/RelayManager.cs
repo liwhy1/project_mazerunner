@@ -20,6 +20,7 @@ public class RelayManager : MonoBehaviour
     {
         await InitializeUnityServices();
 
+        // create the relay room; one slot is used by the host
         Allocation allocation = await RelayService.Instance.CreateAllocationAsync(maxPlayers - 1);
         var relayServerData = AllocationUtils.ToRelayServerData(allocation, "wss");
         var transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
@@ -46,6 +47,7 @@ public class RelayManager : MonoBehaviour
     {
         await InitializeUnityServices();
 
+        // join the relay room using the code from the host
         JoinAllocation allocation = await RelayService.Instance.JoinAllocationAsync(joinCode);
         var relayServerData = AllocationUtils.ToRelayServerData(allocation, "wss");
         var transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
@@ -58,6 +60,7 @@ public class RelayManager : MonoBehaviour
 
     private async Task InitializeUnityServices()
     {
+        // make sure services are initialized and we have an anonymous login
         if (UnityServices.State != ServicesInitializationState.Initialized)
         {
             await UnityServices.InitializeAsync();

@@ -11,6 +11,7 @@ public class ChainliftController : MonoBehaviour
 
     public void OnMoveLift()
     {
+        // ignore requests while the lift is already moving
         if (!chainliftObject || GameManager.Instance.isChainliftMoving.Value || liftMoveRoutine != null) return;
         liftMoveRoutine = StartCoroutine(LiftMoveRoutine());
     }
@@ -19,6 +20,8 @@ public class ChainliftController : MonoBehaviour
     {
         GameManager.Instance.SetChainliftStateServerRpc(true);
         Vector3 startPosition = chainliftObject.transform.localPosition;
+
+        // pick the opposite end of the track
         float targetPositionX = startPosition.x > lowLimit - highLimit ? highLimit : lowLimit;
         Vector3 targetPosition = new Vector3(targetPositionX, startPosition.y, startPosition.z);
         float time = 0f;
@@ -26,6 +29,8 @@ public class ChainliftController : MonoBehaviour
         {
             time += Time.deltaTime;
             Vector3 newPosition = Vector3.Lerp(startPosition, targetPosition, time / movementSpeed);
+
+            // stream the position so every client sees the same lift
             GameManager.Instance.SyncLiftPositionRpc(newPosition);
             yield return new WaitForEndOfFrame();
         }

@@ -19,6 +19,7 @@ public enum LandmarkType
 
 public class LandmarkObject : MonoBehaviour
 {
+    // defines which landmarks the player can arrive from and what those routes cost
     public List<LandmarkData> travelRelations = new List<LandmarkData>();
     public LandmarkType landmarkType;
     public bool isStartArea;

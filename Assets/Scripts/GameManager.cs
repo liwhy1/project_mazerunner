@@ -127,6 +127,7 @@ public class GameManager : NetworkBehaviour
 
     public void OnLobbyStartValueChanged(bool oldValue, bool newValue)
     {
+        // react to the server setting the lobby live
         if (newValue) StartCoroutine(OnLobbyStart());
     }
 
@@ -310,6 +311,7 @@ public class GameManager : NetworkBehaviour
 
     public int GetSceneBuildIndex(string sceneName)
     {
+        // story scenes have to exist in the build settings
         for (int i = 0; i < SceneManager.sceneCountInBuildSettings; i++)
         {
             string path = SceneUtility.GetScenePathByBuildIndex(i);
@@ -338,6 +340,7 @@ public class GameManager : NetworkBehaviour
 
         if (IsHost)
         {
+            // master mode hosts don't need a player avatar
             if (isMaster && NetworkManager.LocalClientId == clientId)
             {
                 // move to lobby connect state without instantiating player data
@@ -385,6 +388,7 @@ public class GameManager : NetworkBehaviour
 
     public void OnDisconnectClient()
     {
+        // stop audio, shut down networking and go back to the menu
         AudioManager.Instance?.ResetAudioState();
         if (NetworkManager != null && NetworkManager.IsListening)
         {
@@ -402,6 +406,8 @@ public class GameManager : NetworkBehaviour
     public async void OnStartHost(bool masterStart)
     {
         isMaster = masterStart;
+
+        // master mode allows one extra player since the master doesn't play
         int targetPlayerCount = masterStart ? 4 : 3;
         if (string.IsNullOrEmpty(MenuManager.Instance.hostPlayerNameInput.text) && !isMaster) 
         {
@@ -463,6 +469,7 @@ public class GameManager : NetworkBehaviour
 
     public void RefreshPlayerList()
     {
+        // rebuild and sort the list by ownership id
         playerList.Clear();
         playerList = FindObjectsByType<PlayerData>().ToList();
         playerList.Sort((a, b) => a.OwnerClientId.CompareTo(b.OwnerClientId));
@@ -472,6 +479,7 @@ public class GameManager : NetworkBehaviour
 
     public void OnLandmarkEntered(GameObject targetLandmark)
     {
+        // track the route and pay for each new landmark
         LandmarkObject landmarkObject = targetLandmark.GetComponent<LandmarkObject>();
         if (visitedLandmarks.Contains(targetLandmark))
         {
@@ -538,6 +546,8 @@ public class GameManager : NetworkBehaviour
     public void UpdatePlayerRenderStateRpc()
     {
         if (isMaster) return;
+
+        // players stay hidden for others until they are lobby ready
         foreach (var player in playerList)
         {
             bool isOwner = player.OwnerClientId == NetworkManager.LocalClientId;
@@ -553,6 +563,7 @@ public class GameManager : NetworkBehaviour
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
     public void SetPlayerPersistentIdServerRpc(ulong playerId)
     {
+        // assign the lowest free id so journal files line up
         int targetId = 0;
         while (playerList.Any(p => p.PersistentPlayerId.Value == targetId)) targetId++;
         FetchPlayerDataById(playerId).PersistentPlayerId.Value = targetId;
@@ -611,6 +622,7 @@ public class GameManager : NetworkBehaviour
     [Rpc(SendTo.Everyone, InvokePermission = RpcInvokePermission.Everyone)]
     public void SyncLiftPositionRpc(Vector3 targetPosition)
     {
+        // cache the lift object on first use
         if (!chainLift) chainLift = FindAnyObjectByType<ChainliftController>()?.chainliftObject;
         else chainLift.transform.localPosition = targetPosition;
     }

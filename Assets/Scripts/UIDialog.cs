@@ -66,7 +66,7 @@ public class UIDialog : MonoBehaviour
         UIManager.Instance.AddEventTrigger(closeButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnCloseDialog);
         UIManager.Instance.AddEventTrigger(closeButton.GetComponent<EventTrigger>(), EventTriggerType.Submit, OnCloseDialog);
 
-        // conditionally assign forced action to close button
+        // forced actions also run when the close button is used
         if (forceAction)
         {
             UIManager.Instance.AddEventTrigger(closeButton.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, () => StartCoroutine(DialogActionHandler(targetAction)));
@@ -77,6 +77,8 @@ public class UIDialog : MonoBehaviour
     private IEnumerator DialogActionHandler(string targetAction)
     {
         OnCloseDialog();
+
+        // wait for the close animation before acting
         yield return new WaitForSeconds(.33f);
         switch (targetAction)
         {
@@ -121,6 +123,7 @@ public class UIDialog : MonoBehaviour
     {
         if (activeDialog)
         {
+            // play the close sound and destroy the popup
             AudioManager.Instance.OnDialogClose();
             Destroy(activeDialog);
             activeDialog = null;

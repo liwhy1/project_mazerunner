@@ -33,6 +33,8 @@ public class UIElement : MonoBehaviour
         selectColor = Color.darkGray;
         disabledColor = Color.white;
         disabledColor.a = .3f;
+
+        // cache the original visuals so states can be restored
         originalSprite = GetComponent<Image>().sprite;
         altSprite = transform.Find("AltSprite")?.GetComponent<Image>().sprite;
 
@@ -72,6 +74,7 @@ public class UIElement : MonoBehaviour
         pointerExitEntry.callback.AddListener((eventData) => { OnElementShrink(); });
         GetComponent<EventTrigger>().triggers.Add(pointerExitEntry);
 
+        // add tooltip triggers when a tooltip key is assigned
         if (!string.IsNullOrEmpty(tooltipText))
         {
             EventTrigger.Entry tooltipEnterEntry = new EventTrigger.Entry() {eventID = EventTriggerType.PointerEnter};
@@ -117,6 +120,7 @@ public class UIElement : MonoBehaviour
 
     private void OnElementDisable()
     {
+        // disabled elements ignore clicks and dim their visuals
         isEnabled = false;
         isSelected = false;
         GetComponents<EventTrigger>().All(p => p.enabled = false);
@@ -177,6 +181,7 @@ public class UIElement : MonoBehaviour
         AudioManager.Instance.OnButtonClick();
         if (resetOnClick)
         {
+            // reset the hover state after a click
             OnElementShrink();
             UITooltip.Instance.OnDestroyTooltip();
         } 

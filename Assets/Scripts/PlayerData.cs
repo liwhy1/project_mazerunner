@@ -29,6 +29,7 @@ public class PlayerData : NetworkBehaviour
 
         if (IsOwner)
         {
+            // send the locally entered name and claim a persistent id
             string targetName = IsHost ? MenuManager.Instance.hostPlayerNameInput.text : MenuManager.Instance.joinPlayerNameInput.text;
             SetPlayerNameServerRpc(targetName);
             GameManager.Instance.SetPlayerPersistentIdServerRpc(NetworkManager.LocalClientId);
@@ -75,6 +76,7 @@ public class PlayerData : NetworkBehaviour
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
     private void SetPlayerNameServerRpc(string name, RpcParams rpcParams = default)
     {
+        // ignore empty names so the default stays
         if (string.IsNullOrEmpty(name)) return;
 
         ulong targetId = rpcParams.Receive.SenderClientId;
@@ -84,6 +86,7 @@ public class PlayerData : NetworkBehaviour
 
     public override void OnNetworkDespawn()
     {
+        // clean up the value subscriptions
         PlayerName.OnValueChanged -= OnPlayerNameChanged;
         PersistentPlayerId.OnValueChanged -= OnPersistentIdChanged;
         SkinData.OnValueChanged -= OnSkinIdChanged;

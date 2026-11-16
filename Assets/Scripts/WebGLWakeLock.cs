@@ -13,6 +13,7 @@ public class WebGLWakeLock : MonoBehaviour
 
     public void Enable()
     {
+        // request the browser wake lock on webgl builds
 #if UNITY_WEBGL && !UNITY_EDITOR
         RequestWakeLock();
 #endif
@@ -20,6 +21,7 @@ public class WebGLWakeLock : MonoBehaviour
 
     public void Disable()
     {
+        // release the wake lock when the game stops
 #if UNITY_WEBGL && !UNITY_EDITOR
         ReleaseWakeLock();
 #endif

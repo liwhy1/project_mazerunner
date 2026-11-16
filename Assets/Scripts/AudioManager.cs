@@ -64,11 +64,13 @@ public class AudioManager : MonoBehaviour
         Vector3 closestPoint = riverCollider.ClosestPoint(PlayerController.Instance.transform.position);
         float currentDistance = Vector3.Distance(PlayerController.Instance.transform.position, closestPoint);
 
+        // fade the river in as the player gets closer
         riverAudioSource.volume = Mathf.InverseLerp(6f, 0f, currentDistance);
     }
 
     private void PlaySoundClip(AudioClip targetClip, bool randomPitch = true)
     {
+        // randomize pitch so repeated sounds don't feel identical
         uiAudioSource.pitch = randomPitch ? Random.Range(.5f, 1f) : 1f;
         uiAudioSource.PlayOneShot(targetClip);
     }

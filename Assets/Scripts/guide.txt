@@ -1,0 +1,457 @@
+MAZE RUNNER - SCRIPT GUIDE
+==========================
+
+This document explains how the game works end to end: how the scripts fit
+together, how a session is created, and how the player moves from the main
+menu through the map-drawing phases into the exploration stage and the final
+reveal. It is based purely on the scripts in this folder; resources are
+loaded from "Resources/..." paths, so some content lives outside this folder.
+
+-------------------------------------------------------------------------------
+1. HIGH LEVEL PICTURE
+-------------------------------------------------------------------------------
+
+Maze Runner is a networked, multiplayer, WebGL-oriented Unity game. One player
+acts as the "master" (game director) while the others are regular players.
+Together they:
+
+  1. Create or join a lobby through Unity Relay.
+  2. Pick a story (a set of journal clues, map art and a level scene).
+  3. Read their personal journal and draw a map of the maze route.
+  4. Upload everyone's individual maps and build a shared map together.
+  5. Explore the actual maze in 3D, following landmarks and paying a travel
+     cost for every route taken.
+  6. Reach the treasure within the allowed travel cost, then review every
+     player's map at the end.
+
+All persistent managers are singletons (GameManager.Instance,
+UIManager.Instance, etc.) and most mutable game state is stored in
+NetworkVariables so the server/host owns it and clients only read it.
+
+Two roles:
+  - Master (GameType.Master): the host that chose "Master" mode. It has no
+    player avatar, does not walk the maze, sees every journal page, decides
+    the story and controls the phase progression.
+  - Player (GameType.Player): a normal participant with an avatar, a personal
+    journal and one individual map.
+
+The first player that gets a persistent id of 0 is the one whose landmark
+route and travel cost are tracked and broadcast to the rest of the lobby
+(see GameManager.OnLandmarkEntered and UIManager.OnTravelCostChanged).
+
+-------------------------------------------------------------------------------
+2. BOOT / LANDING
+-------------------------------------------------------------------------------
+
+LandingManager.cs
+  - Shows the loading icon.
+  - Waits for LocalizationSettings to initialize and preloads the UI_Strings,
+    Dialog_Strings and Landmark_Strings tables.
+  - Loads build index 1 (the main menu) asynchronously.
+
+GameManager.Initialize()
+  - Runs automatically before the first scene loads.
+  - Instantiates the persistent objects that must survive scene loads if they
+    are missing: NetworkManager, InputManager, EventSystem and AudioManager,
+    all from Resources/GameComponents. This is why the game can start from
+    any scene.
+
+WebGLWakeLock.cs
+  - Called from GameManager.Start to keep the browser screen awake while the
+    game is running (WebGL builds only).
+
+-------------------------------------------------------------------------------
+3. MAIN MENU
+-------------------------------------------------------------------------------
+
+UIManager.Start()
+  - Creates the DialogDatabase component.
+  - Calls OnSetup on every UIElement (button visuals, hover, tooltips).
+  - Resets the UI, wires all EventTriggers and subscribes to localization and
+    travel-cost events.
+  - Waits briefly for the locales to be available, then calls
+    MenuManager.OnSetup().
+
+MenuManager.cs (menu)
+  - OnOpenMenu shows the main menu after ResetUIState.
+  - Buttons: Host Game, Join Game, Settings and Editor.
+  - Settings opens the settings panel (language, UI/environment volume, FPS
+    counter).
+  - Editor opens a confirmation dialog (DialogId.EditorOpen). Confirming puts
+    the player into the in-game structure editor (see EditorManager below).
+
+Host flow:
+  - OnHostGame shows the host panel with a name field and a Master/Player
+    selector. In Master mode the name field is hidden.
+  - OnStartHost calls GameManager.OnStartHost(isMaster). The relay is started
+    for 4 players (master mode) or 3 players (player mode); the relay
+    allocation is always maxPlayers - 1.
+  - RelayManager.StartHost signs in anonymously, creates a relay allocation,
+    configures UnityTransport to use WebSockets, starts the host and returns
+    the join code. The join code is written to GameManager.joinCode and shown
+    in the lobby and in the pause menu.
+
+Join flow:
+  - OnJoinGame shows the join panel (player name + join code).
+  - OnStartClient validates the name and code, then RelayManager.JoinHost
+    joins the relay allocation and starts the client. Failed joins show
+    DialogId.FailedGameJoin and re-enable the buttons.
+
+-------------------------------------------------------------------------------
+4. LOBBY AND PLAYER SPAWNING
+-------------------------------------------------------------------------------
+
+GameManager.OnClientConnected (host only)
+  - In Master mode the host calls OnLobbyConnect directly (no player object
+    is spawned for the master).
+  - Otherwise it spawns a player object from Resources/GameComponents/Player.
+  - If there is no MapNetworkManager yet, it spawns the shared map prefab
+    (Resources/MapPrefabs/SharedMapUI).
+
+PlayerData.OnNetworkSpawn
+  - Reads the name from the host/join input field and sends it to the server.
+  - Asks the server for a persistent player id (0, 1, 2, ...). When the id
+    arrives (from -1 to a real value) the owner calls
+    GameManager.OnLobbyConnect, so every client enters the lobby exactly once.
+  - PlayerName, IsMapReady, IsLobbyReady, PersistentPlayerId and SkinData are
+    all server-written NetworkVariables that clients subscribe to.
+
+MenuManager.OnLobbyConnect
+  - Hides the menu, shows the lobby, sets the join code, builds the story
+    dropdown from Resources/Information (host only), shows the ready button
+    (players only) and refreshes the ready counter.
+  - Lobby readiness: each player toggles IsLobbyReady. When everyone is ready
+    GameManager.CheckLobbyReadyStateServerRpc starts the lobby. In master mode
+    the master can start immediately with the ready button.
+
+Player customisation:
+  - Head/body/leg arrows cycle hair, colour and gender ids. The local value is
+    applied immediately and sent to the server
+    (GameManager.SetPlayerSkinDataServerRpc); the server broadcasts the
+    NetworkVariable so all clients see the same skin.
+
+-------------------------------------------------------------------------------
+5. STARTING A SESSION (STORY + SCENE LOAD)
+-------------------------------------------------------------------------------
+
+Lobby story selection:
+  - The master picks a story with the lobby selector. GameManager.SetActiveStory
+    updates the activeStory NetworkVariable (default is "Prototype3").
+  - A story is a folder in Resources/Information/<StoryName> containing map
+    sprites, an optional Terrain material and journal text assets, plus a
+    matching level scene in the build settings.
+
+GameManager.OnLobbyStart (coroutine, triggered by isLobbyStarted)
+  - InventoryManager.OnSetupStory loads the story art and the journal pages:
+      * MapSprite / CorrectMap are applied to the individual, shared and
+        minimap backgrounds.
+      * Journal pages are all TextAssets whose names contain
+        "info<PersistentPlayerId>"; the master sees every page.
+  - MenuManager.OnLobbyStart switches the lobby into its "starting" look and
+    shows the master-only progress bar, timer and continue button.
+  - MapManager.UpdateMapReadyState refreshes the "x/y maps ready" counter.
+  - The host loads the active story scene additively
+    (GameManager.OnLoadMap, fallback "Prototype8").
+
+Empty map:
+  - OnLobbyConnect already asks the host to load "EmptyMap" additively. It
+    provides the terrain, river and ambient audio for the level, but their
+    renderers stay hidden until the exploration phase.
+
+GameManager.OnMapLoaded
+  - EmptyMap: finds "Inner terrain", "Outer Terrain", "River" and the map
+    camera; disables their renderers until the exploration phase.
+  - Story level: finds the "Level" root, rotates it 180 degrees, disables its
+    children (the master destroys it instead), stores the "Starting point"
+    spawn, sets up the environment audio source and optionally applies a
+    custom terrain material from Resources/Information/<story>/Terrain.
+  - Then, based on MapNetworkManager.mapState:
+      * Own      -> inventory is locked open and the map load animation runs
+                    (this is the individual map-drawing phase).
+      * Shared   -> inventory stays locked/open, the saved map is shown.
+      * Explore  -> GameManager.OnExploreGameState starts immediately.
+  - Finally it resets the UI, swaps from the menu camera to the player camera,
+    updates player render states and unpauses the game.
+
+-------------------------------------------------------------------------------
+6. MAP STATE MACHINE
+-------------------------------------------------------------------------------
+
+MapNetworkManager.cs owns the NetworkVariable<MapState> mapState:
+
+  Null -> Own -> Shared -> Explore -> Individual
+
+  Own         Players draw their own map from their journal clues.
+  Shared      Individual maps are uploaded for review and the group builds a
+              shared map; the master then approves it.
+  Explore     The 3D maze is revealed, the navmesh is built and players move.
+  Individual  The final reveal: every player's map is shown side by side.
+
+State changes are broadcast by MapNetworkManager.OnMapStateChanged, which
+forwards them to InventoryManager and MapManager so the map tabs, editability
+and journal visibility follow the phase.
+
+-------------------------------------------------------------------------------
+7. PHASE 1 - OWN (INDIVIDUAL MAP DRAWING)
+-------------------------------------------------------------------------------
+
+MapManager overview:
+  - The inventory's "map" page has an individual canvas and a shared canvas.
+  - The individual canvas belongs to the local player and is only editable
+    during MapState.Own (and only once MapManager.isLoaded is true).
+  - The icon pile (bottom of the screen) contains every landmark icon loaded
+    from Resources/MapIcons. Hovering expands it; dragging an icon out
+    duplicates it so the pile keeps its original.
+  - Tools: Place (icons), Pencil (draw dots), Eraser, Trash (clear confirm)
+    and Save/Ready. Pencil and eraser each have a size slider and a pointer
+    circle that follows the mouse.
+
+Drawing:
+  - OnDrawLine spawns DrawDot prefabs at the pointer (or SharedDrawDot on the
+    shared canvas) and stores them in activeDrawDots.
+  - OnEraseLine compares the pointer circle bounds against all dot bounds and
+    destroys dots that intersect.
+  - OnMapClearRequest asks for confirmation, then OnClearMap removes dots and
+    icons (or clears the shared map through the server).
+
+Saving:
+  - OnMapToggleReady toggles editability and sends the player's
+    IsMapReady state (MapNetworkManager.SetPlayerMapStateServerRpc).
+  - When every player is ready, MapNetworkManager.CheckLobbyMapStateServerRpc
+    switches the state to Shared.
+
+Journal:
+  - The journal shows the player's personal clue pages. Player mode reserves
+    manual page turning for the master, players page with the next-page
+    button (UITimer-like paging logic lives in InventoryManager).
+  - The first MapTutorial dialog chain explains the map tools to players.
+
+-------------------------------------------------------------------------------
+8. PHASE 2 - SHARED (BUILDING THE GROUP MAP)
+-------------------------------------------------------------------------------
+
+When the state becomes Shared:
+  - MapManager.OnMapStateChanged calls OnSendMapData (except on the initial
+    Null -> Shared load). It serialises all icons and dots into MapElementData
+    entries and sends them with
+    MapNetworkManager.SpawnMapInstanceServerRpc. The server stores one copy per
+    persistent player id, so every client can render every player's individual
+    map for the final reveal.
+  - The shared canvas itself is built live with the same tools: any element
+    placed or drawn on it is spawned as a networked object
+    (SpawnMapElementServerRpc) and its position is streamed with
+    SetMapElementPositionRpc. Dragging requests ownership first
+    (SetElementOwnershipServerRpc). Deleting uses
+    DestroyMapElementServerRpc.
+  - The master's UI switches to the shared map (MenuManager.
+    OnMasterSharedMapEnabled) and the continue button becomes "save".
+  - Late joiners ask the server for a full snapshot with SyncMapDataServerRpc,
+    which replays both the shared map elements and every player's individual
+    map, then mirrors the shared map onto the minimap.
+
+The master reviews the combined route and presses continue
+(MenuManager.OnMasterContinueButton -> OnMasterSharedMapReady), which:
+  - advances the progress bar to level 3,
+  - stops the countdown timer,
+  - sets mapState to Explore.
+
+-------------------------------------------------------------------------------
+9. PHASE 3 - EXPLORE
+-------------------------------------------------------------------------------
+
+GameManager.OnExploreGameState
+  - Re-enables all terrain, river, terrain-edge and world-object renderers
+    (one per fixed update so the reveal animates).
+  - Respawns the player at the level's starting point.
+  - Builds the NavMesh surface.
+  - Resets the player camera far clip and closes/unlocks the inventory.
+  - AudioManager.OnGameStarted starts the environment loop and river sound.
+
+PlayerController
+  - Two movement modes share one controller:
+      * Rigidbody movement: WASD/left stick. Player is un-kinematic, movement
+        is applied to linearVelocity, the model turns toward the input.
+      * Click-to-move: clicking the world or the minimap calls OnMove, which
+        switches to the NavMeshAgent (kinematic body, agent destination).
+  - Camera follows behind/above the player, can rotate to look at them, and
+    raycasts forward so obstructing objects are temporarily rendered with a
+    transparent material.
+  - Ground check uses an overlap box under the capsule; jump is only allowed
+    while grounded and adds upward velocity.
+  - Footsteps play on a timer while moving on the ground.
+  - Moving platforms: when entering a Chainlift trigger the player's body is
+    translated by the platform delta every fixed update.
+  - Safety: entering the river teleports the player back to lastSafePosition;
+    purple mist interactables respawn the player; mist volumes set isInMist,
+    which slowly fades in a dark overlay in UIManager.
+
+Landmark route and travel cost (GameManager)
+  - Every LandmarkObject has a landmarkType, an isStartArea flag and a list of
+    LandmarkData travel relations. Each relation stores the landmark you
+    arrive FROM and the travelCost TO this landmark.
+  - OnLandmarkEntered (only evaluated for persistent player id 0):
+      * Re-entering an already visited landmark: if it is the start area the
+        whole route is reset; if backtracking is allowed and it is the
+        previous landmark, the last route step is removed and its cost is
+        refunded.
+      * A new landmark is only accepted if it is reachable from the last
+        visited landmark. Its travel cost is added to currentTravelCost.
+      * Entering the treasure landmark with a legal relation triggers
+        UIManager.OnTreasureReachedRpc.
+  - OnLandmarkExited removes dead-end landmarks that no other landmark
+    references and refunds their cost.
+  - Travel cost is stored in a server NetworkVariable and rendered by
+    UIManager.OnTravelCostChanged as "cost / visited route" for the master's
+    view and broadcast to clients.
+
+Treasure / end condition:
+  - UIManager.OnTreasureReachedRpc shows DialogId.TreasureReached when
+    currentTravelCost < maxTravelCost (default 7), otherwise
+    DialogId.TreasureNotReached.
+  - The host then sets mapState to Individual.
+
+Interactables (InteractableObject):
+  - Lever: moves the chainlift.
+  - Chest: plays the treasure particle system.
+  - Bell: plays the bell sound.
+  - PurpleMist: respawns the player.
+  - River / Mist: handled by trigger enter/exit in PlayerController.
+
+ChainliftController:
+  - A lever calls OnMoveLift. If the lift is not already moving, it lerps the
+    chainlift object between a low and a high X limit over movementSpeed
+    seconds and broadcasts each position with GameManager.SyncLiftPositionRpc.
+    isChainliftMoving is a server NetworkVariable used as a lock so only one
+    player can start the ride.
+
+HUD:
+  - Minimap (UIManager) mirrors the shared map, tracks every player with a
+    coloured icon, converts terrain bounds to minimap coordinates and lets
+    the player click to move.
+  - Landmark text shows the current route and cost.
+  - Zoom buttons and mouse wheel change the camera height.
+  - Timer (UITimer) is a 15 minute countdown controlled by the master and
+    synchronised through UIManager.OnSyncTimerClientRpc.
+  - The mist overlay fades in while inside a mist volume.
+
+-------------------------------------------------------------------------------
+10. PHASE 4 - INDIVIDUAL (FINAL REVEAL / END)
+-------------------------------------------------------------------------------
+
+MapState.Individual
+  - InventoryManager enables both the shared and individual map tabs and
+    opens the individual map page, and enables the player's own journal.
+  - MenuManager.OnMasterEndGame hides the shared map UI and shows the
+    individual maps object, so all players can compare/critique each map.
+  - The master's progress bar reaches the final level and the game is over.
+  - The pause menu's End Game button is host-only and also sets the state to
+    Individual. Quit disconnects and returns to the main menu.
+
+The "CorrectMap" sprite (when a story provides one) is applied to individual
+map entries whose names contain "Correct", so the final reveal can show the
+intended solution next to the players' drawings.
+
+-------------------------------------------------------------------------------
+11. SUPPORTING SYSTEMS
+-------------------------------------------------------------------------------
+
+Network architecture:
+  - Unity Netcode for GameObjects + Unity Relay/UTP with WebSockets.
+  - Server/host authority for every NetworkVariable (map state, story, join
+    code, lobby state, travel cost, chainlift, ready flags, skins).
+  - RPCs are used for map element spawning/moving/deleting, ready toggles,
+    timers and one-off broadcasts. Spawned map elements are NetworkObjects,
+    which is why they can be dragged with ownership changes.
+
+Dialog system:
+  - DialogDatabase builds a list of DialogEntry records from localized
+    strings. Each entry has an id, title, text, optional button/image and an
+    action string.
+  - UIDialog spawns Resources/UIElements/TextDialog, fills it in and runs the
+    action after closing: map clear, open editor, self disconnect, reset
+    session buttons, or the chained MapTutorial dialogs.
+  - DialogDatabase rebuilds itself when the selected locale changes.
+
+Audio:
+  - AudioManager owns a mixer with "UI" and "Environment" groups and a UI
+    AudioSource for one-shots (random pitch for most effects).
+  - Environment loop + river one-shot, with the river volume derived from the
+    player's distance to the river collider.
+
+Localization:
+  - UI_Strings, Dialog_Strings, Landmark_Strings and Tooltip_Strings tables.
+  - The language selector is filled from the project's available locales and
+    changing it updates LocalizationSettings.SelectedLocale.
+
+Settings:
+  - Volume sliders drive the mixer groups.
+  - FPS toggle starts/stops a small FPS counter coroutine.
+  - Master-only game settings toggles (landmark backtracking, inventory lock,
+    own/shared journal, journal paging, page input) are broadcast to clients.
+
+In-game editor (EditorManager):
+  - Accessible from the main menu after confirmation. It instantiates a
+    terrain template with its own camera and structure holder.
+  - It lists every prefab in Resources/TerrainObjects as a placeable icon.
+  - Tools: select (grab a structure and show its editor), pencil (place),
+    eraser (destroy). The selected structure can be rotated, scaled and moved
+    up/down/left/right; it is re-snapped to the terrain (river excluded).
+  - Scrolling moves the editor camera. This is a development/authoring tool,
+    not part of normal gameplay.
+
+UI helpers:
+  - UIElement: button colour/sprite states (normal, highlight, selected,
+    disabled), grow/shrink on hover, click sound and tooltip hooks.
+  - UIHorizontalSelector: simple wrap-around list selector with a change event
+    (used by languages, player mode and story selection).
+  - UIProgressBar: master's phase progress (individual maps, shared map,
+    explore, end) with level labels.
+  - UITimer: 15 minute countdown with pause/reset/modify and client sync.
+  - UITooltip: follows the mouse and clamps itself to the screen bounds.
+  - UIVideoPlayer: play/pause/reset/volume controls for a VideoPlayer.
+  - UIManager also handles keyboard/gamepad navigation between selectables.
+
+Art scripts (editor utilities, not gameplay):
+  - AssetSpawner: scatters prefabs over a mesh by picking triangles weighted
+    by area, optionally aligning to surface normals.
+  - SnapChildrenToGround: raycasts each child down and snaps it to the ground,
+    optionally aligning to the slope.
+
+InputSystem.cs and InputSystem.inputactions are generated by the Unity Input
+System (the .cs file is auto-generated), so they should not be edited by hand.
+
+-------------------------------------------------------------------------------
+12. QUICK FILE INDEX
+-------------------------------------------------------------------------------
+
+Core flow
+  LandingManager.cs      boot, localization preload, load main menu
+  MenuManager.cs         main menu, host/join panels, lobby, master buttons
+  RelayManager.cs        Unity Relay host/join and anonymous auth
+  GameManager.cs         persistent setup, scene loading, phases, landmarks
+  PlayerData.cs          per-player networked name/ready/id/skin
+  PlayerController.cs    movement, camera, grounding, triggers, skins
+
+Map systems
+  MapNetworkManager.cs   map state machine and networked shared map
+  MapManager.cs          individual/shared map UI, drawing, icons, saving
+  InventoryManager.cs    inventory tabs: map, journal, note, editor
+  LandmarkObject.cs      landmark type and travel relations/costs
+  ChainliftController.cs lever-driven moving platform
+
+Presentation
+  UIManager.cs           pause, settings, HUD, minimap, localization helpers
+  UIDialog.cs            dialog popup and dialog actions
+  DialogDatabase.cs      localized dialog definitions and action ids
+  AudioManager.cs        mixer, environment/river audio, UI/action SFX
+  UIElement.cs           button visual states and click handling
+  UIHorizontalSelector.cs  wrap-around selector
+  UIProgressBar.cs       master phase progress bar
+  UITimer.cs             15 minute countdown
+  UITooltip.cs           mouse-following tooltip
+  UIVideoPlayer.cs       video playback controls
+  WebGLWakeLock.cs       prevent screen sleep on WebGL
+
+Authoring
+  EditorManager.cs       in-game terrain/structure editor
+  Art Scripts/*          mesh scattering and ground snapping helpers

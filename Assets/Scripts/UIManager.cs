@@ -170,6 +170,7 @@ public class UIManager : NetworkBehaviour
 
     private void Update()
     {
+        // keep the minimap, navigation highlight and mist updated
         if (GameManager.Instance.isLobbyStarted.Value)
         {
             UpdateMinimapPosition();
@@ -196,6 +197,7 @@ public class UIManager : NetworkBehaviour
 
     public void HandleActiveNavigationElement()
     {
+        // highlight the currently selected button and keep menu focus stable
         GameObject currentSelectedObject = eventSystem.currentSelectedGameObject;
         if (currentSelectedObject != lastSelectedObject)
         {
@@ -337,6 +339,7 @@ public class UIManager : NetworkBehaviour
 
     public void OnTravelCostChanged(int oldValue, int newValue)
     {
+        // only the tracked player builds the travel cost text
         if (GameManager.Instance.FetchPersistentPlayerId() != 0) return;
 
         // setup display text
@@ -550,6 +553,7 @@ public class UIManager : NetworkBehaviour
 
     private void MistEffectHandler()
     {
+        // fade the mist overlay in/out based on the mist volume state
         mistOverlay.gameObject.SetActive(!InventoryManager.Instance.isInventoryActive && !GameManager.Instance.isPaused);
         if (PlayerController.Instance && PlayerController.Instance.isInMist)
         {

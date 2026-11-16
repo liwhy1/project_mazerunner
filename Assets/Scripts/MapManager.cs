@@ -52,6 +52,8 @@ public class MapManager : MonoBehaviour
     {
         Debug.Log("MapManager: Settings up");
         Instance = this;
+
+        // reset the map transforms before setup
         mapObject.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
         individualCanvas.GetComponent<RectTransform>().anchoredPosition = new Vector2(307f, 0);
         mapObject.GetComponent<RectTransform>().localScale = Vector2.one;
@@ -75,6 +77,7 @@ public class MapManager : MonoBehaviour
 
     public void SetActiveCanvas(GameObject targetCanvas)
     {
+        // only one map can be visible and editable at a time
         bool isSharedMapEnabled = targetCanvas == MapNetworkManager.Instance.sharedCanvas;
         activeCanvas = targetCanvas;
 
@@ -93,6 +96,7 @@ public class MapManager : MonoBehaviour
 
     private void Update()
     {
+        // only handle map input while the inventory is open
         if (InventoryManager.Instance.isInventoryActive)
         {
             PileAnimationHandler();
@@ -186,7 +190,7 @@ public class MapManager : MonoBehaviour
     {
         if (activeTool == null) return;
 
-        // request ownership
+        // network objects need ownership before they can be dragged
         if (targetElement.GetComponent<NetworkObject>()) MapNetworkManager.Instance.SetElementOwnershipServerRpc(targetElement.GetComponent<NetworkObject>().NetworkObjectId);
 
         // save element position
@@ -224,6 +228,7 @@ public class MapManager : MonoBehaviour
         if (targetElement.GetComponent<NetworkObject>()) targetElement.GetComponent<NetworkObject>().TrySetParent(mapObject.transform, true);
         else targetElement.transform.SetParent(mapObject.transform, true);
 
+        // networked elements sync their position at a fixed rate
         if (Time.unscaledTime >= nextPositionSyncTime)
         {
             nextPositionSyncTime = Time.unscaledTime + positionSyncInterval;
@@ -247,7 +252,7 @@ public class MapManager : MonoBehaviour
         targetElement.transform.SetParent(activeCanvas.transform, true);
         if (targetElement.GetComponent<NetworkObject>()) SetElementPosition(targetElement, Pointer.current.position.ReadValue(), true);
 
-        // destroy element if its dropped over a discard allowed area
+        // drop over the pile to delete, outside the map to cancel
         if (isPileHovered)
         {
             if (targetElement.GetComponent<NetworkObject>()) MapNetworkManager.Instance.DestroyMapElementServerRpc(targetElement.GetComponent<NetworkObject>().NetworkObjectId);
@@ -289,6 +294,7 @@ public class MapManager : MonoBehaviour
 
     private void SetElementPosition(GameObject targetElement, Vector2 targetPosition, bool ignoreOwner = false)
     {
+        // networked positions are stored normalized so every screen agrees
         if (targetElement.GetComponent<NetworkObject>())
         {
             ulong objectId = targetElement.GetComponent<NetworkObject>().NetworkObjectId;
@@ -317,7 +323,7 @@ public class MapManager : MonoBehaviour
     {
         if (!mapUI.activeInHierarchy) return;
 
-        // move tabs
+        // slide the map aside to make room for the journal
         InventoryManager.Instance.MapTabMoveHandler(shouldCenter);
 
         // set canvas transforms
@@ -340,7 +346,7 @@ public class MapManager : MonoBehaviour
         mapUI.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
         individualCanvas.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
 
-        // move to edit stage
+        // move to the drawing phase and show the tutorial
         yield return new WaitForSeconds(1f);
         isLoaded = true;
         OnToggleMapEditability(true);
@@ -434,6 +440,7 @@ public class MapManager : MonoBehaviour
 
     public IEnumerator ElementReplaceRoutine(GameObject oldElement, GameObject newElement)
     {
+        // wait for the networked replacement to become visible
         float timeCounter = 0f;
         while (newElement.transform.localPosition.z != 0)
         {
@@ -511,6 +518,7 @@ public class MapManager : MonoBehaviour
 
     public void OnSendMapData()
     {
+        // serialize the local map so the server can share it
         List<MapElementData> mapElements = new List<MapElementData>();
         foreach (var icon in activeDrawDots)
         {
@@ -543,10 +551,12 @@ public class MapManager : MonoBehaviour
         switch (newState)
         {
             case MapState.Shared:
+                // upload the local map before the shared view opens
                 if (oldValue != MapState.Null) OnSendMapData();
                 if (GameManager.Instance.isMaster) OnToggleMapEditability(false);
                 break;
             case MapState.Explore:
+                // editing is over once the maze starts
                 OnToggleMapEditability(false);
                 break;
             case MapState.Individual:

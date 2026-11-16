@@ -21,6 +21,7 @@ public class UIVideoPlayer : MonoBehaviour
 
     public void OnTogglePause()
     {
+        // toggle between play and pause
         if (videoPlayer.isPlaying)
         {
             videoPlayer.Pause();
@@ -33,6 +34,7 @@ public class UIVideoPlayer : MonoBehaviour
 
     public void OnResetVideo()
     {
+        // rewind and pause the video
         videoPlayer.frame = 0;
         videoPlayer.Pause();
     }

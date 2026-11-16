@@ -57,6 +57,7 @@ public class InputManager : MonoBehaviour
 
     public bool IsPointerOverUI()
     {
+        // check if the pointer is over any ui element
         PointerEventData pointerData = new PointerEventData(EventSystem.current) { position = Pointer.current.position.ReadValue() };
 
         List<RaycastResult> castResults = new List<RaycastResult>();
@@ -67,6 +68,7 @@ public class InputManager : MonoBehaviour
 
     public void OnPauseAction()
     {
+        // only players can pause, and only after the lobby starts
         if (!GameManager.Instance.isLobbyStarted.Value || GameManager.Instance.isMaster) return;
 
         UIManager.Instance.OnPauseToggle();
@@ -74,6 +76,7 @@ public class InputManager : MonoBehaviour
 
     public void OnInventoryAction()
     {
+        // don't open the inventory while the game is paused
         if (GameManager.Instance.isPaused) return;
 
         InventoryManager.Instance.OnToggleInventory();
@@ -95,6 +98,7 @@ public class InputManager : MonoBehaviour
 
         if (PlayerController.Instance && !InventoryManager.Instance.isInventoryActive)
         {
+            // click an interactable, otherwise click to move
             Ray ray = PlayerController.Instance.playerCamera.GetComponent<Camera>().ScreenPointToRay(Pointer.current.position.ReadValue());
             if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
             {
@@ -120,6 +124,7 @@ public class InputManager : MonoBehaviour
     {
         if (GameManager.Instance.isPaused) yield break;
 
+        // keep scrolling while the zoom button is held
         while(true)
         {
             OnScrollAction(scrollValue);
@@ -142,6 +147,7 @@ public class InputManager : MonoBehaviour
 
         float targetValue = scrollValue > 0 ? .25f : scrollValue < 0 ? -.25f : 0;
 
+        // route scrolling to camera zoom or the editor camera
         if (PlayerController.Instance && !InventoryManager.Instance.isInventoryActive)
         {
             PlayerController.Instance.OnUpdateCameraHeight(targetValue);

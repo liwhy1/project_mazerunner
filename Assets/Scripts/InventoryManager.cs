@@ -54,7 +54,7 @@ public class InventoryManager : MonoBehaviour
         Debug.Log("InventoryManager: Setting up");
         isInventoryActive = false;
 
-        // setup map
+        // setup the individual map and its buttons
         mapOwnViewPage.GetComponent<MapManager>().OnSetup();
         activeMapPage = mapOwnViewPage;
         SetupEventTriggers();
@@ -79,6 +79,8 @@ public class InventoryManager : MonoBehaviour
     public void OnInventoryToggleLock(bool targetState)
     {
         if (GameManager.Instance.isMaster) return;
+
+        // locking the inventory also closes or opens it automatically
         if (targetState)
         {
             OnToggleInventory();
@@ -100,6 +102,8 @@ public class InventoryManager : MonoBehaviour
         if (isLocked) return;
         isInventoryActive = !isInventoryActive;
         inventoryObject.SetActive(isInventoryActive);
+
+        // open on the map page and hide the hud while it's up
         if (isInventoryActive) OnOpenMap();
         else
         {
@@ -150,6 +154,8 @@ public class InventoryManager : MonoBehaviour
     {
         TMP_InputField textComponent = journalObject.GetComponentInChildren<TMP_InputField>();
         int currentIndex = journalPages.IndexOf(journalPages.FirstOrDefault(p => p.text == textComponent.text));
+
+        // loop back to the first page
         int nextIndex = (currentIndex + 1) % journalPages.Count;
         textComponent.text = journalPages[nextIndex].text;
         journalPageNumber.text = UIManager.Instance.GetLocalUIString("INVENTORY_PAGE_SUBSTRING") + " " + (nextIndex + 1);
@@ -157,6 +163,7 @@ public class InventoryManager : MonoBehaviour
 
     public void OnJournalSetPage(int targetPage)
     {
+        // master and empty journals ignore manual paging
         if (GameManager.Instance.isMaster || journalPages.Count == 0) return;
 
         TMP_InputField textComponent = journalObject.GetComponentInChildren<TMP_InputField>();
@@ -208,6 +215,7 @@ public class InventoryManager : MonoBehaviour
         if (!pageObject) return;
         activeMapPage = pageObject;
 
+        // only one map page is visible at a time
         mapOwnViewPage.SetActive(true);
         mapIndividualViewPage.SetActive(false);
         mapSharedViewPage.SetActive(false);
@@ -260,6 +268,7 @@ public class InventoryManager : MonoBehaviour
 
     public void OnMapNavigateDown()
     {
+        // cycle through the enabled map tabs
         GameObject nextMapPage;
         if (activeMapPage == mapOwnViewPage)
         {
@@ -294,13 +303,16 @@ public class InventoryManager : MonoBehaviour
         switch (newValue)
         {
             case MapState.Shared:
+                // shared map replaces the individual map once all maps are done
                 OnOwnJournalToggle(false);
                 OnToggleSharedView(true);
                 break;
             case MapState.Explore:
+                // players can still look at the shared map while exploring
                 OnToggleSharedView(true);
                 break;
             case MapState.Individual:
+                // reveal every player's map at the end
                 OnToggleSharedView(true);
                 OnToggleIndividualView(true);
                 SetMapPage(mapIndividualViewPage);

@@ -19,7 +19,7 @@ public class LandingManager : MonoBehaviour
         await LocalizationSettings.AssetDatabase.GetTableAsync("Dialog_Strings").Task;
         await LocalizationSettings.AssetDatabase.GetTableAsync("Landmark_Strings").Task;
 
-        // load scene
+        // load the main menu now that the tables are ready
         LoadScene(1);
     }
 
@@ -31,6 +31,7 @@ public class LandingManager : MonoBehaviour
         yield return new WaitForSeconds(2f);
         loadIcon.SetActive(true);
 
+        // hold the scene at 90% until the load is done
         AsyncOperation ao = SceneManager.LoadSceneAsync(sceneIndex);
         ao.allowSceneActivation = false;
         Debug.Log("LandingManager: Loading scene " + SceneManager.GetSceneByBuildIndex(sceneIndex).name);

@@ -23,6 +23,7 @@ public class MapNetworkManager : NetworkBehaviour
         OnMapStateChanged(MapState.Null, mapState.Value);
         ToggleMapBackground(false);
 
+        // host spawns the shared canvas, clients wait for it to replicate
         if (IsHost)
         {
             // spawn shared canvas
@@ -75,9 +76,11 @@ public class MapNetworkManager : NetworkBehaviour
         switch (newValue)
         {
             case MapState.Shared:
+                // master gets the combined map to review
                 if (GameManager.Instance.isMaster) MenuManager.Instance.OnMasterSharedMapEnabled();
                 break;
             case MapState.Explore:
+                // reveal the maze for players that were already connected
                 if (oldValue != MapState.Null && !GameManager.Instance.isMaster) StartCoroutine(GameManager.Instance.OnExploreGameState());
                 UIManager.Instance.MirrorSharedmaptoMinimap();
                 if (AudioManager.Instance.environmentAudioSource) AudioManager.Instance.OnGameStarted();
@@ -103,6 +106,7 @@ public class MapNetworkManager : NetworkBehaviour
         if (GameManager.Instance.isLobbyStarted.Value && mapState.Value == MapState.Own) 
         {
             MenuManager.Instance.SetMasterGameState(1);
+            // all individual maps ready -> move to the shared map
             if (GameManager.Instance.playerList.All(p => p.IsMapReady.Value == true))
             {
                 Debug.Log("MNM: All individual maps ready");
@@ -163,7 +167,7 @@ public class MapNetworkManager : NetworkBehaviour
     [Rpc(SendTo.Everyone, InvokePermission = RpcInvokePermission.Everyone)]
     public void SetMapElementPositionRpc(ulong targetElement, Vector2 targetPosition, bool ignoreOwner = false, RpcParams rpcParams = default)
     {
-        // conditionally ignore sender
+        // skip the sender so dragging stays smooth
         if (ignoreOwner && rpcParams.Receive.SenderClientId == NetworkManager.LocalClientId) return;
 
         if (NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(targetElement, out NetworkObject targetObject))
@@ -178,6 +182,7 @@ public class MapNetworkManager : NetworkBehaviour
     {
         if (NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(targetElement, out NetworkObject targetObject))
         {
+            // replace the local placeholder with the networked object
             var pendingObject = MapManager.Instance.pendingPlacements.FirstOrDefault(p => p.Key == requestId);
             if (pendingObject.Value != null) 
             {
@@ -218,6 +223,7 @@ public class MapNetworkManager : NetworkBehaviour
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
     public void DestroyMapElementServerRpc(ulong targetElement)
     {
+        // despawn through the server so every client removes it
         Debug.Log("MNM: Destroying element: " + targetElement);
         if (NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(targetElement, out NetworkObject targetObject))
         {
@@ -231,6 +237,7 @@ public class MapNetworkManager : NetworkBehaviour
         Debug.Log("MNM: Clearing map");
         foreach (Transform element in sharedCanvas.transform)
         {
+            // keep the player icons when clearing the map
             if (element.name.Contains("player")) continue;
             if (element.gameObject.GetComponent<NetworkObject>() && element.gameObject.GetComponent<NetworkObject>().IsSpawned)
             {
@@ -243,6 +250,7 @@ public class MapNetworkManager : NetworkBehaviour
     [ClientRpc]
     public void SpawnMapInstanceClientRpc(int persistentId, string playerName, MapElementData[] mapElements)
     {
+        // rebuild a player's map from serialized data
         GameObject targetMap = InventoryManager.Instance.FetchMapObjectById(persistentId);
         targetMap.transform.Find("Title").GetComponent<TMP_Text>().text = playerName;
         Debug.Log("MNM: Spawning map objects for player: " + playerName);
@@ -277,6 +285,7 @@ public class MapNetworkManager : NetworkBehaviour
     {
         if (NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(targetElement, out NetworkObject targetObject))
         {
+            // whoever drags the element keeps ownership until it is released
             ulong clientId = rpcParams.Receive.SenderClientId;
             targetObject.ChangeOwnership(resetOwnership ? NetworkManager.ServerClientId : clientId);    
         }

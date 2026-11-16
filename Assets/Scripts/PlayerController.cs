@@ -47,6 +47,7 @@ public class PlayerController : NetworkBehaviour
         // setup client player
         if (!IsOwner)
         {
+            // remote players don't run movement or input logic
             GetComponent<NavMeshAgent>().enabled = false;
             gameObject.name = "Player_" + GetComponent<NetworkObject>().OwnerClientId;
             return;
@@ -127,6 +128,8 @@ public class PlayerController : NetworkBehaviour
     private void PlatformMovementHandler()
     {
         if (!currentPlatform) return;
+
+        // carry the player along with the moving chainlift
         Vector3 platformDelta = currentPlatform.position - lastPlatformPosition;
         playerRigidbody.MovePosition(playerRigidbody.position + platformDelta);
         lastPlatformPosition = currentPlatform.position;
@@ -137,6 +140,8 @@ public class PlayerController : NetworkBehaviour
         if (!GameManager.Instance.terrainObject) return;
         MeshCollider riverCollider = GameManager.Instance.riverObject.transform.GetChild(0)?.GetComponent<MeshCollider>();
         float currentDistance = Vector3.Distance(transform.position, riverCollider.ClosestPoint(transform.position));
+
+        // remember the last spot that wasn't close to the river
         lastSafePosition = isGrounded && currentDistance > 2.5f ? transform.position : lastSafePosition;
     }
 
@@ -224,6 +229,8 @@ public class PlayerController : NetworkBehaviour
     private void CameraObstructionHandler()
     {
         // TODO: This doesn't clean up cloned mats
+
+        // fade objects between the camera and the player
         Vector3 toPlayer = transform.position - playerCamera.transform.position;
         float distanceToPlayer = toPlayer.magnitude;
 
@@ -284,6 +291,7 @@ public class PlayerController : NetworkBehaviour
 
     private void MovementHandler()
     {
+        // input is ignored while paused, in dialogs or in the inventory
         if (!enableMovement || GameManager.Instance.isPaused || UIDialog.Instance.activeDialog || InventoryManager.Instance.isInventoryActive) 
         {
             if (playerRigidbody.isKinematic) return;
@@ -343,7 +351,7 @@ public class PlayerController : NetworkBehaviour
         if (!IsOwner) return;
         if (GameManager.Instance.isPaused || InventoryManager.Instance.isInventoryActive || UIDialog.Instance.activeDialog) return;
 
-        // reset agent conditionally
+        // switch from rigidbody movement to navmesh movement
         if (!playerRigidbody.isKinematic) playerAgent.Warp(playerRigidbody.position);
         playerRigidbody.interpolation = RigidbodyInterpolation.None;
         playerRigidbody.isKinematic = true;
@@ -364,6 +372,8 @@ public class PlayerController : NetworkBehaviour
     public void SetPlayerPosition(Vector3 targetPosition, bool kinematicState = false)
     {
         if (!IsOwner) return;
+
+        // teleport without fighting the agent
         playerRigidbody.interpolation = RigidbodyInterpolation.None;
         playerRigidbody.isKinematic = kinematicState;
         playerAgent.updatePosition = false;
@@ -378,6 +388,7 @@ public class PlayerController : NetworkBehaviour
 
     private void FootStepHandler()
     {
+        // play footsteps based on movement speed and ground state
         if ((isPlayerMoving || isAgentNavigating) && isGrounded) lastFootstepTime += Time.deltaTime;
         else lastFootstepTime = .34f;
         if (lastFootstepTime > .36f)
@@ -390,6 +401,8 @@ public class PlayerController : NetworkBehaviour
     public void OnJump()
     {
         if (!IsOwner) return;
+
+        // only jump while grounded and allowed to move
         if (GameManager.Instance.isPaused || !isGrounded || !enableMovement || playerRigidbody.isKinematic || InventoryManager.Instance.isInventoryActive) return;
 
         playerRigidbody.linearVelocity = gameObject.transform.up * jumpStrength;
@@ -416,7 +429,7 @@ public class PlayerController : NetworkBehaviour
         var playerRenderer = transform.Find("Model").Find("Character_Body").GetComponent<Renderer>();
         if (skinMaterials == null) skinMaterials = Resources.LoadAll<Material>("Customisation/PlayerSkins");
 
-        // apply
+        // apply the chosen body colour
         if (skinMaterials.Length == 0 || !playerRenderer) return;
         playerRenderer.sharedMaterial = skinMaterials[skinData.colorId];
     }

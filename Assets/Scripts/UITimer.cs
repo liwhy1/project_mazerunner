@@ -21,6 +21,7 @@ public class UITimer : MonoBehaviour
 
     private void Update()
     {
+        // count down while playing and stop at zero
         if (timeRemaining > 0f)
         {
             if (isPlaying)
@@ -48,12 +49,14 @@ public class UITimer : MonoBehaviour
 
     public void OnTogglePause()
     {
+        // flip the local state and send it to the other clients
         isPlaying = !isPlaying;
         UIManager.Instance?.OnSyncTimerClientRpc(timeRemaining, isPlaying);
     }
 
     public void OnResetTimer()
     {
+        // reset to 15 minutes and stop counting
         isPlaying = false;
         timeRemaining = 900f; // 15 mins
         if (MapManager.Instance) UIManager.Instance?.OnSyncTimerClientRpc(timeRemaining, isPlaying, false);
@@ -61,6 +64,7 @@ public class UITimer : MonoBehaviour
 
     public void OnModifyTime(int targetModifier)
     {
+        // never let the timer go below zero
         timeRemaining = Mathf.Max(timeRemaining += targetModifier, 0);
         UIManager.Instance?.OnSyncTimerClientRpc(timeRemaining, isPlaying);
     }

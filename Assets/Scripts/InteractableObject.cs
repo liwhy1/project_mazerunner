@@ -6,6 +6,7 @@ public class InteractableObject : MonoBehaviour
     public InteractableType interactableType;
     public void OnInteract()
     {
+        // run the interaction based on the object type
         switch (interactableType)
         {
             case InteractableType.Lever:

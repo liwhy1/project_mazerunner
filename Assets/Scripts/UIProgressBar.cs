@@ -34,7 +34,7 @@ public class UIProgressBar : MonoBehaviour
 
         if (levelObjects.Count == 0) return;
 
-        // reset colors
+        // reset colors, then highlight every completed level
         levelObjects.ForEach(l => l.GetComponent<Image>().color = normalColor);
 
         // set active color to levels up to targetLevel

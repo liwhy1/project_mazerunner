@@ -138,7 +138,7 @@ public class MenuManager : NetworkBehaviour
 
     private void SetupLobbyStorySelector()
     {
-        // fetch available stories
+        // story names come from the information folders
         var storyFolders = Resources.LoadAll<Texture2D>("Information");
         List<string> storyNames = new List<string>();
         foreach (var item in storyFolders)
@@ -245,6 +245,7 @@ public class MenuManager : NetworkBehaviour
         // conditionally enable elements
         lobbyPlayerView.SetActive(!GameManager.Instance.isMaster);
         lobbyWaitingText.gameObject.SetActive(true);
+        // only the host can change the story
         lobbyStorySelector.gameObject.SetActive(IsHost);
         lobbyReadyButton.SetActive(!GameManager.Instance.isMaster);
         lobbyReadyButton.transform.Find("Text").GetComponent<TMP_Text>().text = UIManager.Instance.GetLocalUIString("MENU_READY_BUTTON");
@@ -260,7 +261,7 @@ public class MenuManager : NetworkBehaviour
         // set join code
         SetJoinCode(string.IsNullOrEmpty(joinCodeInput.text) ? GameManager.Instance.joinCode.Value.ToString() : joinCodeInput.text);
 
-        // setup story dropdown
+        // setup the story dropdown (host only)
         SetupLobbyStorySelector();
 
         // update lobby ready state
@@ -269,6 +270,7 @@ public class MenuManager : NetworkBehaviour
 
     public void OnLobbyToggleReady()
     {
+        // players toggle their own ready state, the master starts directly
         if (GameManager.Instance.isLobbyStarted.Value == true || GameManager.Instance.isMaster) StartCoroutine(GameManager.Instance.OnLobbyStart());
 
         // this state is the reverse of the target state
@@ -297,6 +299,8 @@ public class MenuManager : NetworkBehaviour
         lobbyStorySelector.gameObject.SetActive(false);
         lobbyWaitingText.text = GameManager.Instance.isMaster ? "" : UIManager.Instance.GetLocalUIString("MENU_STARTING_SUBSTRING");
         lobbyReadyButton.SetActive(false);
+
+        // lock the lobby controls once the game is starting
         foreach (Transform child in lobbyPlayerView.transform) { child.GetComponent<UIElement>().OnElementToggleEnable(false); }
 
         // master
@@ -333,21 +337,25 @@ public class MenuManager : NetworkBehaviour
     {
         if (MapNetworkManager.Instance.mapState.Value == MapState.Own)
         {
+            // own phase: let the master browse every journal
             UIManager.Instance.ToggleJournalPagingClientRpc(true);
             lobbyContinueButton.SetActive(false);
         }
         else if (MapNetworkManager.Instance.mapState.Value == MapState.Shared)
         {
+            // shared phase: start the exploration
             OnMasterSharedMapReady();
         }
         else
         {
+            // end phase: reveal the individual maps
             OnMasterEndGame();
         }
     }
 
     private void OnMasterSharedMapReady()
     {
+        // start the explore phase
         SetMasterGameState(3);
         UIManager.Instance.OnSyncTimerClientRpc(0f, false, false);
         MapNetworkManager.Instance.SetMapStateServerRpc(MapState.Explore);
@@ -357,6 +365,7 @@ public class MenuManager : NetworkBehaviour
 
     private void OnMasterEndGame()
     {
+        // hide the shared map and reveal every individual map
         SetMasterGameState(4);
         MapManager.Instance.ToggleMapUI(false);
         MapNetworkManager.Instance.ToggleSharedCanvas(false);
@@ -367,6 +376,7 @@ public class MenuManager : NetworkBehaviour
 
     public void OnMasterSharedMapEnabled()
     {
+        // show the combined map to the master
         SetMasterGameState(2);
         lobbyContinueButton.SetActive(true);
         lobbyContinueButton.transform.Find("Text").GetComponent<TMP_Text>().text = UIManager.Instance.GetLocalUIString("MENU_SAVE_BUTTON");

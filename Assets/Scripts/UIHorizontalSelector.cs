@@ -20,6 +20,7 @@ public class UIHorizontalSelector : MonoBehaviour
 
     public void OnUpdateSelection(int targetIndex)
     {
+        // update the visible value and notify listeners
         currentSelection = selectorItems[targetIndex];
         selectorText.text = currentSelection;
         onValueChanged?.Invoke();
@@ -28,6 +29,7 @@ public class UIHorizontalSelector : MonoBehaviour
 
     public void OnNavigateSelection(int modifierNumber)
     {
+        // wrap around the list in both directions
         int currentIndex = selectorItems.IndexOf(currentSelection);
         int negativeModifier = modifierNumber < 0 ? selectorItems.Count : 0;
         int newIndex = (currentIndex + modifierNumber + negativeModifier) % selectorItems.Count;

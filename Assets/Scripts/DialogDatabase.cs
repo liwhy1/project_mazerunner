@@ -45,6 +45,7 @@ public class DialogDatabase : MonoBehaviour
 
     private void Start()
     {
+        // rebuild the dialog list whenever the language changes
         LocalizationSettings.SelectedLocaleChanged += Setup;
         Setup(null);
     }
@@ -52,6 +53,8 @@ public class DialogDatabase : MonoBehaviour
     private void Setup(Locale newLocale)
     {
         Instance = this;
+
+        // build every dialog from the active language
         dialogs = new List<DialogEntry>()
         { 
             new DialogEntry() { id = DialogId.InvalidPlayerName,    title = UIManager.Instance.GetLocalDialogString("DIALOG_TITLE_NOTICE"),     text = UIManager.Instance.GetLocalDialogString("DIALOG_EMPTY_NAME"),                                                                                                                                          button = "",                                                                    action = "sessionconnectfail",             forceAction = true},
@@ -77,6 +80,8 @@ public class DialogDatabase : MonoBehaviour
     public DialogEntry GetEntry(DialogId id)
     {
         var targetEntry = dialogs.FirstOrDefault(d => d.id == id);
+
+        // treat missing localized text as a missing dialog
         if (!string.IsNullOrEmpty(targetEntry.text)) return targetEntry;
 
         Debug.Log("No dialog text found for id: " + id);
