@@ -1,8 +1,10 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public enum MapState {Null, Own, Shared, Explore, Individual};
@@ -10,21 +12,54 @@ public class MapNetworkManager : NetworkBehaviour
 {
     public static MapNetworkManager Instance;
     public NetworkVariable<MapState> mapState = new NetworkVariable<MapState>(MapState.Own, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-
+    public GameObject sharedCanvas;
+    public GameObject mapBackground;
+ 
     public override void OnNetworkSpawn()
     {
         Instance = this;
         mapState.OnValueChanged += OnMapStateChanged;
+        ResetRectTransforms();
         OnMapStateChanged(MapState.Null, mapState.Value);
+        ToggleMapBackground(false);
 
         if (IsHost)
         {
-            var mapObject = Instantiate(Resources.Load<GameObject>("MapPrefabs/MapObject"));
-            mapObject.GetComponent<NetworkObject>().Spawn();
-            mapObject.GetComponent<NetworkObject>().TrySetParent(gameObject);
+            // spawn shared canvas
+            sharedCanvas = Instantiate(Resources.Load<GameObject>("MapPrefabs/Canvas"));
+            sharedCanvas.GetComponent<NetworkObject>().Spawn();
+            StartCoroutine(SetupCanvas(sharedCanvas.GetComponent<NetworkObject>()));
         }
+        else StartCoroutine(SetupCanvas(GetComponent<NetworkObject>())); // dummy argument for clients
     }
 
+    private IEnumerator SetupCanvas(NetworkObject targetCanvas)
+    {
+        if (IsHost)
+        {
+            yield return new WaitUntil(() => targetCanvas.IsSpawned);
+            sharedCanvas = targetCanvas.gameObject;
+        }
+        else
+        {
+            // NOTE: This is still not ideal, but oh well
+            while (transform.childCount != 2) yield return new WaitForSeconds(.1f);
+            sharedCanvas = GetComponentInChildren<EventTrigger>().gameObject;
+        }
+        sharedCanvas.name = "Canvas";
+        sharedCanvas.GetComponent<NetworkObject>().TrySetParent(GetComponent<NetworkObject>(), true);
+        sharedCanvas.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+        ToggleSharedCanvas(false);
+    }
+
+    public void ResetRectTransforms()
+    {
+        if (mapBackground) mapBackground.GetComponent<RectTransform>().sizeDelta = Vector2.zero;
+        if (sharedCanvas) sharedCanvas.GetComponent<RectTransform>().localScale = Vector2.one;
+    }
+
+    public void ToggleSharedCanvas(bool targetState) => sharedCanvas.SetActive(targetState);
+    public void ToggleMapBackground(bool targetState) => mapBackground.SetActive(targetState);
     public override void OnNetworkDespawn() => mapState.OnValueChanged -= OnMapStateChanged;
 
     public void OnMapStateChanged(MapState oldValue, MapState newValue)
@@ -34,7 +69,6 @@ public class MapNetworkManager : NetworkBehaviour
         // call class specific functions
         InventoryManager.Instance?.OnMapStateChanged(oldValue, newValue);
         MapManager.Instance?.OnMapStateChanged(oldValue, newValue);
-        MapManager.SharedInstance?.OnMapStateChanged(oldValue, newValue);
 
         // sync map data for clients joining after the game has started
         if (oldValue == MapState.Null && !IsHost) SyncMapDataServerRpc();
@@ -84,7 +118,7 @@ public class MapNetworkManager : NetworkBehaviour
         if (mapState.Value == MapState.Own) return;
 
         // sync shared map element data
-        foreach (Transform element in MapManager.SharedInstance.mapBackground.transform)
+        foreach (Transform element in sharedCanvas.transform)
         {
             if (!element.GetComponent<NetworkObject>()) continue;
             SetMapElementDataClientRpc(0, element.GetComponent<NetworkObject>().NetworkObjectId, element.name, element.transform.localScale);
@@ -99,7 +133,7 @@ public class MapNetworkManager : NetworkBehaviour
 
             GameObject targetMap = InventoryManager.Instance.FetchMapObjectById(id);
             List<MapElementData> mapElements = new List<MapElementData>();
-            foreach (Transform icon in targetMap.transform.Find("Background"))
+            foreach (Transform icon in targetMap.transform.Find("Canvas"))
             {
                 string iconSprite = icon.transform.Find("Sprite") ? icon.transform.Find("Sprite").GetComponent<Image>().sprite.name : "DrawDot";
                 string iconPrefab = icon.name.Contains("Dot") ? "DrawDot" : "MapIcon";
@@ -117,9 +151,9 @@ public class MapNetworkManager : NetworkBehaviour
     public void SpawnMapElementServerRpc(ulong requestId, string iconPrefab, string iconSprite, Vector2 iconPosition, Vector2 iconScale)
     {
         Debug.Log("MNM: Spawning new object with type: " + iconPrefab);
-        GameObject newObject = Instantiate(Resources.Load<GameObject>("MapPrefabs/" + iconPrefab), MapManager.SharedInstance.mapObject.transform.position, Quaternion.identity);
+        GameObject newObject = Instantiate(Resources.Load<GameObject>("MapPrefabs/" + iconPrefab), MapManager.Instance.mapObject.transform.position, Quaternion.identity);
         newObject.GetComponent<NetworkObject>().Spawn();
-        newObject.transform.SetParent(MapManager.SharedInstance.mapBackground.transform);
+        newObject.transform.SetParent(sharedCanvas.transform);
 
         ulong objectId = newObject.GetComponent<NetworkObject>().NetworkObjectId;
         SetMapElementDataClientRpc(requestId, objectId, iconSprite, iconScale);
@@ -144,7 +178,7 @@ public class MapNetworkManager : NetworkBehaviour
     {
         if (NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(targetElement, out NetworkObject targetObject))
         {
-            var pendingObject = MapManager.SharedInstance.pendingPlacements.FirstOrDefault(p => p.Key == requestId);
+            var pendingObject = MapManager.Instance.pendingPlacements.FirstOrDefault(p => p.Key == requestId);
             if (pendingObject.Value != null) 
             {
                 targetObject.transform.Find("Sprite")?.gameObject.SetActive(false);
@@ -155,17 +189,17 @@ public class MapNetworkManager : NetworkBehaviour
             targetObject.transform.localScale = targetScale;
             if (targetSprite == "DrawDot") 
             {
-                targetObject.transform.SetSiblingIndex(MapManager.SharedInstance.iconPile.transform.GetSiblingIndex());
+                targetObject.transform.SetSiblingIndex(MapManager.Instance.iconPile.transform.GetSiblingIndex());
             }
             else
             {
-                targetObject.transform.Find("Sprite").GetComponent<Image>().sprite = MapManager.SharedInstance.mapSprites.FirstOrDefault(s => s.name.Contains(targetSprite));
+                targetObject.transform.Find("Sprite").GetComponent<Image>().sprite = MapManager.Instance.mapSprites.FirstOrDefault(s => s.name.Contains(targetSprite));
                 targetObject.transform.Find("Sprite").GetComponent<Image>().preserveAspect = true;
                 targetObject.transform.Find("Name").gameObject.SetActive(false);
-                MapManager.SharedInstance.SetupElementTriggers(targetObject.gameObject);
+                MapManager.Instance.SetupElementTriggers(targetObject.gameObject);
             }
 
-            if (pendingObject.Value) StartCoroutine(MapManager.SharedInstance.ElementReplaceRoutine(pendingObject.Value, targetObject.gameObject));
+            if (pendingObject.Value) StartCoroutine(MapManager.Instance.ElementReplaceRoutine(pendingObject.Value, targetObject.gameObject));
         }
     }
 
@@ -195,7 +229,7 @@ public class MapNetworkManager : NetworkBehaviour
     public void ClearMapServerRpc()
     {
         Debug.Log("MNM: Clearing map");
-        foreach (Transform element in MapManager.SharedInstance.mapBackground.transform)
+        foreach (Transform element in sharedCanvas.transform)
         {
             if (element.name.Contains("player")) continue;
             if (element.gameObject.GetComponent<NetworkObject>() && element.gameObject.GetComponent<NetworkObject>().IsSpawned)
@@ -219,11 +253,11 @@ public class MapNetworkManager : NetworkBehaviour
             newObject.name = element.iconSprite;
             if (element.iconPrefab == "MapIcon")
             {
-                newObject.transform.Find("Sprite").GetComponent<Image>().sprite = MapManager.SharedInstance.mapSprites.FirstOrDefault(i => i.name.Contains(element.iconSprite));
+                newObject.transform.Find("Sprite").GetComponent<Image>().sprite = MapManager.Instance.mapSprites.FirstOrDefault(i => i.name.Contains(element.iconSprite));
                 newObject.transform.Find("Sprite").GetComponent<Image>().preserveAspect = true;
                 newObject.transform.Find("Name").gameObject.SetActive(false);
             }
-            newObject.transform.SetParent(targetMap.transform.Find("Background"));
+            newObject.transform.SetParent(targetMap.transform.Find("Canvas"));
             Vector2 targetPos = UIManager.Instance.ApplyNormalizedPosition(newObject.transform.parent.GetComponent<RectTransform>(), element.iconPosition);
             newObject.transform.GetComponent<RectTransform>().anchoredPosition = targetPos;
             newObject.transform.localScale = element.iconScale;

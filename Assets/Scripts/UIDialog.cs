@@ -81,10 +81,8 @@ public class UIDialog : MonoBehaviour
         switch (targetAction)
         {
             case "mapclear":
-                MapManager.Instance.OnClearMap();
-                break;
             case "sharedmapclear":
-                MapManager.SharedInstance.OnClearMap();
+                MapManager.Instance.OnClearMap();
                 break;
             case "openeditor":
                 MenuManager.Instance.ResetUIState();

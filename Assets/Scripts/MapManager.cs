@@ -9,13 +9,11 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
-public class MapManager : NetworkBehaviour
+public class MapManager : MonoBehaviour
 {
     public static MapManager Instance;
-    public static MapManager SharedInstance;
     public GameObject mapObject;
     [NonSerialized] public Dictionary<ulong, GameObject> pendingPlacements = new();
-    [SerializeField] private bool isNetworked;
     private ulong nextPlacementRequestId = 0;
 
     [Header("Icon Data")]
@@ -29,8 +27,10 @@ public class MapManager : NetworkBehaviour
     [SerializeField] private GameObject pointerCircle;
 
     [Header("UI Data")]
-    public bool isMapActive;
-    public GameObject mapBackground;
+    public bool isLoaded;
+    [SerializeField] private GameObject mapUI;
+    public GameObject activeCanvas;
+    public GameObject individualCanvas;
     public GameObject toolBar;
     public bool isPileHovered;
     public bool isMapHovered;
@@ -45,34 +45,18 @@ public class MapManager : NetworkBehaviour
     [SerializeField] private Sprite pointerEraserSprite;
     [SerializeField] private Sprite pointerPencilSprite;
     public GameObject saveIcon;
-    public bool isLoaded;
-    public bool isCentered;
     private float nextPositionSyncTime;
     private const float positionSyncInterval = 0.1f;
 
-    public override void OnNetworkSpawn() => OnSetup();
-
     public void OnSetup()
     {
-        if (isNetworked)
-        {
-            Debug.Log("SharedMapManager: Settings up");
-            SharedInstance = this;
+        Debug.Log("MapManager: Settings up");
+        Instance = this;
+        mapObject.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+        individualCanvas.GetComponent<RectTransform>().anchoredPosition = new Vector2(307f, 0);
+        mapObject.GetComponent<RectTransform>().localScale = Vector2.one;
+        pointerCircle.SetActive(false);
 
-            if (IsHost)
-            {
-                mapBackground = Instantiate(Resources.Load<GameObject>("MapPrefabs/Background"));
-                mapBackground.GetComponent<NetworkObject>().Spawn();
-                mapBackground.GetComponent<NetworkObject>().TrySetParent(mapObject);
-            }
-            mapObject = gameObject;
-        }
-        else
-        {
-            Debug.Log("MapManager: Settings up");
-            Instance = this;
-            if (MapManager.SharedInstance) MapNetworkManager.Instance.OnMapStateChanged(MapState.Null, MapNetworkManager.Instance.mapState.Value);
-        }
         // load map icons
         mapSprites = Resources.LoadAll<Sprite>("MapIcons").ToList();
 
@@ -82,45 +66,33 @@ public class MapManager : NetworkBehaviour
         // set active map tool
         SetActiveTool(placeIcon);
 
-        // conditionally disable save icon
-        if (isNetworked && !IsHost)
-        {
-            saveIcon.SetActive(false);
-        }
-
+        // setup map triggers
         SetupMapTriggers();
-        if (mapBackground)
-        {
-            SetupLayout();
-        }
+
+        // apply mapstate values
+        if (MapNetworkManager.Instance) OnMapStateChanged(MapState.Null, MapNetworkManager.Instance.mapState.Value);
     }
 
-    public void SetupLayout()
+    public void SetActiveCanvas(GameObject targetCanvas)
     {
-        if (!mapBackground) mapBackground = mapObject.transform.Find("Background(Clone)").gameObject;
-        mapBackground.transform.SetSiblingIndex(1);
-        mapBackground.GetComponent<RectTransform>().anchoredPosition = new Vector2(307f, 0f);
-        mapObject.transform.Find("InnerLayer").GetComponent<RectTransform>().anchoredPosition = new Vector2(307f, -40f);
-        mapObject.GetComponent<RectTransform>().anchoredPosition = new Vector2(-307f, mapObject.GetComponent<RectTransform>().anchoredPosition.y);
-        mapObject.GetComponent<RectTransform>().localScale = Vector2.one;
-        pointerCircle.SetActive(false);
-        if (isNetworked) isLoaded = true;
+        bool isSharedMapEnabled = targetCanvas == MapNetworkManager.Instance.sharedCanvas;
+        activeCanvas = targetCanvas;
+
+        // toggle states
+        individualCanvas.SetActive(!isSharedMapEnabled);
+        InventoryManager.Instance.ToggleBackground(!isSharedMapEnabled);
+        MapNetworkManager.Instance.ToggleSharedCanvas(isSharedMapEnabled);
+        MapNetworkManager.Instance.ToggleMapBackground(isSharedMapEnabled && !GameManager.Instance.isMaster);
+        MapNetworkManager.Instance.ResetRectTransforms();
+
+        // determine editability
+        bool isEditable = (targetCanvas == individualCanvas && MapNetworkManager.Instance.mapState.Value == MapState.Own && isLoaded) || (targetCanvas == MapNetworkManager.Instance.sharedCanvas && MapNetworkManager.Instance.mapState.Value == MapState.Shared);
+        saveIcon.transform.Find("ReadyText").gameObject.SetActive(activeCanvas == individualCanvas && MapNetworkManager.Instance.mapState.Value == MapState.Own);
+        OnToggleMapEditability(isEditable);
     }
 
     private void Update()
     {
-        isMapActive = InventoryManager.Instance.isInventoryActive && ((isNetworked && InventoryManager.Instance.mapSharedViewPage.activeSelf) || (!isNetworked && InventoryManager.Instance.mapOwnViewPage.activeSelf));
-        bool isMasterActive = GameManager.Instance.isMaster && (MapNetworkManager.Instance.mapState.Value == MapState.Shared || MapNetworkManager.Instance.mapState.Value == MapState.Explore);
-
-        // handle map setup on clients
-        if (!mapBackground && transform.Find("Background(Clone)"))
-        {
-            SetupLayout();
-        }
-
-        // handle shared map visibility
-        if (isNetworked && mapBackground) mapObject.transform.localPosition = new Vector2(mapObject.transform.localPosition.x, isMapActive || isMasterActive ? 40f : -3000f);
-
         if (InventoryManager.Instance.isInventoryActive)
         {
             PileAnimationHandler();
@@ -135,7 +107,7 @@ public class MapManager : NetworkBehaviour
         UIManager.Instance.AddEventTrigger(pencilIcon.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, SetActiveTool, pencilIcon);
         UIManager.Instance.AddEventTrigger(eraserIcon.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, SetActiveTool, eraserIcon);
         UIManager.Instance.AddEventTrigger(trashIcon.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, OnMapClearRequest);
-        UIManager.Instance.AddEventTrigger(saveIcon.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, () => OnMapToggleReady(true, !isNetworked ? true : false));
+        UIManager.Instance.AddEventTrigger(saveIcon.GetComponent<EventTrigger>(), EventTriggerType.PointerClick, () => OnMapToggleReady(iconPile.activeSelf));
     }
 
     private void HoverHandler()
@@ -147,7 +119,7 @@ public class MapManager : NetworkBehaviour
 
         // handle hover states
         bool isSliderHovered = castResults.Any(r => r.gameObject.GetComponentInParent<Slider>());
-        isMapHovered = mapBackground && castResults.Any(r => r.gameObject == mapBackground && !isSliderHovered);
+        isMapHovered = activeCanvas && castResults.Any(r => r.gameObject == activeCanvas && !isSliderHovered);
         isPileHovered = iconPile && castResults.Any(r => r.gameObject == iconPile && !isSliderHovered);
 
         // handle pointer circle
@@ -252,7 +224,7 @@ public class MapManager : NetworkBehaviour
         if (targetElement.GetComponent<NetworkObject>()) targetElement.GetComponent<NetworkObject>().TrySetParent(mapObject.transform, true);
         else targetElement.transform.SetParent(mapObject.transform, true);
 
-        if (!isNetworked || Time.unscaledTime >= nextPositionSyncTime)
+        if (Time.unscaledTime >= nextPositionSyncTime)
         {
             nextPositionSyncTime = Time.unscaledTime + positionSyncInterval;
             SetElementPosition(targetElement, targetPosition, true);
@@ -272,7 +244,7 @@ public class MapManager : NetworkBehaviour
         AudioManager.Instance.OnElementPlace();
 
         // set target element parent to the components object
-        targetElement.transform.SetParent(mapBackground.transform, true);
+        targetElement.transform.SetParent(activeCanvas.transform, true);
         if (targetElement.GetComponent<NetworkObject>()) SetElementPosition(targetElement, Pointer.current.position.ReadValue(), true);
 
         // destroy element if its dropped over a discard allowed area
@@ -301,7 +273,7 @@ public class MapManager : NetworkBehaviour
         if (!activeIcons.Contains(targetElement)) activeIcons.Add(targetElement);
 
         // spawn networkobject if the element was pulled from the pile
-        if (savedElementPosition == Vector2.zero && isNetworked)
+        if (savedElementPosition == Vector2.zero && activeCanvas == MapNetworkManager.Instance.sharedCanvas)
         {
             // prevent interaction until the element is replaced with a networked one
             targetElement.GetComponent<EventTrigger>().enabled = false;
@@ -317,7 +289,7 @@ public class MapManager : NetworkBehaviour
 
     private void SetElementPosition(GameObject targetElement, Vector2 targetPosition, bool ignoreOwner = false)
     {
-        if (isNetworked && targetElement.GetComponent<NetworkObject>())
+        if (targetElement.GetComponent<NetworkObject>())
         {
             ulong objectId = targetElement.GetComponent<NetworkObject>().NetworkObjectId;
             Vector2 normalisedPosition = UIManager.Instance.GetNormalizedPosition(targetElement.transform.parent.GetComponent<RectTransform>(), targetPosition);
@@ -330,46 +302,51 @@ public class MapManager : NetworkBehaviour
     {
         Color greenHighlight = new Color(0.8478955f, 1f, 0.7528302f);
         Color redHighlight = new Color(1f, 0.8207547f, 0.8207547f);
-        mapBackground.GetComponent<Image>().color = targetState ? greenHighlight : Color.white;
+        activeCanvas.GetComponent<Image>().color = targetState ? greenHighlight : Color.white;
         iconPile.GetComponent<Image>().color = targetState ? redHighlight : Color.white;
     }
 
     private void PileAnimationHandler()
     {
         if (!iconPile) return;
-        float targetY = !isPileHovered ? -495f : -375f;
+        float targetY = !isPileHovered ? -495f : -335f;
         iconPile.transform.localPosition = Vector2.Lerp(iconPile.transform.localPosition, new Vector2(iconPile.transform.localPosition.x, targetY), Time.deltaTime * 10f);
     }
 
-    public void MapMoveHandler(bool shouldCenter, bool shouldAnimate = true)
+    public void MapMoveHandler(bool shouldCenter)
     {
-        //Debug.Log("MapManager: Target center state: " + shouldCenter + " last center state: " + isCentered);
-        isCentered = shouldCenter;
-        if (shouldAnimate) InventoryManager.Instance.MapTabMoveHandler(shouldCenter);
-        RectTransform mapRect = mapObject.transform.GetComponent<RectTransform>();
-        RectTransform backgroundRect = mapObject.transform.Find("InnerLayer").GetComponent<RectTransform>();
-        mapObject.GetComponent<RectTransform>().localScale = Vector2.one;
+        if (!mapUI.activeInHierarchy) return;
 
-        // reset y
-        mapRect.anchoredPosition = new Vector2(mapRect.anchoredPosition.x, 40);
-        backgroundRect.anchoredPosition = new Vector2(backgroundRect.anchoredPosition.x, -40);
+        // move tabs
+        InventoryManager.Instance.MapTabMoveHandler(shouldCenter);
 
-        // set map target pos
-        Vector2 targetPosition = new Vector2(shouldCenter ? -307f : 0f, 40f);
-        if (shouldAnimate) StartCoroutine(UIManager.Instance.UIAnimator(mapRect, targetPosition));
-        else mapRect.anchoredPosition = targetPosition;
+        // set canvas transforms
+        Vector2 targetPosition = new Vector2(shouldCenter ? 0f : 307f, 0f);
+        StartCoroutine(UIManager.Instance.UIAnimator(individualCanvas.GetComponent<RectTransform>(), targetPosition));
+        StartCoroutine(UIManager.Instance.UIAnimator(MapNetworkManager.Instance.sharedCanvas.GetComponent<RectTransform>(), targetPosition));
 
-        // set background target pos
-        targetPosition = new Vector2(shouldCenter ? 307f : 0f, -40);
-        if (shouldAnimate) StartCoroutine(UIManager.Instance.UIAnimator(backgroundRect, targetPosition));
-        else backgroundRect.anchoredPosition = targetPosition;
+        targetPosition = new Vector2(shouldCenter ? 0f : 307f, 0f);
+        StartCoroutine(UIManager.Instance.UIAnimator(mapUI.GetComponent<RectTransform>(), targetPosition));
     }
 
-    public void MapLoadAnimator()
+    public IEnumerator MapLoadAnimation()
     {
         Debug.Log("MapManager: Running load animation");
-        MapManager.Instance.OnMapToggleReady(false, true);
+
+        // reset ui
+        // NOTE: yeah, I know how this looks
+        InventoryManager.Instance.mapPageButtons.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+        InventoryManager.Instance.journalObject.GetComponent<RectTransform>().anchoredPosition = new Vector2(-700f, InventoryManager.Instance.journalObject.GetComponent<RectTransform>().anchoredPosition.y);
+        mapUI.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+        individualCanvas.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+
+        // move to edit stage
+        yield return new WaitForSeconds(1f);
         isLoaded = true;
+        OnToggleMapEditability(true);
+        InventoryManager.Instance.OnOwnJournalToggle(true);
+
+        // prompt tutorial dialog
         if (MapNetworkManager.Instance.mapState.Value == MapState.Own) UIDialog.Instance.OnOpenDialog(DialogId.MapTutorial);
     }
 
@@ -380,8 +357,8 @@ public class MapManager : NetworkBehaviour
 
         // instantiate new dot based on mouse position
         Vector2 targetPosition = Pointer.current.position.ReadValue();
-        GameObject objectPrefab = Resources.Load<GameObject>("MapPrefabs/" + (isNetworked ? "SharedDrawDot" : "DrawDot"));
-        GameObject newDot = Instantiate(objectPrefab, targetPosition, Quaternion.identity, mapBackground.transform);
+        GameObject objectPrefab = Resources.Load<GameObject>("MapPrefabs/" + (activeCanvas == MapNetworkManager.Instance.sharedCanvas ? "SharedDrawDot" : "DrawDot"));
+        GameObject newDot = Instantiate(objectPrefab, targetPosition, Quaternion.identity, activeCanvas.transform);
         newDot.transform.localScale = Vector2.one * pencilSizeSlider.value;
         newDot.transform.SetSiblingIndex(0);
         newDot.SetActive(true);
@@ -390,7 +367,7 @@ public class MapManager : NetworkBehaviour
         activeDrawDots.Add(newDot);
 
         // conditionally spawn network object
-        if (isNetworked)
+        if (activeCanvas == MapNetworkManager.Instance.sharedCanvas)
         {
             ulong requestId = nextPlacementRequestId++;
             pendingPlacements.Add(requestId, newDot);
@@ -404,7 +381,7 @@ public class MapManager : NetworkBehaviour
         if (!isMapHovered) return;
 
         // check for drawdots under pointercircle
-        foreach (Transform element in mapBackground.transform)
+        foreach (Transform element in activeCanvas.transform)
         {
             if (!element.name.Contains("Dot")) continue;
 
@@ -424,7 +401,7 @@ public class MapManager : NetworkBehaviour
             // destroy element on intersect
             if (boundsA.Intersects(boundsB))
             {
-                if (isNetworked && !IsHost)
+                if (activeCanvas == MapNetworkManager.Instance.sharedCanvas)
                 {
                     MapNetworkManager.Instance.DestroyMapElementServerRpc(element.GetComponent<NetworkObject>().NetworkObjectId);        
                 }
@@ -478,71 +455,58 @@ public class MapManager : NetworkBehaviour
 
     public void OnMapClearRequest()
     {
-        UIDialog.Instance.OnOpenDialog(isNetworked ? DialogId.SharedMapClear : DialogId.MapClear);
+        UIDialog.Instance.OnOpenDialog(activeCanvas == MapNetworkManager.Instance.sharedCanvas ? DialogId.SharedMapClear : DialogId.MapClear);
     }
 
     public void OnClearMap()
     {
-        if (isNetworked)
+        if (activeCanvas == MapNetworkManager.Instance.sharedCanvas)
         {
             MapNetworkManager.Instance.ClearMapServerRpc();
         }
         else
         {
             // cleanup dots
-            activeDrawDots.ForEach(d => Destroy(d));
+            activeDrawDots.Where(d => d != null).ToList().ForEach(d => Destroy(d));
             activeDrawDots.Clear();
 
             // cleanup icons
-            activeIcons.ForEach(i => Destroy(i));
+            activeIcons.Where(i => i != null).ToList().ForEach(i => Destroy(i));
             activeIcons.Clear();
         }
     }
 
-    public void OnMapToggleReady(bool sendToServer = true, bool shouldAnimate = true)
+    public void OnMapToggleReady(bool isReady, bool sendToServer = true)
     {
-        bool isMapReady = iconPile.activeSelf;
-        iconPile.SetActive(!isMapReady);
-        placeIcon.GetComponent<UIElement>().OnElementToggleEnable(!isMapReady);
-        pencilIcon.GetComponent<UIElement>().OnElementToggleEnable(!isMapReady);
-        eraserIcon.GetComponent<UIElement>().OnElementToggleEnable(!isMapReady);
-        trashIcon.GetComponent<UIElement>().OnElementToggleEnable(!isMapReady);
-        SetActiveTool(!isMapReady ? placeIcon : null);
-        if (shouldAnimate) 
-        {
-            MapMoveHandler(isMapReady);
-            InventoryManager.Instance.OnJournalToggle(!isMapReady);
-        }
+        OnToggleMapEditability(!isReady);
+        InventoryManager.Instance.OnJournalToggle(!isReady); // NOTE: This isn't really ideal, since it can enable the journal when it is availible, but the current gameplay progress shouldn't allow that
 
         // handle behaviour based on map type
-        if (isNetworked)
+        if (activeCanvas == MapNetworkManager.Instance.sharedCanvas)
         {
-            saveIcon.SetActive(!isMapReady);
-
             // send ready state
             if (!GameManager.Instance.isMaster && sendToServer) MapNetworkManager.Instance.SetMapStateServerRpc(MapState.Explore);
         }
         else
         {
-            saveIcon.transform.GetChild(1).gameObject.SetActive(isMapReady);
-            saveIcon.transform.GetChild(0).gameObject.SetActive(!isMapReady);
-
             // send ready state
-            if (!GameManager.Instance.isMaster && sendToServer) MapNetworkManager.Instance.SetPlayerMapStateServerRpc(isMapReady);
+            if (!GameManager.Instance.isMaster && sendToServer) MapNetworkManager.Instance.SetPlayerMapStateServerRpc(isReady);
         }
     }
 
-    public void OnDisableMapUI()
+    public void OnToggleMapEditability(bool targetState)
     {
-        SetActiveTool(null);
-        iconPile.SetActive(false);
-        saveIcon.SetActive(false);
-        placeIcon.GetComponent<UIElement>().OnElementToggleEnable(false);
-        pencilIcon.GetComponent<UIElement>().OnElementToggleEnable(false);
-        eraserIcon.GetComponent<UIElement>().OnElementToggleEnable(false);
-        trashIcon.GetComponent<UIElement>().OnElementToggleEnable(false);
+        SetActiveTool(targetState ? placeIcon : null);
+        iconPile.SetActive(targetState);
+        saveIcon.GetComponent<UIElement>().OnElementToggleEnable((activeCanvas == individualCanvas && targetState) || (activeCanvas == MapNetworkManager.Instance.sharedCanvas && MapNetworkManager.Instance.mapState.Value == MapState.Shared && GameManager.Instance.IsHost));
+        placeIcon.GetComponent<UIElement>().OnElementToggleEnable(targetState);
+        pencilIcon.GetComponent<UIElement>().OnElementToggleEnable(targetState);
+        eraserIcon.GetComponent<UIElement>().OnElementToggleEnable(targetState);
+        trashIcon.GetComponent<UIElement>().OnElementToggleEnable(targetState);
+        saveIcon.transform.GetChild(0).gameObject.SetActive(targetState);
+        saveIcon.transform.GetChild(1).gameObject.SetActive(!targetState);
         if (GameManager.Instance.isMaster) toolBar.SetActive(false);
-        ToggleColorHighlight(false);
+        if (activeCanvas) ToggleColorHighlight(false);
     }
 
     public void OnSendMapData()
@@ -563,7 +527,7 @@ public class MapManager : NetworkBehaviour
 
         // prevent sending empty data
         if (mapElements.Count == 0) return;
-        Debug.Log("MapManager: Sending map data from: " + GameManager.Instance.FetchPlayerDataById(NetworkManager.LocalClientId).PlayerName.Value.ToString());
+        Debug.Log("MapManager: Sending map data from: " + GameManager.Instance.FetchPersistentPlayerId());
         MapNetworkManager.Instance.SpawnMapInstanceServerRpc(mapElements.ToArray());            
     }
 
@@ -575,23 +539,24 @@ public class MapManager : NetworkBehaviour
 
     public void OnMapStateChanged(MapState oldValue, MapState newState)
     {
+        if (Instance == null) return;
         switch (newState)
         {
             case MapState.Shared:
-                if (!isNetworked && oldValue != MapState.Null) OnSendMapData();
-                if (!isNetworked || (isNetworked && GameManager.Instance.isMaster)) OnDisableMapUI();
+                if (oldValue != MapState.Null) OnSendMapData();
+                if (GameManager.Instance.isMaster) OnToggleMapEditability(false);
                 break;
             case MapState.Explore:
-                OnDisableMapUI();
+                OnToggleMapEditability(false);
                 break;
             case MapState.Individual:
-                OnDisableMapUI();
+                OnToggleMapEditability(false);
                 break;
         }
     }
 
     public void ToggleMapObject(bool targetState) => mapObject.SetActive(targetState);
-    public void ToggleIconPile(bool targetState) => iconPile.SetActive(targetState);
+    public void ToggleMapUI(bool targetState) => mapUI.SetActive(targetState);
 }
 
 public struct MapElementData : INetworkSerializable

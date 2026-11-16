@@ -15,7 +15,7 @@ public class InventoryManager : MonoBehaviour
     public bool isLocked;
     [SerializeField] private GameObject innerLayer;
     [SerializeField] private GameObject backButton;
-    [SerializeField] private GameObject journalObject;
+    public GameObject journalObject;
     [SerializeField] private GameObject mapObject;
     [SerializeField] private GameObject noteObject;
     [SerializeField] private GameObject editorObject;
@@ -29,6 +29,7 @@ public class InventoryManager : MonoBehaviour
     public bool enableSharedJournal;
 
     [Header("Map Data")]
+    public GameObject mapPageButtons;
     [SerializeField] private GameObject mapOwnViewButton;
     [SerializeField] private GameObject mapSharedViewButton;
     [SerializeField] private GameObject mapIndividualViewButton;
@@ -46,12 +47,6 @@ public class InventoryManager : MonoBehaviour
 
         // reset inventory
         ResetInventoryState();
-    }
-
-    private void LateUpdate()
-    {
-        // shared map doesn't have it's own background layer due to layering issues, use a generic layer here
-        innerLayer.SetActive(!editorObject.activeSelf && ((MapManager.SharedInstance && !MapManager.SharedInstance.isMapActive) || !MapManager.SharedInstance));
     }
 
     public void OnSetup()
@@ -106,6 +101,11 @@ public class InventoryManager : MonoBehaviour
         isInventoryActive = !isInventoryActive;
         inventoryObject.SetActive(isInventoryActive);
         if (isInventoryActive) OnOpenMap();
+        else
+        {
+            MapNetworkManager.Instance.ToggleSharedCanvas(false);
+            MapNetworkManager.Instance.ToggleMapBackground(false);
+        }
         UIManager.Instance.ToggleHUDIcons(!isInventoryActive);
     }
 
@@ -116,16 +116,16 @@ public class InventoryManager : MonoBehaviour
         // setup map
         Sprite mapSprite = Resources.Load<Sprite>("Information/" + activeStory + "/MapSprite");
         Sprite correctMapSprite = Resources.Load<Sprite>("Information/" + activeStory + "/CorrectMap");
-        MapManager.Instance.mapBackground.GetComponent<Image>().sprite = mapSprite;
-        MapManager.SharedInstance.mapBackground.GetComponent<Image>().sprite = mapSprite;
-        UIManager.Instance.minimapObject.transform.Find("Background").GetComponent<Image>().sprite = mapSprite;
+        MapManager.Instance.individualCanvas.GetComponent<Image>().sprite = mapSprite;
+        MapNetworkManager.Instance.sharedCanvas.GetComponent<Image>().sprite = mapSprite;
+        UIManager.Instance.minimapObject.transform.Find("Canvas").GetComponent<Image>().sprite = mapSprite;
 
         // setup individual maps
         var allTransforms = mapIndividualViewPage.transform.Cast<Transform>().Concat(MenuManager.Instance.individualMapsObject.transform.Cast<Transform>());
         foreach (Transform child in allTransforms)
         {
             Sprite targetSprite = child.name.Contains("Correct") ? correctMapSprite : mapSprite;
-            Image targetBackground = child.Find("Background")?.GetComponent<Image>();
+            Image targetBackground = child.Find("Canvas")?.GetComponent<Image>();
             if (!targetSprite || !targetBackground) continue;
             targetBackground.sprite = targetSprite;
         }
@@ -166,9 +166,9 @@ public class InventoryManager : MonoBehaviour
 
     public void OnJournalToggle(bool targetState) 
     {
+        if (!MapManager.Instance.isLoaded || !isInventoryActive) return;
         JournalMoveHandler(targetState);
-        if (activeMapPage == mapOwnViewPage) MapManager.Instance.MapMoveHandler(!targetState);
-        else if (activeMapPage == mapSharedViewPage) MapManager.SharedInstance.MapMoveHandler(!targetState);
+        MapManager.Instance.MapMoveHandler(!targetState);
     }
 
     public void OnOwnJournalToggle(bool targetState)
@@ -200,15 +200,15 @@ public class InventoryManager : MonoBehaviour
     public void OnOpenMap() 
     {
         mapObject.SetActive(true);
-        SetMapPage(activeMapPage, true);
+        SetMapPage(activeMapPage);
     }
 
-    public void SetMapPage(GameObject pageObject, bool forceSet = false)
+    public void SetMapPage(GameObject pageObject)
     {
-        if (!forceSet && (!pageObject || pageObject == activeMapPage || UIManager.Instance.isAnimating)) return;
+        if (!pageObject) return;
         activeMapPage = pageObject;
 
-        mapOwnViewPage.SetActive(false);
+        mapOwnViewPage.SetActive(true);
         mapIndividualViewPage.SetActive(false);
         mapSharedViewPage.SetActive(false);
         pageObject.SetActive(true);
@@ -217,52 +217,32 @@ public class InventoryManager : MonoBehaviour
         mapOwnViewButton.GetComponent<UIElement>().OnElementDeSelect();
         mapIndividualViewButton.GetComponent<UIElement>().OnElementDeSelect();
         mapSharedViewButton.GetComponent<UIElement>().OnElementDeSelect();
-        if (MapNetworkManager.Instance?.mapState.Value == MapState.Individual) MapTabMoveHandler(activeMapPage != mapOwnViewPage);
+
+        var showJournal = false;
         if (pageObject == mapOwnViewPage)
         {
             mapOwnViewButton.GetComponent<UIElement>().OnElementSelect();
-            if (!MapManager.Instance.isLoaded) 
-            {
-                SetInventoryInitialState();
-                return;
-            }
-
-            MapManager.Instance.MapMoveHandler(MapManager.SharedInstance.isCentered, false);
-            var showJournal = enableOwnJournal || MapNetworkManager.Instance?.mapState.Value == MapState.Own || MapNetworkManager.Instance?.mapState.Value == MapState.Individual;
-            OnJournalToggle(showJournal);
+            MapManager.Instance.SetActiveCanvas(MapManager.Instance.individualCanvas);
+            showJournal = enableOwnJournal;
         }
         else if (pageObject == mapSharedViewPage)
         {
-            if (!MapManager.SharedInstance.isLoaded) MapManager.SharedInstance.SetupLayout();
             mapSharedViewButton.GetComponent<UIElement>().OnElementSelect();
-
-            MapManager.SharedInstance.MapMoveHandler(MapManager.Instance.isCentered, false);
-            var showJournal = enableSharedJournal || MapNetworkManager.Instance?.mapState.Value == MapState.Individual;
-            OnJournalToggle(showJournal);
+            MapManager.Instance.SetActiveCanvas(MapNetworkManager.Instance.sharedCanvas);
+            showJournal = enableSharedJournal;
         }
         else if (pageObject == mapIndividualViewPage)
         {
             mapIndividualViewButton.GetComponent<UIElement>().OnElementSelect();
-            OnJournalToggle(false);
+            MapManager.Instance.SetActiveCanvas(MapManager.Instance.individualCanvas);
+            mapOwnViewPage.SetActive(false);
         }
+
+        // handle journal visibility & map positions
+        OnJournalToggle(showJournal);
     }
 
-    private void SetInventoryInitialState()
-    {
-        // map object
-        MapManager.Instance.ToggleIconPile(true);
-        MapManager.Instance.OnMapToggleReady(false, false);
-        MapManager.SharedInstance.mapObject.GetComponent<RectTransform>().anchoredPosition = new Vector2(-307f, mapObject.GetComponent<RectTransform>().anchoredPosition.y);
-        MapManager.Instance.saveIcon.SetActive(MapNetworkManager.Instance.mapState.Value == MapState.Own);
-
-        // map tabs
-        mapOwnViewButton.GetComponent<RectTransform>().anchoredPosition = new Vector2(36f, mapOwnViewButton.GetComponent<RectTransform>().anchoredPosition.y);
-        mapSharedViewButton.GetComponent<RectTransform>().anchoredPosition = new Vector2(230f, mapSharedViewButton.GetComponent<RectTransform>().anchoredPosition.y);
-        mapIndividualViewButton.GetComponent<RectTransform>().anchoredPosition = new Vector2(425f, mapIndividualViewButton.GetComponent<RectTransform>().anchoredPosition.y);
-
-        // journal
-        journalObject.GetComponent<RectTransform>().anchoredPosition = new Vector2(-700f, journalObject.GetComponent<RectTransform>().anchoredPosition.y);
-    }
+    public void ToggleBackground(bool targetState) => innerLayer.SetActive(targetState);
 
     public void OnToggleNote() 
     {
@@ -303,14 +283,8 @@ public class InventoryManager : MonoBehaviour
 
     public void MapTabMoveHandler(bool shouldCenter)
     {
-        Vector2 targetPosition = new Vector2(!shouldCenter ? 340f : 36f, mapOwnViewButton.GetComponent<RectTransform>().anchoredPosition.y);
-        StartCoroutine(UIManager.Instance.UIAnimator(mapOwnViewButton.GetComponent<RectTransform>(), targetPosition));
-    
-        targetPosition = new Vector2(!shouldCenter ? 535f : 230f, mapSharedViewButton.GetComponent<RectTransform>().anchoredPosition.y);
-        StartCoroutine(UIManager.Instance.UIAnimator(mapSharedViewButton.GetComponent<RectTransform>(), targetPosition));
-
-        targetPosition = new Vector2(!shouldCenter ? 730f : 425f, mapIndividualViewButton.GetComponent<RectTransform>().anchoredPosition.y);
-        StartCoroutine(UIManager.Instance.UIAnimator(mapIndividualViewButton.GetComponent<RectTransform>(), targetPosition));
+        Vector2 targetPosition = new Vector2(shouldCenter ? 0f : 307f, 0f);
+        StartCoroutine(UIManager.Instance.UIAnimator(mapPageButtons.GetComponent<RectTransform>(), targetPosition));
     }
 
     public void OnMapStateChanged(MapState oldValue, MapState newValue)
@@ -320,20 +294,17 @@ public class InventoryManager : MonoBehaviour
         switch (newValue)
         {
             case MapState.Shared:
+                OnOwnJournalToggle(false);
                 OnToggleSharedView(true);
-                OnJournalTogglePaging(false);
                 break;
             case MapState.Explore:
                 OnToggleSharedView(true);
-                OnJournalTogglePaging(false);
                 break;
             case MapState.Individual:
                 OnToggleSharedView(true);
                 OnToggleIndividualView(true);
                 SetMapPage(mapIndividualViewPage);
-                enableOwnJournal = true;
-                enableSharedJournal = true;
-                OnJournalTogglePaging(true);
+                OnOwnJournalToggle(true);
             break;
         }
     }

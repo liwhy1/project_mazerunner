@@ -268,7 +268,7 @@ public class UIManager : NetworkBehaviour
 
     private void SetupMinimapIcon(int playerId)
     {
-        Transform targetParent = GameManager.Instance.isMaster ? MapManager.SharedInstance.mapBackground.transform : minimapIcon.transform.parent;
+        Transform targetParent = GameManager.Instance.isMaster ? MapNetworkManager.Instance.sharedCanvas.transform : minimapIcon.transform.parent;
         GameObject newIcon = Instantiate(Resources.Load<GameObject>("MapPrefabs/PlayerIcon"), Vector2.zero, Quaternion.identity, targetParent);
         newIcon.transform.localScale = Vector2.one / 2f;
         newIcon.name = "playerIcon_" + playerId;
@@ -282,7 +282,7 @@ public class UIManager : NetworkBehaviour
         if (!GameManager.Instance.terrainObject) return;
         MeshRenderer renderer = GameManager.Instance.terrainObject.GetComponent<MeshRenderer>();
         Bounds bounds = renderer.bounds;
-        RectTransform minimapRect = GameManager.Instance.isMaster ? MapManager.SharedInstance.mapBackground.GetComponent<RectTransform>() : minimapIcon.GetComponent<RectTransform>();
+        RectTransform minimapRect = GameManager.Instance.isMaster ? MapNetworkManager.Instance.sharedCanvas.GetComponent<RectTransform>() : minimapIcon.GetComponent<RectTransform>();
 
         // check for dead icons
         var deadIcons = minimapPlayerIcons.FindAll(i => GameManager.Instance.playerList.All(p => p.PersistentPlayerId.Value.ToString() != i.name.Split('_')[1]));
@@ -315,9 +315,8 @@ public class UIManager : NetworkBehaviour
 
     public void MirrorSharedmaptoMinimap()
     {
-        if (!MapManager.SharedInstance) return;
         Debug.Log("UIManager: Mirroring sharedmap to minimap");
-        foreach (Transform icon in MapManager.SharedInstance.mapBackground.transform)
+        foreach (Transform icon in MapNetworkManager.Instance?.sharedCanvas.transform)
         {
             // prevent mirroring drawdots
             if (!icon.GetComponent<NetworkObject>() || icon.name.Contains("Dot")) continue;

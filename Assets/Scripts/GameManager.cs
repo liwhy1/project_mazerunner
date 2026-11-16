@@ -249,14 +249,17 @@ public class GameManager : NetworkBehaviour
             // hide start platform
             navMeshObject.GetComponent<NavMeshSurface>().GetComponent<Renderer>().enabled = false;
 
-            // reset ui
+            // conditionally run map load logic
             if (MapNetworkManager.Instance.mapState.Value == MapState.Own || MapNetworkManager.Instance.mapState.Value == MapState.Shared) InventoryManager.Instance.OnInventoryToggleLock(true);
-            if (MapNetworkManager.Instance.mapState.Value == MapState.Own) MapManager.Instance.MapLoadAnimator();
-            playerViewCamera.gameObject.SetActive(false);
+            if (MapNetworkManager.Instance.mapState.Value == MapState.Own) StartCoroutine(MapManager.Instance.MapLoadAnimation());
+            else MapManager.Instance.isLoaded = true;
+            
+            // reset ui
             MenuManager.Instance.ResetUIState();
 
             // start using the player's camera
             mainCamera.SetActive(false);
+            playerViewCamera.gameObject.SetActive(false);
 
             if (MapNetworkManager.Instance.mapState.Value == MapState.Explore) StartCoroutine(OnExploreGameState());
 
@@ -347,7 +350,7 @@ public class GameManager : NetworkBehaviour
             }
 
             // spawn shared map if it doesn't exist already
-            if (!MapManager.SharedInstance)
+            if (!MapNetworkManager.Instance)
             {
                 SpawnSharedMap();
             }          

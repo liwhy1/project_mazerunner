@@ -358,7 +358,8 @@ public class MenuManager : NetworkBehaviour
     private void OnMasterEndGame()
     {
         SetMasterGameState(4);
-        MapManager.SharedInstance.ToggleMapObject(false);
+        MapManager.Instance.ToggleMapUI(false);
+        MapNetworkManager.Instance.ToggleSharedCanvas(false);
         individualMapsObject.SetActive(true);
         lobbyContinueButton.SetActive(false);
         MapNetworkManager.Instance.SetMapStateServerRpc(MapState.Individual);
@@ -369,11 +370,9 @@ public class MenuManager : NetworkBehaviour
         SetMasterGameState(2);
         lobbyContinueButton.SetActive(true);
         lobbyContinueButton.transform.Find("Text").GetComponent<TMP_Text>().text = UIManager.Instance.GetLocalUIString("MENU_SAVE_BUTTON");
-        MapManager.SharedInstance.ToggleMapObject(true);
-        MapManager.SharedInstance.ToggleIconPile(true);
-        MapManager.SharedInstance.OnMapToggleReady(false, false);
-        MapManager.SharedInstance.mapObject.transform.Find("InnerLayer").gameObject.SetActive(false);
-        MapManager.SharedInstance.SetupLayout();
+        MapManager.Instance.SetActiveCanvas(MapNetworkManager.Instance.sharedCanvas);
+        MapManager.Instance.ToggleMapUI(true);
+        MapManager.Instance.OnMapToggleReady(false, false);
     }
 
     public void TogglePlayerList(bool targetState) => lobbyPlayerListObject.SetActive(targetState);
