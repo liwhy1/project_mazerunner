@@ -6,7 +6,7 @@ public class ChainliftController : MonoBehaviour
     public GameObject chainliftObject;
     private Coroutine liftMoveRoutine;
     private float lowLimit = 20.35f; // CHANGEME
-    private float highLimit = -17.07f; // CHANGEME
+    private float highLimit = 3f; // CHANGEME
     private float movementSpeed = 10f;
 
     public void OnMoveLift()

@@ -25986,6 +25986,7 @@ GameObject:
   - component: {fileID: 1053885460}
   - component: {fileID: 1053885459}
   - component: {fileID: 1053885458}
+  - component: {fileID: 1053885462}
   m_Layer: 0
   m_Name: ConvexRiver
   m_TagString: Untagged
@@ -26184,6 +26185,19 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1053885456}
   m_Mesh: {fileID: -5285660197504196628, guid: 332a6367a8e4c1f4d9656d274f936f79, type: 3}
+--- !u!114 &1053885462
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1053885456}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa5d9c2a2683f2149b6ae76bf607d008, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InteractableObject
+  interactableType: 5
 --- !u!1 &1058676928
 GameObject:
   m_ObjectHideFlags: 0

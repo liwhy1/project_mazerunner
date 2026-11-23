@@ -142,7 +142,7 @@ public class PlayerController : NetworkBehaviour
         float currentDistance = Vector3.Distance(transform.position, riverCollider.ClosestPoint(transform.position));
 
         // remember the last spot that wasn't close to the river
-        lastSafePosition = isGrounded && currentDistance > 2.5f ? transform.position : lastSafePosition;
+        lastSafePosition = isGrounded && !currentPlatform && currentDistance > 2.5f ? transform.position : lastSafePosition;
     }
 
     private void OnTriggerEnter(Collider other)
